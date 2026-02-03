@@ -61,7 +61,7 @@ function HomePage() {
 
         <div className="mt-12 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
           <h2 className="text-lg font-semibold text-slate-900">How does it work?</h2>
-          <div className="mt-4 grid gap-6 sm:grid-cols-3">
+          <div className="mt-4 grid gap-6 md:grid-cols-3">
             <div>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-sm font-bold text-teal-600">
                 1

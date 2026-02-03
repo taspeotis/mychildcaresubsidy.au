@@ -16,13 +16,13 @@ function RootLayout() {
           <nav className="flex items-center gap-1">
             <Link
               to="/qld"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
+              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
             >
               QLD
             </Link>
             <Link
               to="/act"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
+              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
             >
               ACT
             </Link>

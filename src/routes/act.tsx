@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
+import { CalculatorSidebar } from '../components/CalculatorSidebar'
 import { InputField } from '../components/InputField'
 import { SelectField } from '../components/SelectField'
 import { TimePicker } from '../components/TimePicker'
@@ -124,34 +125,55 @@ function ActCalculator() {
         onApply={(pct) => setCcsPercent(String(pct))}
       />
 
-      <Container className="pt-8">
-        <Link to="/" className="inline-flex items-center text-sm text-slate-500 hover:text-teal-600 transition-colors">
-          <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Back
-        </Link>
-
-        <div className="mt-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">ACT 3-Year-Old Preschool</h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Estimate your out-of-pocket costs with the ACT's funded preschool program
-            </p>
-          </div>
-          <ToggleGroup
-            options={[
-              { value: 'daily', label: 'Daily' },
-              { value: 'fortnightly', label: 'Fortnightly' },
+      <Container className="py-8">
+        <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
+          {/* Sidebar panel */}
+          <aside className="relative mb-8 lg:mb-0">
+            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-slate-50 p-6 lg:p-8">
+              <CalculatorSidebar
+            schemeTag="ACT"
+            schemeName="3-Year-Old Preschool"
+            description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
+            keyFacts={[
+              { label: 'Annual hours funded', value: '300 hours' },
+              { label: 'Days per week', value: '1 day' },
+              { label: 'Program length', value: '6–7.5 hrs/day' },
             ]}
-            value={mode}
-            onChange={setMode}
-          />
-        </div>
+            guidance={[
+              {
+                title: 'Your CCS percentage',
+                description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income.',
+              },
+              {
+                title: 'Session fees',
+                description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
+              },
+              {
+                title: 'CCS hours per fortnight',
+                description: 'The number of subsidised hours you are approved for each fortnight. Check your Centrelink CCS assessment.',
+              },
+              {
+                title: 'Preschool day selection',
+                description: 'Pick which day each week your child attends the preschool program. Only one day per week is funded.',
+              },
+            ]}
+          >
+            <ToggleGroup
+              options={[
+                { value: 'daily', label: 'Daily' },
+                { value: 'fortnightly', label: 'Fortnightly' },
+              ]}
+              value={mode}
+              onChange={setMode}
+            />
+              </CalculatorSidebar>
+            </div>
+          </aside>
 
-        {mode === 'daily' ? (
-          <div className="mt-8 grid gap-8 lg:grid-cols-2">
-            <div className="space-y-6">
+          {/* Main content */}
+          <div className="min-w-0 space-y-6">
+          {mode === 'daily' ? (
+            <>
               <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
                 <h2 className="text-base font-semibold text-slate-900">CCS Details</h2>
                 <div className="mt-4 space-y-4">
@@ -232,9 +254,7 @@ function ActCalculator() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div>
               {dailyResult && (
                 <ResultCard
                   title="Daily Cost Estimate"
@@ -248,147 +268,142 @@ function ActCalculator() {
                   note="Assumes 1 preschool day per week. The preschool program hours are fully funded. You only pay for the care hours outside the program, minus CCS."
                 />
               )}
-            </div>
-          </div>
-        ) : (
-          <div className="mt-8">
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="space-y-4 lg:col-span-2">
-                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                  <h2 className="text-base font-semibold text-slate-900">Fortnightly Setup</h2>
-                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    <InputField
-                      label="CCS hours/fortnight"
-                      type="number"
-                      value={fnCcsHours}
-                      onChange={(e) => setFnCcsHours(e.target.value)}
-                    />
-                    <InputField
-                      label="Daily session fee"
-                      type="number"
-                      value={fnSessionFee}
-                      onChange={(e) => setFnSessionFee(e.target.value)}
-                      suffix="$"
-                    />
-                    <TimePicker
-                      label="Session start"
-                      value={fnSessionStart}
-                      onChange={setFnSessionStart}
-                      min={5}
-                      max={12}
-                    />
-                    <TimePicker
-                      label="Session end"
-                      value={fnSessionEnd}
-                      onChange={setFnSessionEnd}
-                      min={12}
-                      max={21}
-                    />
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    <SelectField
-                      label="Preschool hours"
-                      hint={`${fnProgramWeeks} weeks/year, ${kindyHoursPerWeek.toFixed(1)} hrs/week`}
-                      options={PRESCHOOL_OPTIONS}
-                      value={fnPreschoolHours}
-                      onChange={(e) => setFnPreschoolHours(e.target.value)}
-                    />
-                    <TimePicker
-                      label="Preschool start"
-                      value={fnPreschoolStart}
-                      onChange={setFnPreschoolStart}
-                      min={7}
-                      max={12}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                  <h2 className="text-base font-semibold text-slate-900">Preschool Days</h2>
-                  <p className="mt-1 text-xs text-slate-500">Select the preschool day for each week (1 day per week)</p>
-                  <div className="mt-4 space-y-3">
-                    {[1, 2].map((week) => (
-                      <div key={week}>
-                        <p className="text-xs font-medium text-slate-500 mb-1.5">Week {week}</p>
-                        <div className="flex gap-2">
-                          {DAYS.map((day) => {
-                            const key = `w${week}-${day}`
-                            const checked = fnPreschoolDays[key] ?? false
-                            return (
-                              <button
-                                key={key}
-                                type="button"
-                                onClick={() =>
-                                  setFnPreschoolDays((prev) => {
-                                    // Radio-style: clear other days in this week, toggle this one
-                                    const next = { ...prev }
-                                    for (const d of DAYS) next[`w${week}-${d}`] = false
-                                    next[key] = !checked
-                                    return next
-                                  })
-                                }
-                                className={`flex-1 rounded-lg border py-2 text-xs font-medium transition-colors ${
-                                  checked
-                                    ? 'border-teal-300 bg-teal-50 text-teal-700'
-                                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-                                }`}
-                              >
-                                {day}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {fortnightlyResult && (
-                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-left text-slate-700">
-                          <th className="py-2 pr-3 font-medium">Day</th>
-                          <th className="py-2 px-2 font-medium text-right">Fee</th>
-                          <th className="py-2 px-2 font-medium text-right">CCS</th>
-                          <th className="py-2 px-2 font-medium text-right">Preschool</th>
-                          <th className="py-2 pl-2 font-medium text-right">Gap</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {fortnightlyResult.sessions.map((s, i) => (
-                          <tr key={i} className={s.week === 2 && s.day === 'Mon' ? 'border-t-4 border-slate-100' : ''}>
-                            <td className="py-2 pr-3 text-slate-900">
-                              <span className="text-slate-500">W{s.week}</span> {s.day}
-                            </td>
-                            <td className="py-2 px-2 text-right tabular-nums text-slate-900">{fmt(Number(fnSessionFee))}</td>
-                            <td className="py-2 px-2 text-right tabular-nums text-slate-700">{fmt(s.ccsEntitlement)}</td>
-                            <td className="py-2 px-2 text-right tabular-nums text-teal-600">{fmt(s.kindyFundingAmount)}</td>
-                            <td className="py-2 pl-2 text-right tabular-nums font-semibold">{fmt(s.estimatedGapFee)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                {fortnightlyResult && (
-                  <ResultCard
-                    title="Fortnightly Total"
-                    rows={[
-                      { label: 'Total session fees', value: fmt(fortnightlyResult.totalSessionFees) },
-                      { label: 'Total CCS entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
-                      { label: 'Total preschool funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
-                      { label: 'Your estimated gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
-                    ]}
+            </>
+          ) : (
+            <>
+              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
+                <h2 className="text-base font-semibold text-slate-900">Fortnightly Setup</h2>
+                <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  <InputField
+                    label="CCS hours/fortnight"
+                    type="number"
+                    value={fnCcsHours}
+                    onChange={(e) => setFnCcsHours(e.target.value)}
                   />
-                )}
+                  <InputField
+                    label="Daily session fee"
+                    type="number"
+                    value={fnSessionFee}
+                    onChange={(e) => setFnSessionFee(e.target.value)}
+                    suffix="$"
+                  />
+                  <TimePicker
+                    label="Session start"
+                    value={fnSessionStart}
+                    onChange={setFnSessionStart}
+                    min={5}
+                    max={12}
+                  />
+                  <TimePicker
+                    label="Session end"
+                    value={fnSessionEnd}
+                    onChange={setFnSessionEnd}
+                    min={12}
+                    max={21}
+                  />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <SelectField
+                    label="Preschool hours"
+                    hint={`${fnProgramWeeks} weeks/year, ${kindyHoursPerWeek.toFixed(1)} hrs/week`}
+                    options={PRESCHOOL_OPTIONS}
+                    value={fnPreschoolHours}
+                    onChange={(e) => setFnPreschoolHours(e.target.value)}
+                  />
+                  <TimePicker
+                    label="Preschool start"
+                    value={fnPreschoolStart}
+                    onChange={setFnPreschoolStart}
+                    min={7}
+                    max={12}
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
+                <h2 className="text-base font-semibold text-slate-900">Preschool Days</h2>
+                <p className="mt-1 text-xs text-slate-500">Select the preschool day for each week (1 day per week)</p>
+                <div className="mt-4 space-y-3">
+                  {[1, 2].map((week) => (
+                    <div key={week}>
+                      <p className="text-xs font-medium text-slate-500 mb-1.5">Week {week}</p>
+                      <div className="flex gap-2">
+                        {DAYS.map((day) => {
+                          const key = `w${week}-${day}`
+                          const checked = fnPreschoolDays[key] ?? false
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() =>
+                                setFnPreschoolDays((prev) => {
+                                  // Radio-style: clear other days in this week, toggle this one
+                                  const next = { ...prev }
+                                  for (const d of DAYS) next[`w${week}-${d}`] = false
+                                  next[key] = !checked
+                                  return next
+                                })
+                              }
+                              className={`flex-1 rounded-lg border py-3 text-xs font-medium transition-colors ${
+                                checked
+                                  ? 'border-teal-300 bg-teal-50 text-teal-700'
+                                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {fortnightlyResult && (
+                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 overflow-x-auto">
+                  <table className="w-full min-w-[20rem] text-xs">
+                    <thead>
+                      <tr className="text-left text-slate-700">
+                        <th className="py-2 pr-3 font-medium">Day</th>
+                        <th className="py-2 px-2 font-medium text-right">Fee</th>
+                        <th className="py-2 px-2 font-medium text-right">CCS</th>
+                        <th className="py-2 px-2 font-medium text-right">Preschool</th>
+                        <th className="py-2 pl-2 font-medium text-right">Gap</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {fortnightlyResult.sessions.map((s, i) => (
+                        <tr key={i} className={s.week === 2 && s.day === 'Mon' ? 'border-t-4 border-slate-100' : ''}>
+                          <td className="py-2 pr-3 text-slate-900">
+                            <span className="text-slate-500">W{s.week}</span> {s.day}
+                          </td>
+                          <td className="py-2 px-2 text-right tabular-nums text-slate-900">{fmt(Number(fnSessionFee))}</td>
+                          <td className="py-2 px-2 text-right tabular-nums text-slate-700">{fmt(s.ccsEntitlement)}</td>
+                          <td className="py-2 px-2 text-right tabular-nums text-teal-600">{fmt(s.kindyFundingAmount)}</td>
+                          <td className="py-2 pl-2 text-right tabular-nums font-semibold">{fmt(s.estimatedGapFee)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {fortnightlyResult && (
+                <ResultCard
+                  title="Fortnightly Total"
+                  rows={[
+                    { label: 'Total session fees', value: fmt(fortnightlyResult.totalSessionFees) },
+                    { label: 'Total CCS entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
+                    { label: 'Total preschool funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
+                    { label: 'Your estimated gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
+                  ]}
+                />
+              )}
+            </>
+          )}
           </div>
-        )}
+        </div>
       </Container>
     </>
   )
