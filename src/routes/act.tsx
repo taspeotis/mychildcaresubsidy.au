@@ -202,7 +202,8 @@ function ActCalculator() {
                     onChange={(e) => setWithholding(e.target.value)}
                     suffix="%"
                     hint="Usually 5%"
-                    format="percent"
+                    format="integer"
+                    suffix="%"
                     min={0}
                     max={100}
                   />
