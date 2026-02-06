@@ -115,6 +115,8 @@ The navbar (ACT/NSW/QLD/VIC) and the ToggleGroup (Daily/Fortnightly) use a slidi
 
 **First activation**: The pill skips the slide transition and only fades in. This prevents a jarring slide from position 0. Implementation: temporarily set `transition: none` on the element, update position, then restore transition in a `requestAnimationFrame`. A `useRef` boolean tracks whether the pill has been visible before.
 
+**Resize handling**: A `ResizeObserver` on the container re-measures the active element on window/container resize, snapping the pill to the correct position without animation.
+
 ### Scroll restoration
 
 Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (not the deprecated `<ScrollRestoration />` component).
@@ -133,6 +135,8 @@ npm run dev
 ## Building
 
 `npm run build` runs `tsc -b && vite build` — TypeScript must pass before Vite builds. Running `vite build` alone skips type-checking.
+
+The build uses `vite-plugin-singlefile` to inline all JS and CSS into a single `index.html` — no separate asset files in `dist/`.
 
 ## Dev practices
 

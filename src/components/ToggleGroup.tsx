@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 interface ToggleGroupProps {
@@ -36,6 +36,26 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
       setPill({ left, width })
     }
   }, [value])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const ro = new ResizeObserver(() => {
+      const active = container.querySelector<HTMLButtonElement>('[data-active="true"]')
+      if (!active) return
+      const el = pillRef.current
+      if (el) {
+        el.style.transition = 'none'
+        void el.offsetLeft
+      }
+      setPill({ left: active.offsetLeft, width: active.offsetWidth })
+      requestAnimationFrame(() => {
+        if (el) el.style.transition = ''
+      })
+    })
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <div ref={containerRef} className={clsx('relative flex rounded-xl bg-white/10 p-1.5', className)}>

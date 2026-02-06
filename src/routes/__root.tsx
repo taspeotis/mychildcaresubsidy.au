@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 
@@ -25,11 +25,9 @@ function RootLayout() {
     const left = active.offsetLeft
     const width = active.offsetWidth
     if (!wasVisible.current) {
-      // First activation: snap position instantly, only fade opacity
       const el = pillRef.current
       if (el) {
         el.style.transition = 'none'
-        // Force reflow so the snap takes effect before re-enabling transition
         void el.offsetLeft
       }
       setPill({ left, width, opacity: 1 })
@@ -41,6 +39,26 @@ function RootLayout() {
     }
     wasVisible.current = true
   }, [pathname])
+
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const ro = new ResizeObserver(() => {
+      const active = nav.querySelector<HTMLAnchorElement>('.active')
+      if (!active) return
+      const el = pillRef.current
+      if (el) {
+        el.style.transition = 'none'
+        void el.offsetLeft
+      }
+      setPill({ left: active.offsetLeft, width: active.offsetWidth, opacity: 1 })
+      requestAnimationFrame(() => {
+        if (el) el.style.transition = ''
+      })
+    })
+    ro.observe(nav)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
