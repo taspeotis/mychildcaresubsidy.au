@@ -56,16 +56,22 @@ function RootLayout() {
               style={{ left: pill.left, width: pill.width, opacity: pill.opacity }}
             />
             <Link
-              to="/qld"
-              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
-            >
-              QLD
-            </Link>
-            <Link
               to="/act"
               className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
             >
               ACT
+            </Link>
+            <Link
+              to="/nsw"
+              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+            >
+              NSW
+            </Link>
+            <Link
+              to="/qld"
+              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+            >
+              QLD
             </Link>
           </nav>
         </Container>

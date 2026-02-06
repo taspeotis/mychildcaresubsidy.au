@@ -200,7 +200,6 @@ function QldCalculator() {
                     label="CCS withholding"
                     value={withholding}
                     onChange={(e) => setWithholding(e.target.value)}
-                    suffix="%"
                     hint="Usually 5%"
                     format="integer"
                     suffix="%"

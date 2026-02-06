@@ -42,18 +42,24 @@ function HomePage() {
       </div>
 
       <Container className="-mt-2 sm:mt-0">
-        <div className="grid gap-5 sm:grid-cols-2">
-          <StateCard
-            to="/qld"
-            state="QLD"
-            program="Free Kindy"
-            description="15 hours per week of funded kindergarten in long day care. Covers two 7.5-hour sessions or a 6-hour split across the fortnight."
-          />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <StateCard
             to="/act"
             state="ACT"
             program="3-Year-Old Preschool"
             description="Funded preschool for 3-year-olds. 6 to 7.5 hours on one day per week at participating long day care services."
+          />
+          <StateCard
+            to="/nsw"
+            state="NSW"
+            program="Start Strong"
+            description="Annual fee relief for 3 and 4+ year olds in long day care preschool programs. Applied weekly after CCS to reduce your gap fee."
+          />
+          <StateCard
+            to="/qld"
+            state="QLD"
+            program="Free Kindy"
+            description="15 hours per week of funded kindergarten in long day care. Covers two 7.5-hour sessions or a 6-hour split across the fortnight."
           />
         </div>
 
