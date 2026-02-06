@@ -14,7 +14,7 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 const NUMERIC_PATTERN: Record<InputFormat, RegExp> = {
   currency: /[^0-9.]/g,
-  integer: /[^0-9]/g,
+  integer: /[^0-9,]/g,
   percent: /[^0-9.]/g,
 }
 
@@ -42,13 +42,9 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, cl
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (fmt) {
-      // Strip non-numeric characters (keep digits and decimal point where appropriate)
-      const cleaned = e.target.value.replace(/,/g, '').replace(NUMERIC_PATTERN[fmt], '')
-      if (cleaned !== e.target.value.replace(/,/g, '')) {
-        e.target.value = cleaned
-      } else {
-        e.target.value = cleaned
-      }
+      // Strip non-numeric characters; integer format allows commas during typing (reformatted on blur)
+      const raw = fmt === 'integer' ? e.target.value : e.target.value.replace(/,/g, '')
+      e.target.value = raw.replace(NUMERIC_PATTERN[fmt], '')
     }
     onChange?.(e)
   }, [fmt, onChange])

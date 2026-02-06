@@ -16,7 +16,7 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
 
   if (!open) return null
 
-  const incomeValue = Number(income) || 0
+  const incomeValue = Number(income.replace(/,/g, '')) || 0
   const result = estimateCcs({
     income: incomeValue,
     numberOfChildren: Number(numChildren) || 1,
