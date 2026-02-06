@@ -185,6 +185,8 @@ function ActCalculator() {
                       onChange={(e) => setCcsPercent(e.target.value)}
                       suffix="%"
                       format="percent"
+                      min={0}
+                      max={95}
                     />
                     <button
                       type="button"
@@ -201,6 +203,8 @@ function ActCalculator() {
                     suffix="%"
                     hint="Usually 5%"
                     format="percent"
+                    min={0}
+                    max={100}
                   />
                 </div>
               </div>
@@ -214,6 +218,7 @@ function ActCalculator() {
                     onChange={(e) => setSessionFee(e.target.value)}
                     prefix="$"
                     format="currency"
+                    min={0}
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <TimePicker
@@ -282,6 +287,7 @@ function ActCalculator() {
                     onChange={(e) => setFnSessionFee(e.target.value)}
                     prefix="$"
                     format="currency"
+                    min={0}
                   />
                   <TimePicker
                     label="Session start"

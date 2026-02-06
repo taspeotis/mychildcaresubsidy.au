@@ -18,10 +18,12 @@ const NUMERIC_PATTERN: Record<InputFormat, RegExp> = {
   percent: /[^0-9.]/g,
 }
 
-function formatOnBlur(value: string, fmt: InputFormat): string {
+function formatOnBlur(value: string, fmt: InputFormat, min?: number, max?: number): string {
   const raw = value.replace(/,/g, '')
-  const num = parseFloat(raw)
+  let num = parseFloat(raw)
   if (isNaN(num) || raw === '') return value
+  if (min != null && num < min) num = min
+  if (max != null && num > max) num = max
   switch (fmt) {
     case 'currency':
       return num.toFixed(2)
@@ -32,9 +34,11 @@ function formatOnBlur(value: string, fmt: InputFormat): string {
   }
 }
 
-export function InputField({ label, hint, prefix, suffix, error, format: fmt, className, id, onBlur, onChange, ...props }: InputFieldProps) {
+export function InputField({ label, hint, prefix, suffix, error, format: fmt, className, id, onBlur, onChange, min, max, ...props }: InputFieldProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   const isTextMode = !!fmt
+  const numMin = min != null ? Number(min) : undefined
+  const numMax = max != null ? Number(max) : undefined
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (fmt) {
@@ -51,7 +55,7 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, cl
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     if (fmt) {
-      const formatted = formatOnBlur(e.target.value, fmt)
+      const formatted = formatOnBlur(e.target.value, fmt, numMin, numMax)
       if (formatted !== e.target.value) {
         e.target.value = formatted
         onChange?.(e as unknown as React.ChangeEvent<HTMLInputElement>)
@@ -78,7 +82,7 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, cl
             prefix && 'pl-10',
             suffix && 'pr-14',
           )}
-          {...(isTextMode ? { type: 'text', inputMode: fmt === 'integer' ? 'numeric' as const : 'decimal' as const } : {})}
+          {...(isTextMode ? { type: 'text', inputMode: fmt === 'integer' ? 'numeric' as const : 'decimal' as const } : { min, max })}
           {...props}
           onChange={handleChange}
           onBlur={handleBlur}
