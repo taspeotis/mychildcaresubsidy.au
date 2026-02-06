@@ -53,7 +53,7 @@ function QldCalculator() {
   const [kindyStart, setKindyStart] = useState(8)
 
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState('100')
+  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [fnKindyHours, setFnKindyHours] = useState('7.5')
   const [fnKindyStart, setFnKindyStart] = useState(8)
   const [days, setDays] = useState<DayConfig[]>(() =>

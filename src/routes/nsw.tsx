@@ -59,7 +59,7 @@ function NswCalculator() {
   const [daysPerWeek, setDaysPerWeek] = useState('3')
 
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState('36')
+  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: 8, sessionEnd: 18 },

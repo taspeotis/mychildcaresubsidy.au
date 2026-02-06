@@ -52,7 +52,7 @@ function ActCalculator() {
   const [preschoolStart, setPreschoolStart] = useState(8.5)
 
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState('36')
+  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')
   const [fnPreschoolStart, setFnPreschoolStart] = useState(8.5)
   const [days, setDays] = useState<DayConfig[]>(() =>
