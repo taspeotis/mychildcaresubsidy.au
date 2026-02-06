@@ -7,7 +7,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-page">
+    <div className="flex min-h-screen flex-col bg-page">
       <header className="header-glow sticky top-0 z-40 bg-brand-900/80 backdrop-blur-sm">
         <Container className="flex h-16 items-center justify-between">
           <Link to="/" className="text-xl font-bold text-white tracking-tight">
@@ -30,7 +30,7 @@ function RootLayout() {
         </Container>
       </header>
 
-      <main className="pb-16">
+      <main className="flex-1 pb-16">
         <Outlet />
       </main>
 
