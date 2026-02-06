@@ -9,7 +9,7 @@ const PROGRAMS = [
   {
     to: '/act',
     state: 'ACT',
-    program: '3-Year-Old Preschool',
+    program: 'Free 3-Year-Old Preschool',
     description: 'Funded preschool for 3-year-olds. 6 to 7.5 hours on one day per week at participating long day care services.',
   },
   {

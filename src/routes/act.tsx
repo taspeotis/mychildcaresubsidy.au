@@ -139,7 +139,7 @@ function ActCalculator() {
             <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="ACT"
-                schemeName="3-Year-Old Preschool"
+                schemeName="Free 3-Year-Old Preschool"
                 description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
                 keyFacts={[
                   { label: 'Annual Hours Funded', value: '300 hours' },
