@@ -181,12 +181,10 @@ function ActCalculator() {
                   <div>
                     <InputField
                       label="CCS percentage"
-                      type="number"
-                      min="0"
-                      max="95"
                       value={ccsPercent}
                       onChange={(e) => setCcsPercent(e.target.value)}
                       suffix="%"
+                      format="percent"
                     />
                     <button
                       type="button"
@@ -198,13 +196,11 @@ function ActCalculator() {
                   </div>
                   <InputField
                     label="CCS withholding"
-                    type="number"
-                    min="0"
-                    max="10"
                     value={withholding}
                     onChange={(e) => setWithholding(e.target.value)}
                     suffix="%"
                     hint="Usually 5%"
+                    format="percent"
                   />
                 </div>
               </div>
@@ -214,11 +210,10 @@ function ActCalculator() {
                 <div className="mt-5 space-y-4">
                   <InputField
                     label="Daily session fee"
-                    type="number"
-                    min="0"
                     value={sessionFee}
                     onChange={(e) => setSessionFee(e.target.value)}
                     prefix="$"
+                    format="currency"
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <TimePicker
@@ -283,10 +278,10 @@ function ActCalculator() {
                   />
                   <InputField
                     label="Daily session fee"
-                    type="number"
                     value={fnSessionFee}
                     onChange={(e) => setFnSessionFee(e.target.value)}
                     prefix="$"
+                    format="currency"
                   />
                   <TimePicker
                     label="Session start"

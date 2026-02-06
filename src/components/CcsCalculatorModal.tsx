@@ -37,12 +37,12 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
           <InputField
             label="Family adjusted taxable income"
             hint="Combined annual income"
-            type="number"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
             placeholder="e.g. 120,000"
             prefix="$"
             suffix="/yr"
+            format="integer"
           />
 
           <InputField
