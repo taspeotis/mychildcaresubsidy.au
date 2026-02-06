@@ -10,20 +10,36 @@ function RootLayout() {
   const { pathname } = useLocation()
   const navRef = useRef<HTMLElement>(null)
   const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 })
+  const wasVisible = useRef(false)
+  const pillRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     const nav = navRef.current
     if (!nav) return
     const active = nav.querySelector<HTMLAnchorElement>('.active')
     if (!active) {
+      wasVisible.current = false
       setPill((p) => ({ ...p, opacity: 0 }))
       return
     }
-    setPill({
-      left: active.offsetLeft,
-      width: active.offsetWidth,
-      opacity: 1,
-    })
+    const left = active.offsetLeft
+    const width = active.offsetWidth
+    if (!wasVisible.current) {
+      // First activation: snap position instantly, only fade opacity
+      const el = pillRef.current
+      if (el) {
+        el.style.transition = 'none'
+        // Force reflow so the snap takes effect before re-enabling transition
+        void el.offsetLeft
+      }
+      setPill({ left, width, opacity: 1 })
+      requestAnimationFrame(() => {
+        if (el) el.style.transition = ''
+      })
+    } else {
+      setPill({ left, width, opacity: 1 })
+    }
+    wasVisible.current = true
   }, [pathname])
 
   return (
@@ -35,6 +51,7 @@ function RootLayout() {
           </Link>
           <nav ref={navRef} className="relative flex items-center gap-1">
             <div
+              ref={pillRef}
               className="absolute top-0 h-full rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 transition-all duration-300 ease-out"
               style={{ left: pill.left, width: pill.width, opacity: pill.opacity }}
             />
