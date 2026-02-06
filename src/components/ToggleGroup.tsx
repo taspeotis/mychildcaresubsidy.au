@@ -10,6 +10,8 @@ interface ToggleGroupProps {
 
 export function ToggleGroup({ options, value, onChange, className }: ToggleGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const pillRef = useRef<HTMLDivElement>(null)
+  const mounted = useRef(false)
   const [pill, setPill] = useState({ left: 0, width: 0 })
 
   useLayoutEffect(() => {
@@ -17,12 +19,28 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
     if (!container) return
     const active = container.querySelector<HTMLButtonElement>('[data-active="true"]')
     if (!active) return
-    setPill({ left: active.offsetLeft, width: active.offsetWidth })
+    const left = active.offsetLeft
+    const width = active.offsetWidth
+    if (!mounted.current) {
+      const el = pillRef.current
+      if (el) {
+        el.style.transition = 'none'
+        void el.offsetLeft
+      }
+      setPill({ left, width })
+      requestAnimationFrame(() => {
+        if (el) el.style.transition = ''
+      })
+      mounted.current = true
+    } else {
+      setPill({ left, width })
+    }
   }, [value])
 
   return (
     <div ref={containerRef} className={clsx('relative inline-flex rounded-xl bg-white/10 p-1.5', className)}>
       <div
+        ref={pillRef}
         className="absolute top-1.5 h-[calc(100%-12px)] rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 shadow-md transition-all duration-300 ease-out"
         style={{ left: pill.left, width: pill.width }}
       />
