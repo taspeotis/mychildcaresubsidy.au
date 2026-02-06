@@ -35,7 +35,7 @@ function HomePage() {
               factoring in the federal Child Care Subsidy and your state's kindy funding.
             </p>
             <p className="mt-3 text-base text-white/70">
-              Select your state below to get started.
+              Select your state or territory below to get started.
             </p>
           </div>
         </Container>
