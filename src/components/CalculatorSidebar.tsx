@@ -31,10 +31,10 @@ export function CalculatorSidebar({
     <>
       <Link
         to="/"
-        className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-teal-600 transition-colors"
+        className="inline-flex items-center text-sm font-medium text-white/60 hover:text-accent-400 transition-colors"
       >
         <svg
-          className="mr-1 h-4 w-4"
+          className="mr-1.5 h-4 w-4"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2}
@@ -45,31 +45,31 @@ export function CalculatorSidebar({
         All calculators
       </Link>
 
-      <h1 className="mt-4 text-xl font-bold text-slate-900">
-        <span className="mr-2 inline-flex translate-y-[-1px] items-center rounded-md bg-teal-600 px-2 py-0.5 align-middle text-xs font-semibold text-white">
+      <h1 className="mt-4 text-2xl font-bold text-white">
+        <span className="mr-2 inline-flex translate-y-[-1px] items-center rounded-lg bg-accent-500 px-2.5 py-1 align-middle text-xs font-bold text-white">
           {schemeTag}
         </span>
         {schemeName}
       </h1>
 
-      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{description}</p>
+      <p className="mt-3 text-sm text-white/70 leading-relaxed">{description}</p>
 
       <div className="mt-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-white/50">
           Key Facts
         </h3>
         <dl className="mt-3 space-y-2">
           {keyFacts.map((fact) => (
             <div key={fact.label} className="flex items-baseline justify-between gap-2">
-              <dt className="text-sm text-slate-600">{fact.label}</dt>
-              <dd className="text-sm font-semibold text-slate-900">{fact.value}</dd>
+              <dt className="text-sm text-white/70">{fact.label}</dt>
+              <dd className="text-sm font-bold text-white">{fact.value}</dd>
             </div>
           ))}
         </dl>
       </div>
 
       <details className="group mt-6 [&[open]]:mt-6" open>
-        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-slate-400 lg:pointer-events-none lg:select-text">
+        <summary className="cursor-pointer select-none text-xs font-bold uppercase tracking-wide text-white/50 lg:pointer-events-none lg:select-text">
           Calculator Guide
           <svg
             className="ml-1 inline h-3 w-3 transition-transform group-open:rotate-90 lg:hidden"
@@ -84,15 +84,15 @@ export function CalculatorSidebar({
         <div className="mt-3 space-y-3">
           {guidance.map((item) => (
             <div key={item.title}>
-              <h4 className="text-sm font-medium text-slate-900">{item.title}</h4>
-              <p className="mt-0.5 text-xs text-slate-500 leading-relaxed">{item.description}</p>
+              <h4 className="text-sm font-medium text-white">{item.title}</h4>
+              <p className="mt-0.5 text-xs text-white/60 leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>
       </details>
 
       {children && (
-        <div className="mt-6 border-t border-slate-200 pt-6">{children}</div>
+        <div className="mt-6 border-t border-white/20 pt-6">{children}</div>
       )}
     </>
   )

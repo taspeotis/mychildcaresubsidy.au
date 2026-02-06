@@ -10,8 +10,8 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export function InputField({ label, hint, suffix, error, className, id, ...props }: InputFieldProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   return (
-    <div className={clsx('space-y-1', className)}>
-      <label htmlFor={inputId} className="block text-sm font-medium text-slate-900">
+    <div className={clsx('space-y-1.5', className)}>
+      <label htmlFor={inputId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
       {hint && <p className="text-xs text-slate-500">{hint}</p>}
@@ -19,16 +19,16 @@ export function InputField({ label, hint, suffix, error, className, id, ...props
         <input
           id={inputId}
           className={clsx(
-            'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors',
+            'block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition-colors',
             'placeholder:text-slate-400',
-            'focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none',
+            'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
             error ? 'border-red-300' : 'border-slate-200',
-            suffix && 'pr-12',
+            suffix && 'pr-14',
           )}
           {...props}
         />
         {suffix && (
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-slate-400">
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-sm text-slate-400">
             {suffix}
           </span>
         )}

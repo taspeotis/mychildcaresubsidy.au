@@ -33,8 +33,8 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
   const options = generateTimeOptions(min, max, step)
 
   return (
-    <div className={clsx('space-y-1', className)}>
-      <label htmlFor={pickerId} className="block text-sm font-medium text-slate-900">
+    <div className={clsx('space-y-1.5', className)}>
+      <label htmlFor={pickerId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
       {hint && <p className="text-xs text-slate-500">{hint}</p>}
@@ -44,8 +44,8 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className={clsx(
-            'block w-full appearance-none rounded-lg border border-slate-200 bg-white py-2 pr-8 pl-3 text-sm text-slate-900 shadow-sm transition-colors',
-            'focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none',
+            'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
+            'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
           )}
         >
           {options.map((opt) => (
@@ -54,8 +54,8 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-          <svg className="h-4 w-4 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+          <svg className="h-5 w-5 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
             <path d="M5.75 10.75L8 13L10.25 10.75" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
             <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
           </svg>

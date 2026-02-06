@@ -7,22 +7,22 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <Container className="flex h-14 items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-slate-900 tracking-tight">
-            kindy<span className="text-teal-600">.au</span>
+    <div className="min-h-screen bg-brand-600">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-900/80 backdrop-blur-sm">
+        <Container className="flex h-16 items-center justify-between">
+          <Link to="/" className="text-xl font-bold text-white tracking-tight">
+            kindy<span className="text-accent-400">.au</span>
           </Link>
           <nav className="flex items-center gap-1">
             <Link
               to="/qld"
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
+              className="rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white [&.active]:bg-accent-500 [&.active]:text-white"
             >
               QLD
             </Link>
             <Link
               to="/act"
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 [&.active]:bg-teal-50 [&.active]:text-teal-700"
+              className="rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white [&.active]:bg-accent-500 [&.active]:text-white"
             >
               ACT
             </Link>
@@ -34,8 +34,8 @@ function RootLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <Container className="py-6 text-center text-xs text-slate-500">
+      <footer className="border-t border-white/10 bg-brand-900">
+        <Container className="py-8 text-center text-xs text-white/50">
           <p>
             This calculator provides estimates only and should not be taken as financial advice.
             Actual costs may vary. Rates are based on FY2026 published schedules.

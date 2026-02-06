@@ -125,11 +125,11 @@ function ActCalculator() {
         onApply={(pct) => setCcsPercent(String(pct))}
       />
 
-      <Container className="py-8">
+      <Container className="py-10">
         <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
           {/* Sidebar panel */}
           <aside className="relative mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-slate-50 p-6 lg:p-8">
+            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-brand-800 p-6 lg:p-8">
               <CalculatorSidebar
             schemeTag="ACT"
             schemeName="3-Year-Old Preschool"
@@ -137,7 +137,7 @@ function ActCalculator() {
             keyFacts={[
               { label: 'Annual hours funded', value: '300 hours' },
               { label: 'Days per week', value: '1 day' },
-              { label: 'Program length', value: '6–7.5 hrs/day' },
+              { label: 'Program length', value: '6\u20137.5 hrs/day' },
             ]}
             guidance={[
               {
@@ -174,9 +174,9 @@ function ActCalculator() {
           <div className="min-w-0 space-y-6">
           {mode === 'daily' ? (
             <>
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                <h2 className="text-base font-semibold text-slate-900">CCS Details</h2>
-                <div className="mt-4 space-y-4">
+              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+                <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
+                <div className="mt-5 space-y-4">
                   <div>
                     <InputField
                       label="CCS percentage"
@@ -190,7 +190,7 @@ function ActCalculator() {
                     <button
                       type="button"
                       onClick={() => setCcsModalOpen(true)}
-                      className="mt-1 text-xs font-medium text-teal-600 hover:text-teal-500"
+                      className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
                     >
                       Don't know your CCS %? Calculate it
                     </button>
@@ -208,9 +208,9 @@ function ActCalculator() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                <h2 className="text-base font-semibold text-slate-900">Session Details</h2>
-                <div className="mt-4 space-y-4">
+              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+                <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
+                <div className="mt-5 space-y-4">
                   <InputField
                     label="Daily session fee"
                     type="number"
@@ -271,9 +271,9 @@ function ActCalculator() {
             </>
           ) : (
             <>
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                <h2 className="text-base font-semibold text-slate-900">Fortnightly Setup</h2>
-                <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+                <h2 className="text-lg font-bold text-slate-900">Fortnightly Setup</h2>
+                <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
                   <InputField
                     label="CCS hours/fortnight"
                     type="number"
@@ -320,13 +320,13 @@ function ActCalculator() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-                <h2 className="text-base font-semibold text-slate-900">Preschool Days</h2>
+              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+                <h2 className="text-lg font-bold text-slate-900">Preschool Days</h2>
                 <p className="mt-1 text-xs text-slate-500">Select the preschool day for each week (1 day per week)</p>
-                <div className="mt-4 space-y-3">
+                <div className="mt-5 space-y-3">
                   {[1, 2].map((week) => (
                     <div key={week}>
-                      <p className="text-xs font-medium text-slate-500 mb-1.5">Week {week}</p>
+                      <p className="text-xs font-bold text-slate-500 mb-2">Week {week}</p>
                       <div className="flex gap-2">
                         {DAYS.map((day) => {
                           const key = `w${week}-${day}`
@@ -344,10 +344,10 @@ function ActCalculator() {
                                   return next
                                 })
                               }
-                              className={`flex-1 rounded-lg border py-3 text-xs font-medium transition-colors ${
+                              className={`flex-1 rounded-xl border-2 py-3.5 text-sm font-bold transition-colors ${
                                 checked
-                                  ? 'border-teal-300 bg-teal-50 text-teal-700'
-                                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                                  ? 'border-accent-400 bg-accent-50 text-accent-700'
+                                  : 'border-slate-200 bg-white text-slate-500 hover:border-accent-300'
                               }`}
                             >
                               {day}
@@ -361,27 +361,27 @@ function ActCalculator() {
               </div>
 
               {fortnightlyResult && (
-                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 overflow-x-auto">
-                  <table className="w-full min-w-[20rem] text-xs">
+                <div className="rounded-2xl bg-white p-6 shadow-md ring-2 ring-white/25 overflow-x-auto">
+                  <table className="w-full min-w-[20rem] text-sm">
                     <thead>
                       <tr className="text-left text-slate-700">
-                        <th className="py-2 pr-3 font-medium">Day</th>
-                        <th className="py-2 px-2 font-medium text-right">Fee</th>
-                        <th className="py-2 px-2 font-medium text-right">CCS</th>
-                        <th className="py-2 px-2 font-medium text-right">Preschool</th>
-                        <th className="py-2 pl-2 font-medium text-right">Gap</th>
+                        <th className="py-2.5 pr-3 font-bold">Day</th>
+                        <th className="py-2.5 px-2 font-bold text-right">Fee</th>
+                        <th className="py-2.5 px-2 font-bold text-right">CCS</th>
+                        <th className="py-2.5 px-2 font-bold text-right">Preschool</th>
+                        <th className="py-2.5 pl-2 font-bold text-right">Gap</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {fortnightlyResult.sessions.map((s, i) => (
                         <tr key={i} className={s.week === 2 && s.day === 'Mon' ? 'border-t-4 border-slate-100' : ''}>
-                          <td className="py-2 pr-3 text-slate-900">
+                          <td className="py-2.5 pr-3 text-slate-900">
                             <span className="text-slate-500">W{s.week}</span> {s.day}
                           </td>
-                          <td className="py-2 px-2 text-right tabular-nums text-slate-900">{fmt(Number(fnSessionFee))}</td>
-                          <td className="py-2 px-2 text-right tabular-nums text-slate-700">{fmt(s.ccsEntitlement)}</td>
-                          <td className="py-2 px-2 text-right tabular-nums text-teal-600">{fmt(s.kindyFundingAmount)}</td>
-                          <td className="py-2 pl-2 text-right tabular-nums font-semibold">{fmt(s.estimatedGapFee)}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums text-slate-900">{fmt(Number(fnSessionFee))}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums text-slate-700">{fmt(s.ccsEntitlement)}</td>
+                          <td className="py-2.5 px-2 text-right tabular-nums text-accent-500 font-semibold">{fmt(s.kindyFundingAmount)}</td>
+                          <td className="py-2.5 pl-2 text-right tabular-nums font-bold">{fmt(s.estimatedGapFee)}</td>
                         </tr>
                       ))}
                     </tbody>

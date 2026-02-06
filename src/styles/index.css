@@ -2,45 +2,58 @@
 
 @theme {
   --shadow-*: initial;
-  --shadow-sm: 0 2px 6px rgb(15 23 42 / 0.08);
-  --shadow-md: 0 8px 8px rgb(15 23 42 / 0.05), 0 3px 6px rgb(15 23 42 / 0.05);
-  --shadow-lg: 0 8px 15px rgb(15 23 42 / 0.08), 0 3px 6px rgb(15 23 42 / 0.08);
+  --shadow-sm: 0 2px 8px rgb(255 255 255 / 0.1);
+  --shadow-md: 0 4px 16px rgb(255 255 255 / 0.14), 0 2px 6px rgb(255 255 255 / 0.1);
+  --shadow-lg: 0 8px 24px rgb(255 255 255 / 0.18), 0 4px 8px rgb(255 255 255 / 0.12);
   --shadow-xl:
-    2px 11px 16px rgb(15 23 42 / 0.17), 0 1px 6px rgb(15 23 42 / 0.17),
-    3px 23px 24px rgb(15 23 42 / 0.17);
+    0 16px 40px rgb(255 255 255 / 0.2), 0 4px 12px rgb(255 255 255 / 0.15);
 
   --text-*: initial;
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.875rem;
-  --text-sm--line-height: 1.5rem;
-  --text-base: 1rem;
-  --text-base--line-height: 1.75rem;
-  --text-lg: 1.125rem;
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.75rem;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.875rem;
+  --text-lg: 1.25rem;
   --text-lg--line-height: 2rem;
-  --text-xl: 1.25rem;
-  --text-xl--line-height: 2rem;
-  --text-2xl: 1.5rem;
-  --text-2xl--line-height: 2rem;
-  --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.25rem;
-  --text-4xl: 2.25rem;
-  --text-4xl--line-height: 2.5rem;
-  --text-5xl: 3rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2.25rem;
+  --text-2xl: 1.875rem;
+  --text-2xl--line-height: 2.5rem;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 2.75rem;
+  --text-4xl: 2.75rem;
+  --text-4xl--line-height: 3.25rem;
+  --text-5xl: 3.5rem;
   --text-5xl--line-height: 1.1;
 
   --radius-4xl: 2rem;
 
-  --color-teal-50: #f0fdfa;
-  --color-teal-100: #ccfbf1;
-  --color-teal-200: #99f6e4;
-  --color-teal-300: #5eead4;
-  --color-teal-400: #2dd4bf;
-  --color-teal-500: #14b8a6;
-  --color-teal-600: #0d9488;
-  --color-teal-700: #0f766e;
-  --color-teal-800: #115e59;
-  --color-teal-900: #134e4a;
+  /* Brand purple palette based on #63198e */
+  --color-brand-50: #f6f0fa;
+  --color-brand-100: #ead5f5;
+  --color-brand-200: #d4abea;
+  --color-brand-300: #be80e0;
+  --color-brand-400: #a856d5;
+  --color-brand-500: #7b22a0;
+  --color-brand-600: #63198e;
+  --color-brand-700: #501575;
+  --color-brand-800: #3d105c;
+  --color-brand-900: #2a0b40;
+  --color-brand-950: #1a0628;
+
+  /* Accent orange palette based on #f44e27 */
+  --color-accent-50: #fff5f0;
+  --color-accent-100: #fee0d6;
+  --color-accent-200: #fdc0a8;
+  --color-accent-300: #fba080;
+  --color-accent-400: #f87050;
+  --color-accent-500: #f44e27;
+  --color-accent-600: #d93f1e;
+  --color-accent-700: #b53218;
+  --color-accent-800: #912814;
+  --color-accent-900: #6d1e0f;
 }
 
 /* Hide number input spinners to avoid suffix overlap */

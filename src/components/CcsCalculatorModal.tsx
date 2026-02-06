@@ -26,9 +26,9 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5">
-        <h2 className="text-lg font-semibold text-slate-900">Estimate your CCS %</h2>
+      <div className="fixed inset-0 bg-brand-950/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-white p-8 shadow-xl ring-2 ring-white/25">
+        <h2 className="text-xl font-bold text-slate-900">Estimate your CCS %</h2>
         <p className="mt-1 text-sm text-slate-600">
           Based on FY2026 Child Care Subsidy rates
         </p>
@@ -58,22 +58,22 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
               type="checkbox"
               checked={isSecondChild}
               onChange={(e) => setIsSecondChild(e.target.checked)}
-              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+              className="rounded border-slate-300 text-accent-500 focus:ring-accent-500"
             />
             This is the 2nd+ child under 6 (Higher CCS)
           </label>
         </div>
 
         {incomeValue > 0 && (
-          <div className="mt-5 rounded-xl bg-teal-50 p-4">
+          <div className="mt-5 rounded-xl bg-accent-50 p-4">
             <div className="flex items-baseline justify-between">
-              <span className="text-sm text-teal-700">Your estimated CCS</span>
-              <span className="text-2xl font-bold text-teal-600">
+              <span className="text-sm text-accent-700">Your estimated CCS</span>
+              <span className="text-2xl font-bold text-accent-500">
                 {result.applicablePercent}%
               </span>
             </div>
             {isSecondChild && result.higherPercent > result.standardPercent && (
-              <p className="mt-1 text-xs text-teal-600">
+              <p className="mt-1 text-xs text-accent-600">
                 Higher CCS applied ({result.standardPercent}% standard)
               </p>
             )}

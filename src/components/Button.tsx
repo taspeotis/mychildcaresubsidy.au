@@ -3,23 +3,25 @@ import clsx from 'clsx'
 
 const baseStyles = {
   solid:
-    'inline-flex justify-center rounded-lg py-2 px-4 text-sm font-semibold tracking-tight shadow-sm transition-colors',
+    'inline-flex justify-center rounded-xl py-3 px-6 text-sm font-bold tracking-tight shadow-md transition-colors',
   outline:
-    'inline-flex justify-center rounded-lg border py-[calc(theme(spacing.2)-1px)] px-[calc(theme(spacing.4)-1px)] text-sm font-semibold tracking-tight transition-colors',
+    'inline-flex justify-center rounded-xl border-2 py-[calc(theme(spacing.3)-2px)] px-[calc(theme(spacing.6)-2px)] text-sm font-bold tracking-tight transition-colors',
 }
 
 const variantStyles = {
   solid: {
-    teal: 'bg-teal-600 text-white hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 active:bg-teal-700',
+    accent:
+      'bg-accent-500 text-white hover:bg-accent-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 active:bg-accent-600',
     slate:
-      'bg-slate-900 text-white hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 active:bg-slate-700',
+      'bg-brand-800 text-white hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-800 active:bg-brand-900',
     white:
-      'bg-white text-teal-600 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-teal-50',
+      'bg-white text-accent-500 hover:text-accent-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-accent-50',
   },
   outline: {
-    teal: 'border-teal-300 text-teal-600 hover:border-teal-400 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600',
+    accent:
+      'border-accent-400 text-accent-500 hover:border-accent-300 hover:bg-accent-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500',
     slate:
-      'border-slate-200 text-slate-900 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600',
+      'border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600',
   },
 }
 
@@ -34,7 +36,7 @@ type ButtonProps = (
 
 export function Button({ className, ...props }: ButtonProps) {
   const variant = props.variant ?? 'solid'
-  const color = props.color ?? 'teal'
+  const color = props.color ?? 'accent'
 
   const classes = clsx(
     baseStyles[variant],

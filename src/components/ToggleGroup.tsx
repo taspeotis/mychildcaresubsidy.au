@@ -9,17 +9,17 @@ interface ToggleGroupProps {
 
 export function ToggleGroup({ options, value, onChange, className }: ToggleGroupProps) {
   return (
-    <div className={clsx('inline-flex rounded-lg bg-slate-100 p-1', className)}>
+    <div className={clsx('inline-flex rounded-xl bg-white/10 p-1.5', className)}>
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
           className={clsx(
-            'rounded-md px-4 py-1.5 text-sm font-medium transition-all',
+            'rounded-lg px-5 py-2 text-sm font-bold transition-all',
             value === option.value
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900',
+              ? 'bg-accent-500 text-white shadow-md'
+              : 'text-white/60 hover:text-white',
           )}
         >
           {option.label}

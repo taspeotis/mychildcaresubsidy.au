@@ -11,9 +11,9 @@ function HomePage() {
     <>
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-teal-50 to-slate-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-700 to-brand-600" />
           <svg
-            className="absolute inset-0 h-full w-full opacity-[0.03]"
+            className="absolute inset-0 h-full w-full text-white opacity-[0.05]"
             aria-hidden="true"
           >
             <defs>
@@ -25,18 +25,18 @@ function HomePage() {
           </svg>
         </div>
 
-        <Container className="pt-16 pb-12 sm:pt-24 sm:pb-16">
+        <Container className="pt-20 pb-14 sm:pt-28 sm:pb-20">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
               What will kindy{' '}
-              <span className="text-teal-600">actually</span> cost you?
+              <span className="text-accent-400">actually</span> cost you?
             </h1>
-            <p className="mt-4 text-lg text-slate-600">
+            <p className="mt-5 text-lg text-white/80">
               Australian families can access free or subsidised kindergarten programs.
               Between the federal Child Care Subsidy and your state's kindy funding,
               the out-of-pocket costs might be less than you think.
             </p>
-            <p className="mt-3 text-base text-slate-600">
+            <p className="mt-3 text-base text-white/70">
               Select your state below to get a personalised estimate.
             </p>
           </div>
@@ -44,7 +44,7 @@ function HomePage() {
       </div>
 
       <Container className="-mt-2 sm:mt-0">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <StateCard
             to="/qld"
             state="QLD"
@@ -59,32 +59,32 @@ function HomePage() {
           />
         </div>
 
-        <div className="mt-12 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
-          <h2 className="text-lg font-semibold text-slate-900">How does it work?</h2>
-          <div className="mt-4 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+          <h2 className="text-xl font-bold text-slate-900">How does it work?</h2>
+          <div className="mt-5 grid gap-8 md:grid-cols-3">
             <div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-sm font-bold text-teal-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
                 1
               </div>
-              <h3 className="mt-2 text-sm font-medium text-slate-900">Child Care Subsidy</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">Child Care Subsidy</h3>
               <p className="mt-1 text-sm text-slate-600">
                 The federal government subsidises your childcare fees based on your family income, up to 90% for lower incomes.
               </p>
             </div>
             <div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-sm font-bold text-teal-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
                 2
               </div>
-              <h3 className="mt-2 text-sm font-medium text-slate-900">State kindy funding</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">State kindy funding</h3>
               <p className="mt-1 text-sm text-slate-600">
                 Your state or territory provides additional funding to cover the kindergarten program hours, making them free for families.
               </p>
             </div>
             <div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-sm font-bold text-teal-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
                 3
               </div>
-              <h3 className="mt-2 text-sm font-medium text-slate-900">Your gap fee</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">Your gap fee</h3>
               <p className="mt-1 text-sm text-slate-600">
                 You only pay for the hours of care outside the kindy program, minus your CCS entitlement. This calculator shows you that gap.
               </p>
