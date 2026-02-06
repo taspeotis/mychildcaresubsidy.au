@@ -142,3 +142,4 @@ The build uses `vite-plugin-singlefile` to inline all JS and CSS into a single `
 
 - Keep `README.md` up to date when adding new components, calculators, design patterns, or architectural decisions. It serves as the primary knowledge base for the codebase.
 - Use "child care" (two words) not "childcare", following the federal government's convention for the Child Care Subsidy.
+- Keep `public/sitemap.xml` up to date when adding or removing routes.
