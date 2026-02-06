@@ -8,6 +8,8 @@ import { TimePicker } from '../components/TimePicker'
 import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
+import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
+import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
 import { DEFAULTS } from '../config'
 import type { FortnightlySession } from '../types'
@@ -22,7 +24,13 @@ const KINDY_PROGRAM_OPTIONS = [
   { value: '5', label: '5 hours' },
 ]
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+
+// Default kindy pattern: W1 Mon+Tue, W2 Mon+Tue
+const DEFAULT_KINDY = [
+  true, true, false, false, false,
+  true, true, false, false, false,
+]
 
 function fmt(n: number): string {
   return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
@@ -32,9 +40,11 @@ function QldCalculator() {
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
-  // Daily inputs
+  // Shared inputs
   const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
   const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
+
+  // Daily inputs
   const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(6.5)
   const [sessionEnd, setSessionEnd] = useState(18.5)
@@ -43,17 +53,14 @@ function QldCalculator() {
 
   // Fortnightly inputs
   const [fnCcsHours, setFnCcsHours] = useState('100')
-  const [fnSessionFee, setFnSessionFee] = useState(DEFAULTS.sessionFee)
-  const [fnSessionStart, setFnSessionStart] = useState(6.5)
-  const [fnSessionEnd, setFnSessionEnd] = useState(18.5)
   const [fnKindyHours, setFnKindyHours] = useState('7.5')
   const [fnKindyStart, setFnKindyStart] = useState(8)
-  const [fnKindyDays, setFnKindyDays] = useState<Record<string, boolean>>({
-    'w1-Mon': true,
-    'w1-Tue': true,
-    'w2-Mon': true,
-    'w2-Tue': true,
-  })
+  const [days, setDays] = useState<DayConfig[]>(() =>
+    createDefaultDays(
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: 6.5, sessionEnd: 18.5 },
+      DEFAULT_KINDY,
+    ),
+  )
 
   const dailyResult = useMemo(() => {
     const ccs = Number(ccsPercent) || 0
@@ -78,30 +85,23 @@ function QldCalculator() {
     const ccs = Number(ccsPercent) || 0
     const wh = Number(withholding) || 0
     const ccsHours = Number(fnCcsHours) || 100
-    const fee = Number(fnSessionFee) || 0
     const kh = Number(fnKindyHours) || 7.5
 
-    if (fee <= 0 || fnSessionEnd <= fnSessionStart) return null
+    const sessions: FortnightlySession[] = days.map((d, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const day = WEEKDAYS[i % 5]
+      const fee = d.booked ? (Number(d.sessionFee) || 0) : 0
+      const start = d.booked ? d.sessionStart : 0
+      const end = d.booked ? d.sessionEnd : 0
+      const hasKindy = d.booked && d.hasKindy
+      const ks = hasKindy ? fnKindyStart : null
+      const ke = hasKindy ? fnKindyStart + kh : null
 
-    const sessions: FortnightlySession[] = []
-    for (const week of [1, 2] as const) {
-      for (const day of DAYS) {
-        const key = `w${week}-${day}`
-        const hasKindy = fnKindyDays[key] ?? false
-        const ks = hasKindy ? fnKindyStart : null
-        const ke = hasKindy ? fnKindyStart + kh : null
+      return { week, day, sessionFee: fee, sessionStartHour: start, sessionEndHour: end, kindyProgramStartHour: ks, kindyProgramEndHour: ke }
+    })
 
-        sessions.push({
-          week,
-          day,
-          sessionFee: fee,
-          sessionStartHour: fnSessionStart,
-          sessionEndHour: fnSessionEnd,
-          kindyProgramStartHour: ks,
-          kindyProgramEndHour: ke,
-        })
-      }
-    }
+    // Check at least one booked day
+    if (!days.some((d) => d.booked && (Number(d.sessionFee) || 0) > 0)) return null
 
     return calculateQldFortnightly({
       ccsPercent: ccs,
@@ -109,11 +109,19 @@ function QldCalculator() {
       fortnightlyCcsHours: ccsHours,
       sessions,
     })
-  }, [ccsPercent, withholding, fnCcsHours, fnSessionFee, fnSessionStart, fnSessionEnd, fnKindyHours, fnKindyStart, fnKindyDays])
+  }, [ccsPercent, withholding, fnCcsHours, fnKindyHours, fnKindyStart, days])
+
+  const dayResults: DayResult[] | null = fortnightlyResult
+    ? fortnightlyResult.sessions.map((s) => ({
+        ccsEntitlement: s.ccsEntitlement,
+        kindyFunding: s.kindyFundingAmount,
+        gapFee: s.estimatedGapFee,
+      }))
+    : null
 
   const kindyNote =
     kindyHours === '7.5'
-      ? 'Assumes 2 kindy days per week (15 hrs/week)'
+      ? 'Assumes 2 kindy days per week (30 hrs/fortnight)'
       : kindyHours === '6'
         ? 'Assumes a 3/2 day split across the fortnight (18/12 hrs)'
         : `${kindyHours}hr kindy program, ${QLD_KINDY_HOURS_PER_WEEK} hrs/week total`
@@ -132,274 +140,227 @@ function QldCalculator() {
           <aside className="relative mb-8 lg:mb-0">
             <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
-            schemeTag="QLD"
-            schemeName="Free Kindy"
-            description="Queensland's Free Kindy program provides 15 hours per week of funded kindergarten in approved long day care centres. The program covers two 7.5-hour sessions or can be split across multiple days."
-            keyFacts={[
-              { label: 'Weekly Hours Funded', value: '15 hours' },
-              { label: 'Fortnight Total', value: '30 hours' },
-              { label: 'Typical Arrangement', value: '2 days/week' },
-            ]}
-            guidance={[
-              {
-                title: 'Your CCS Percentage',
-                description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income, or up to 95% for second and subsequent children in care.',
-              },
-              {
-                title: 'Session Fees',
-                description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
-              },
-              {
-                title: 'Session Times',
-                description: 'The hours you drop off and pick up (e.g. 6:30 AM to 6:30 PM).',
-              },
-              {
-                title: 'Kindy Program Hours',
-                description: 'How many hours per day the funded kindy program runs at your centre. Common options are 7.5 or 6 hours.',
-              },
-            ]}
-          >
-            <ToggleGroup
-              options={[
-                { value: 'daily', label: 'Daily' },
-                { value: 'fortnightly', label: 'Fortnightly' },
-              ]}
-              value={mode}
-              onChange={setMode}
-            />
+                schemeTag="QLD"
+                schemeName="Free Kindy"
+                description="Queensland's Free Kindy program provides 30 hours per fortnight of funded kindergarten in approved long day care centres. Common arrangements are two 7.5-hour days per week, or 2 and 3 day splits with 6-hour sessions across the fortnight."
+                keyFacts={[
+                  { label: 'Funded Hours', value: '30 hrs/fortnight' },
+                  { label: 'Typical Split', value: '2 \u00d7 7.5 hr days/wk' },
+                  { label: 'Alternative', value: '2/3 days/wk \u00d7 6 hrs' },
+                ]}
+                guidance={[
+                  {
+                    title: 'Your CCS Percentage',
+                    description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income, or up to 95% for second and subsequent children in care.',
+                  },
+                  {
+                    title: 'Session Fees',
+                    description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
+                  },
+                  {
+                    title: 'Session Times',
+                    description: 'The hours you drop off and pick up (e.g. 6:30 AM to 6:30 PM).',
+                  },
+                  {
+                    title: 'Kindy Program Hours',
+                    description: 'How many hours per day the funded kindy program runs at your centre. 7.5 hours gives two days per week; 6 hours allows a 2/3 day split across the fortnight.',
+                  },
+                ]}
+              >
+                <ToggleGroup
+                  options={[
+                    { value: 'daily', label: 'Daily' },
+                    { value: 'fortnightly', label: 'Fortnightly' },
+                  ]}
+                  value={mode}
+                  onChange={setMode}
+                />
               </CalculatorSidebar>
             </div>
           </aside>
 
           {/* Main content */}
           <div className="min-w-0 space-y-6">
-          {mode === 'daily' ? (
-            <>
-              <div className="rounded-2xl card-glass p-8">
-                <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
-                <div className="mt-5 space-y-4">
-                  <div>
+            {mode === 'daily' ? (
+              <>
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <InputField
+                        label="CCS percentage"
+                        value={ccsPercent}
+                        onChange={(e) => setCcsPercent(e.target.value)}
+                        suffix="%"
+                        format="percent"
+                        min={0}
+                        max={95}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCcsModalOpen(true)}
+                        className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
+                      >
+                        Don't know your CCS %? Calculate it
+                      </button>
+                    </div>
                     <InputField
-                      label="CCS percentage"
-                      value={ccsPercent}
-                      onChange={(e) => setCcsPercent(e.target.value)}
+                      label="CCS withholding"
+                      value={withholding}
+                      onChange={(e) => setWithholding(e.target.value)}
+                      hint="Usually 5%"
+                      format="integer"
                       suffix="%"
-                      format="percent"
                       min={0}
-                      max={95}
+                      max={100}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setCcsModalOpen(true)}
-                      className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
-                    >
-                      Don't know your CCS %? Calculate it
-                    </button>
                   </div>
-                  <InputField
-                    label="CCS withholding"
-                    value={withholding}
-                    onChange={(e) => setWithholding(e.target.value)}
-                    hint="Usually 5%"
-                    format="integer"
-                    suffix="%"
-                    min={0}
-                    max={100}
-                  />
                 </div>
-              </div>
 
-              <div className="rounded-2xl card-glass p-8">
-                <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
-                <div className="mt-5 space-y-4">
-                  <InputField
-                    label="Daily session fee"
-                    value={sessionFee}
-                    onChange={(e) => setSessionFee(e.target.value)}
-                    prefix="$"
-                    format="currency"
-                    min={0}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <TimePicker
-                      label="Session start"
-                      value={sessionStart}
-                      onChange={setSessionStart}
-                      min={5}
-                      max={12}
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
+                  <div className="mt-5 space-y-4">
+                    <InputField
+                      label="Daily session fee"
+                      value={sessionFee}
+                      onChange={(e) => setSessionFee(e.target.value)}
+                      prefix="$"
+                      format="currency"
+                      min={0}
                     />
-                    <TimePicker
-                      label="Session end"
-                      value={sessionEnd}
-                      onChange={setSessionEnd}
-                      min={12}
-                      max={21}
+                    <div className="grid grid-cols-2 gap-4">
+                      <TimePicker
+                        label="Session start"
+                        value={sessionStart}
+                        onChange={setSessionStart}
+                        min={5}
+                        max={12}
+                      />
+                      <TimePicker
+                        label="Session end"
+                        value={sessionEnd}
+                        onChange={setSessionEnd}
+                        min={12}
+                        max={21}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <SelectField
+                        label="Kindy program hours"
+                        hint="Hours per day"
+                        options={KINDY_PROGRAM_OPTIONS}
+                        value={kindyHours}
+                        onChange={(e) => setKindyHours(e.target.value)}
+                      />
+                      <TimePicker
+                        label="Kindy start time"
+                        hint="When the kindy program starts"
+                        value={kindyStart}
+                        onChange={setKindyStart}
+                        min={7}
+                        max={12}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {dailyResult && (
+                  <ResultCard
+                    title="Daily Cost Estimate"
+                    rows={[
+                      { label: 'Session Fee', value: fmt(Number(sessionFee)) },
+                      { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                      { label: 'Gap Before Kindy Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
+                      { label: 'Free Kindy Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
+                      { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                    ]}
+                    note={kindyNote}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <InputField
+                        label="CCS percentage"
+                        value={ccsPercent}
+                        onChange={(e) => setCcsPercent(e.target.value)}
+                        suffix="%"
+                        format="percent"
+                        min={0}
+                        max={95}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCcsModalOpen(true)}
+                        className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
+                      >
+                        Don't know your CCS %? Calculate it
+                      </button>
+                    </div>
+                    <InputField
+                      label="CCS withholding"
+                      value={withholding}
+                      onChange={(e) => setWithholding(e.target.value)}
+                      hint="Usually 5%"
+                      format="integer"
+                      suffix="%"
+                      min={0}
+                      max={100}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                </div>
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
+                    <InputField
+                      label="CCS hours/fortnight"
+                      type="number"
+                      value={fnCcsHours}
+                      onChange={(e) => setFnCcsHours(e.target.value)}
+                    />
                     <SelectField
-                      label="Kindy program hours"
-                      hint="Hours per day"
+                      label="Kindy hours/day"
                       options={KINDY_PROGRAM_OPTIONS}
-                      value={kindyHours}
-                      onChange={(e) => setKindyHours(e.target.value)}
+                      value={fnKindyHours}
+                      onChange={(e) => setFnKindyHours(e.target.value)}
                     />
                     <TimePicker
                       label="Kindy start time"
-                      hint="When the kindy program starts"
-                      value={kindyStart}
-                      onChange={setKindyStart}
+                      value={fnKindyStart}
+                      onChange={setFnKindyStart}
                       min={7}
                       max={12}
                     />
                   </div>
                 </div>
-              </div>
 
-              {dailyResult && (
-                <ResultCard
-                  title="Daily Cost Estimate"
-                  rows={[
-                    { label: 'Session Fee', value: fmt(Number(sessionFee)) },
-                    { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                    { label: 'Gap Before Kindy Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
-                    { label: 'Free Kindy Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                    { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                  ]}
-                  note={kindyNote}
+                <FortnightlyGrid
+                  days={days}
+                  onChange={setDays}
+                  results={dayResults}
+                  kindyToggle={{ label: 'Kindy' }}
+                  fundingLabel="Free Kindy"
+                  fmt={fmt}
                 />
-              )}
-            </>
-          ) : (
-            <>
-              <div className="rounded-2xl card-glass p-8">
-                <h2 className="text-lg font-bold text-slate-900">Fortnightly Setup</h2>
-                <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  <InputField
-                    label="CCS hours/fortnight"
-                    type="number"
-                    value={fnCcsHours}
-                    onChange={(e) => setFnCcsHours(e.target.value)}
-                  />
-                  <InputField
-                    label="Daily session fee"
-                    value={fnSessionFee}
-                    onChange={(e) => setFnSessionFee(e.target.value)}
-                    prefix="$"
-                    format="currency"
-                    min={0}
-                  />
-                  <TimePicker
-                    label="Session start"
-                    value={fnSessionStart}
-                    onChange={setFnSessionStart}
-                    min={5}
-                    max={12}
-                  />
-                  <TimePicker
-                    label="Session end"
-                    value={fnSessionEnd}
-                    onChange={setFnSessionEnd}
-                    min={12}
-                    max={21}
-                  />
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <SelectField
-                    label="Kindy program hours per day"
-                    options={KINDY_PROGRAM_OPTIONS}
-                    value={fnKindyHours}
-                    onChange={(e) => setFnKindyHours(e.target.value)}
-                  />
-                  <TimePicker
-                    label="Kindy start time"
-                    value={fnKindyStart}
-                    onChange={setFnKindyStart}
-                    min={7}
-                    max={12}
-                  />
-                </div>
-              </div>
 
-              <div className="rounded-2xl card-glass p-8">
-                <h2 className="text-lg font-bold text-slate-900">Kindy Days</h2>
-                <p className="mt-1 text-xs text-slate-500">Select which days have a kindy program (max 15 hrs/week)</p>
-                <div className="mt-5 space-y-3">
-                  {[1, 2].map((week) => (
-                    <div key={week}>
-                      <p className="text-xs font-bold text-slate-500 mb-2">Week {week}</p>
-                      <div className="flex gap-2">
-                        {DAYS.map((day) => {
-                          const key = `w${week}-${day}`
-                          const checked = fnKindyDays[key] ?? false
-                          return (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() =>
-                                setFnKindyDays((prev) => ({
-                                  ...prev,
-                                  [key]: !prev[key],
-                                }))
-                              }
-                              className={`flex-1 rounded-xl border-2 py-3.5 text-sm font-bold transition-colors ${
-                                checked
-                                  ? 'border-accent-400 bg-accent-50 text-accent-700'
-                                  : 'border-slate-200 bg-white text-slate-500 hover:border-accent-300'
-                              }`}
-                            >
-                              {day}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {fortnightlyResult && (
-                <div className="rounded-2xl card-glass p-6 overflow-x-auto">
-                  <table className="w-full min-w-[20rem] text-sm">
-                    <thead>
-                      <tr className="text-left text-slate-700">
-                        <th className="py-2.5 pr-3 font-bold">Day</th>
-                        <th className="py-2.5 px-2 font-bold text-right">Fee</th>
-                        <th className="py-2.5 px-2 font-bold text-right">CCS</th>
-                        <th className="py-2.5 px-2 font-bold text-right">Kindy</th>
-                        <th className="py-2.5 pl-2 font-bold text-right">Gap</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {fortnightlyResult.sessions.map((s, i) => (
-                        <tr key={i} className={s.week === 2 && s.day === 'Mon' ? 'border-t-4 border-slate-100' : ''}>
-                          <td className="py-2.5 pr-3 text-slate-900">
-                            <span className="text-slate-500">W{s.week}</span> {s.day}
-                          </td>
-                          <td className="py-2.5 px-2 text-right tabular-nums text-slate-900">{fmt(Number(fnSessionFee))}</td>
-                          <td className="py-2.5 px-2 text-right tabular-nums text-slate-700">{fmt(s.ccsEntitlement)}</td>
-                          <td className="py-2.5 px-2 text-right tabular-nums text-accent-500 font-semibold">{fmt(s.kindyFundingAmount)}</td>
-                          <td className="py-2.5 pl-2 text-right tabular-nums font-bold">{fmt(s.estimatedGapFee)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {fortnightlyResult && (
-                <ResultCard
-                  title="Fortnightly Total"
-                  rows={[
-                    { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },
-                    { label: 'Total CCS Entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
-                    { label: 'Total Free Kindy Funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
-                    { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
-                  ]}
-                />
-              )}
-            </>
-          )}
+                {fortnightlyResult && (
+                  <ResultCard
+                    title="Fortnightly Total"
+                    rows={[
+                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },
+                      { label: 'Total CCS Entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
+                      { label: 'Total Free Kindy Funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
+                      { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
+                    ]}
+                  />
+                )}
+              </>
+            )}
           </div>
         </div>
       </Container>

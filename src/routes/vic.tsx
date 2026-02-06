@@ -8,7 +8,9 @@ import { TimePicker } from '../components/TimePicker'
 import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
-import { calculateVicDaily, calculateVicFortnightly, VIC_FREE_KINDER_WEEKS } from '../calculators/vic'
+import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
+import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
+import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS } from '../calculators/vic'
 import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS } from '../config'
 
@@ -47,18 +49,22 @@ function VicCalculator() {
   // Shared inputs
   const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
   const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
+  const [kinderHours, setKinderHours] = useState('15')
+  const [cohort, setCohort] = useState<VicCohort>('standard')
+
+  // Daily inputs
   const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(8)
   const [sessionEnd, setSessionEnd] = useState(18)
-  const [kinderHours, setKinderHours] = useState('15')
-  const [cohort, setCohort] = useState<VicCohort>('standard')
   const [daysPerWeek, setDaysPerWeek] = useState('3')
 
   // Fortnightly inputs
   const [fnCcsHours, setFnCcsHours] = useState('36')
-  const [fnSessionFee, setFnSessionFee] = useState(DEFAULTS.sessionFee)
-  const [fnSessionStart, setFnSessionStart] = useState(8)
-  const [fnSessionEnd, setFnSessionEnd] = useState(18)
+  const [days, setDays] = useState<DayConfig[]>(() =>
+    createDefaultDays(
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: 8, sessionEnd: 18 },
+    ),
+  )
 
   const kinderHoursNum = kinderHours === '15-3yo' ? 15 : Number(kinderHours) || 15
 
@@ -66,9 +72,9 @@ function VicCalculator() {
     const ccs = Number(ccsPercent) || 0
     const fee = Number(sessionFee) || 0
     const wh = Number(withholding) || 0
-    const days = Number(daysPerWeek) || 3
+    const dpw = Number(daysPerWeek) || 3
 
-    if (fee <= 0 || sessionEnd <= sessionStart || days <= 0) return null
+    if (fee <= 0 || sessionEnd <= sessionStart || dpw <= 0) return null
 
     return calculateVicDaily({
       ccsPercent: ccs,
@@ -78,7 +84,7 @@ function VicCalculator() {
       sessionEndHour: sessionEnd,
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
-      daysPerWeek: days,
+      daysPerWeek: dpw,
     })
   }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, cohort, kinderHoursNum, daysPerWeek])
 
@@ -86,23 +92,33 @@ function VicCalculator() {
     const ccs = Number(ccsPercent) || 0
     const wh = Number(withholding) || 0
     const ccsHours = Number(fnCcsHours) || 36
-    const fee = Number(fnSessionFee) || 0
-    const days = Number(daysPerWeek) || 3
 
-    if (fee <= 0 || fnSessionEnd <= fnSessionStart || days <= 0) return null
+    const sessions = days.map((d) => ({
+      booked: d.booked,
+      sessionFee: d.booked ? (Number(d.sessionFee) || 0) : 0,
+      sessionStartHour: d.booked ? d.sessionStart : 0,
+      sessionEndHour: d.booked ? d.sessionEnd : 0,
+    }))
 
-    return calculateVicFortnightly({
+    if (!days.some((d) => d.booked && (Number(d.sessionFee) || 0) > 0)) return null
+
+    return calculateVicFortnightlySessions({
       ccsPercent: ccs,
       ccsWithholdingPercent: wh,
       fortnightlyCcsHours: ccsHours,
-      sessionFee: fee,
-      sessionStartHour: fnSessionStart,
-      sessionEndHour: fnSessionEnd,
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
-      daysPerWeek: days,
+      sessions,
     })
-  }, [ccsPercent, withholding, fnCcsHours, fnSessionFee, fnSessionStart, fnSessionEnd, cohort, kinderHoursNum, daysPerWeek])
+  }, [ccsPercent, withholding, fnCcsHours, cohort, kinderHoursNum, days])
+
+  const dayResults: DayResult[] | null = fortnightlyResult
+    ? fortnightlyResult.sessions.map((s) => ({
+        ccsEntitlement: s.ccsEntitlement,
+        kindyFunding: s.freeKinder,
+        gapFee: s.gapFee,
+      }))
+    : null
 
   return (
     <>
@@ -120,7 +136,7 @@ function VicCalculator() {
               <CalculatorSidebar
                 schemeTag="VIC"
                 schemeName="Free Kinder"
-                description="Victoria's Free Kinder program provides an annual fee offset for 3 and 4-year-olds in long day care kindergarten programs. The offset is applied weekly after the Child Care Subsidy, reducing your gap fee."
+                description="Victoria's Free Kinder program provides an annual fee offset for 3 and 4-year-olds in long day care kindergarten programs, reducing your gap fee."
                 keyFacts={[
                   { label: 'Standard Offset', value: `$2,101/yr` },
                   { label: 'Priority Cohort', value: `$2,693/yr` },
@@ -269,43 +285,47 @@ function VicCalculator() {
             ) : (
               <>
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Fortnightly Setup</h2>
-                  <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <InputField
+                        label="CCS percentage"
+                        value={ccsPercent}
+                        onChange={(e) => setCcsPercent(e.target.value)}
+                        suffix="%"
+                        format="percent"
+                        min={0}
+                        max={95}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCcsModalOpen(true)}
+                        className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
+                      >
+                        Don't know your CCS %? Calculate it
+                      </button>
+                    </div>
+                    <InputField
+                      label="CCS withholding"
+                      value={withholding}
+                      onChange={(e) => setWithholding(e.target.value)}
+                      suffix="%"
+                      hint="Usually 5%"
+                      format="integer"
+                      min={0}
+                      max={100}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <InputField
                       label="CCS hours/fortnight"
                       type="number"
                       value={fnCcsHours}
                       onChange={(e) => setFnCcsHours(e.target.value)}
-                    />
-                    <InputField
-                      label="Daily session fee"
-                      value={fnSessionFee}
-                      onChange={(e) => setFnSessionFee(e.target.value)}
-                      prefix="$"
-                      format="currency"
-                      min={0}
-                    />
-                    <TimePicker
-                      label="Session start"
-                      value={fnSessionStart}
-                      onChange={setFnSessionStart}
-                      min={5}
-                      max={12}
-                    />
-                    <TimePicker
-                      label="Session end"
-                      value={fnSessionEnd}
-                      onChange={setFnSessionEnd}
-                      min={12}
-                      max={21}
-                    />
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={daysPerWeek}
-                      onChange={(e) => setDaysPerWeek(e.target.value)}
                     />
                     <SelectField
                       label="Kinder program"
@@ -322,34 +342,13 @@ function VicCalculator() {
                   </div>
                 </div>
 
-                {fortnightlyResult && (
-                  <div className="rounded-2xl card-glass p-6 overflow-x-auto">
-                    <table className="w-full min-w-[20rem] text-sm">
-                      <thead>
-                        <tr className="text-left text-slate-700">
-                          <th className="py-2.5 pr-3 font-bold">Day</th>
-                          <th className="py-2.5 px-2 font-bold text-right">Fee</th>
-                          <th className="py-2.5 px-2 font-bold text-right">CCS</th>
-                          <th className="py-2.5 px-2 font-bold text-right">Free Kinder</th>
-                          <th className="py-2.5 pl-2 font-bold text-right">Gap</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {fortnightlyResult.dailyBreakdown.map((d) => (
-                          <tr key={d.day} className={d.day === Number(daysPerWeek) + 1 ? 'border-t-4 border-slate-100' : ''}>
-                            <td className="py-2.5 pr-3 text-slate-900">
-                              <span className="text-slate-500">W{d.day <= Number(daysPerWeek) ? 1 : 2}</span> Day {d.day <= Number(daysPerWeek) ? d.day : d.day - Number(daysPerWeek)}
-                            </td>
-                            <td className="py-2.5 px-2 text-right tabular-nums text-slate-900">{fmt(d.sessionFee)}</td>
-                            <td className="py-2.5 px-2 text-right tabular-nums text-slate-700">{fmt(d.ccsEntitlement)}</td>
-                            <td className="py-2.5 px-2 text-right tabular-nums text-accent-500 font-semibold">{fmt(d.freeKinder)}</td>
-                            <td className="py-2.5 pl-2 text-right tabular-nums font-bold">{fmt(d.gapFee)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <FortnightlyGrid
+                  days={days}
+                  onChange={setDays}
+                  results={dayResults}
+                  fundingLabel="Free Kinder"
+                  fmt={fmt}
+                />
 
                 {fortnightlyResult && (
                   <ResultCard

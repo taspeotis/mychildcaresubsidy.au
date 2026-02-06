@@ -16,19 +16,19 @@ const PROGRAMS = [
     to: '/nsw',
     state: 'NSW',
     program: 'Start Strong',
-    description: 'Annual fee relief for 3 and 4+ year olds in long day care preschool programs. Applied weekly after CCS.',
+    description: 'Annual fee relief for 3 and 4+ year olds in long day care preschool programs.',
   },
   {
     to: '/qld',
     state: 'QLD',
     program: 'Free Kindy',
-    description: '15 hours per week of funded kindergarten in long day care. Covers two 7.5-hour sessions across the week.',
+    description: '30 hours per fortnight of funded kindergarten in long day care. Typically two 7.5-hour days per week, or split across the fortnight.',
   },
   {
     to: '/vic',
     state: 'VIC',
     program: 'Free Kinder',
-    description: 'Annual fee offset for 3 and 4-year-olds in long day care kinder programs. Applied weekly after CCS.',
+    description: 'Annual fee offset for 3 and 4-year-olds in long day care kinder programs.',
   },
 ]
 

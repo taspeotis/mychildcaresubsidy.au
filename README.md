@@ -2,7 +2,7 @@
 
 A calculator that estimates out-of-pocket childcare costs for Australian families, factoring in the federal Child Care Subsidy (CCS) and state/territory kindy funding programs.
 
-Currently supports **ACT** (3-Year-Old Preschool), **NSW** (Start Strong), and **QLD** (Free Kindy).
+Currently supports **ACT** (3-Year-Old Preschool), **NSW** (Start Strong), **QLD** (Free Kindy), and **VIC** (Free Kinder).
 
 ## Tech stack
 
@@ -14,13 +14,31 @@ Currently supports **ACT** (3-Year-Old Preschool), **NSW** (Start Strong), and *
 
 ```
 src/
-  calculators/      # Pure calculation logic (act, ccs, nsw, qld)
+  calculators/      # Pure calculation logic (act, ccs, nsw, qld, vic)
   components/       # Reusable UI components
-  routes/           # TanStack file-based routes (__root, index, act, nsw, qld)
+  routes/           # TanStack file-based routes (__root, index, act, nsw, qld, vic)
   styles/index.css  # Tailwind theme + custom CSS classes
   config.ts         # Shared default values for calculator inputs
   types.ts          # Shared TypeScript types
 ```
+
+## Calculator models
+
+### QLD — Free Kindy
+
+Funded hours model. 30 hours per fortnight of funded kindergarten in long day care. The subsidy covers the kindy program hours (typically two 7.5-hour days per week). You pay only for the remaining gap hours after CCS.
+
+### ACT — 3-Year-Old Preschool
+
+Funded hours model. 6 to 7.5 hours of funded preschool on one day per week at participating long day care services. Similar gap-hours approach to QLD.
+
+### NSW — Start Strong
+
+Annual fee relief model. Fixed annual dollar amounts ($423--$2,563 depending on age group and tier) divided across service operating weeks and days per week. Fee relief is applied daily after CCS, reducing the gap fee.
+
+### VIC — Free Kinder
+
+Annual offset model. A flat annual offset ($2,101 standard / $2,693 priority cohort) pro-rated by enrolled kinder hours (scaled against 15 hrs/wk) and divided across 40 program weeks. Applied daily after CCS.
 
 ## Design decisions
 
@@ -39,6 +57,14 @@ Complex multi-property visual effects that Tailwind utilities can't express are 
 - **`.card-lift`** — Hover animation: translateY(-4px) + intensified shadows + accent ring
 - **`.sidebar-gradient`** — Dark purple gradient for calculator sidebars
 - **`.header-glow`** / **`.footer-glow`** — Gradient glow lines via `::after` / `::before` pseudo-elements
+
+### Home page layout
+
+The home page uses a single card with a divided list of calculator links (not a grid of separate cards). Each row shows the state badge, program name, description, and a chevron. A second card below explains the three-step CCS + state funding + gap fee model.
+
+### Calculator page layout
+
+Each calculator page uses a two-column layout on desktop: a sticky `CalculatorSidebar` on the left and form cards on the right. The sidebar contains a back link, scheme name/description, a Daily/Fortnightly `ToggleGroup` (under a "Calculate" heading), key facts, and a collapsible calculator guide. On mobile the sidebar stacks above the form.
 
 ### Form field alignment in grids
 
@@ -66,7 +92,7 @@ The root layout uses `flex min-h-screen flex-col` on the outer div and `flex-1` 
 
 ### Sliding pill animations
 
-Both the navbar (QLD/ACT) and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
+The navbar (ACT/NSW/QLD/VIC) and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 1. An absolutely positioned gradient div sits behind the buttons
 2. `useLayoutEffect` measures the active element's `offsetLeft` and `offsetWidth`
@@ -80,7 +106,7 @@ Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (
 
 ### Shared defaults
 
-Calculator default values (CCS %, withholding, session fee) are centralised in `src/config.ts` so both QLD and ACT calculators stay consistent.
+Calculator default values (CCS %, withholding, session fee) are centralised in `src/config.ts` so all calculators stay consistent.
 
 ## Running locally
 

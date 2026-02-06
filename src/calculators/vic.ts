@@ -148,6 +148,89 @@ export function calculateVicFortnightly(inputs: VicFortnightlyInputs): VicFortni
   }
 }
 
+export interface VicSessionInput {
+  booked: boolean
+  sessionFee: number
+  sessionStartHour: number
+  sessionEndHour: number
+}
+
+export interface VicFortnightlySessionsResult {
+  sessions: { ccsEntitlement: number; freeKinder: number; gapFee: number }[]
+  totalSessionFees: number
+  totalCcsEntitlement: number
+  totalFreeKinder: number
+  totalGapFee: number
+}
+
+/**
+ * Calculate fortnightly out-of-pocket costs for VIC Free Kinder LDC with per-session inputs.
+ */
+export function calculateVicFortnightlySessions(inputs: {
+  ccsPercent: number
+  ccsWithholdingPercent: number
+  fortnightlyCcsHours: number
+  cohort: VicCohort
+  kinderHoursPerWeek: number
+  sessions: VicSessionInput[]
+}): VicFortnightlySessionsResult | null {
+  const week1Booked = inputs.sessions.slice(0, 5).filter((s) => s.booked).length
+  const week2Booked = inputs.sessions.slice(5, 10).filter((s) => s.booked).length
+  if (week1Booked + week2Booked === 0) return null
+
+  const baseOffset = VIC_FREE_KINDER_OFFSET[inputs.cohort]
+  const annualOffset = roundTo(baseOffset * (inputs.kinderHoursPerWeek / 15), 2)
+  const weeklyOffset = roundTo(annualOffset / VIC_FREE_KINDER_WEEKS, 2)
+
+  let remainingCcsHours = inputs.fortnightlyCcsHours
+  const sessionResults: VicFortnightlySessionsResult['sessions'] = []
+  let totalFees = 0
+  let totalCcs = 0
+  let totalKinder = 0
+  let totalGap = 0
+
+  for (let i = 0; i < inputs.sessions.length; i++) {
+    const s = inputs.sessions[i]
+    if (!s.booked || s.sessionFee <= 0) {
+      sessionResults.push({ ccsEntitlement: 0, freeKinder: 0, gapFee: 0 })
+      continue
+    }
+
+    const weekBooked = i < 5 ? week1Booked : week2Booked
+    const dailyOffset = weekBooked > 0 ? roundTo(weeklyOffset / weekBooked, 2) : 0
+
+    const sessionHours = s.sessionEndHour - s.sessionStartHour
+    const hourlyFee = sessionHours > 0 ? s.sessionFee / sessionHours : 0
+
+    const ccsRate = inputs.ccsPercent / 100
+    const applicableCcsHourlyRate = roundTo(Math.min(hourlyFee, CCS_HOURLY_RATE_CAP) * ccsRate, 2)
+    const applicableCcsHours = Math.min(sessionHours, Math.max(0, remainingCcsHours))
+    remainingCcsHours -= applicableCcsHours
+
+    const ccsAmount = roundTo(Math.min(applicableCcsHours * applicableCcsHourlyRate, s.sessionFee), 4)
+    const ccsWithholding = roundTo(ccsAmount * (inputs.ccsWithholdingPercent / 100), 4)
+    const ccsEntitlement = roundTo(ccsAmount - ccsWithholding, 4)
+
+    const gapBeforeKinder = roundTo(s.sessionFee - ccsEntitlement, 2)
+    const appliedOffset = Math.min(dailyOffset, gapBeforeKinder)
+    const gapFee = roundTo(Math.max(0, gapBeforeKinder - appliedOffset), 2)
+
+    sessionResults.push({ ccsEntitlement, freeKinder: appliedOffset, gapFee })
+    totalFees += s.sessionFee
+    totalCcs += ccsEntitlement
+    totalKinder += appliedOffset
+    totalGap += gapFee
+  }
+
+  return {
+    sessions: sessionResults,
+    totalSessionFees: roundTo(totalFees, 2),
+    totalCcsEntitlement: roundTo(totalCcs, 2),
+    totalFreeKinder: roundTo(totalKinder, 2),
+    totalGapFee: roundTo(totalGap, 2),
+  }
+}
+
 function roundTo(value: number, decimals: number): number {
   const factor = Math.pow(10, decimals)
   return Math.round(value * factor) / factor
