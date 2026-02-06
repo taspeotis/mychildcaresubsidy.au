@@ -217,7 +217,7 @@ function QldCalculator() {
                     min="0"
                     value={sessionFee}
                     onChange={(e) => setSessionFee(e.target.value)}
-                    suffix="$"
+                    prefix="$"
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <TimePicker
@@ -285,7 +285,7 @@ function QldCalculator() {
                     type="number"
                     value={fnSessionFee}
                     onChange={(e) => setFnSessionFee(e.target.value)}
-                    suffix="$"
+                    prefix="$"
                   />
                   <TimePicker
                     label="Session start"

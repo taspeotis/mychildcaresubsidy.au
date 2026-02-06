@@ -32,7 +32,7 @@ function HomePage() {
             </h1>
             <p className="mt-5 text-lg text-white/80">
               A simple calculator to estimate your out-of-pocket childcare costs,
-              factoring in the federal Child Care Subsidy and your state's kindy funding.
+              factoring in the federal Child Care Subsidy and your state or territory's kindy funding.
             </p>
             <p className="mt-3 text-base text-white/70">
               Select your state or territory below to get started.
