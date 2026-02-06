@@ -66,6 +66,21 @@ The home page uses a single card with a divided list of calculator links (not a 
 
 Each calculator page uses a two-column layout on desktop: a sticky `CalculatorSidebar` on the left and form cards on the right. The sidebar contains a back link, scheme name/description, a Daily/Fortnightly `ToggleGroup` (under a "Calculate" heading), key facts, and a collapsible calculator guide. On mobile the sidebar stacks above the form.
 
+### FortnightlyGrid component
+
+The `FortnightlyGrid` component (`src/components/FortnightlyGrid.tsx`) is a reusable fortnightly schedule editor used by all four state calculators. It renders:
+
+- **Desktop**: An inline-editable table with columns for day (booked checkbox), session fee, start/end time selects, optional kindy/preschool toggle, CCS, state funding, and gap fee.
+- **Mobile**: Tappable card list grouped by week. Tapping a card opens a `DayEditModal` bottom sheet for editing that day's settings.
+
+Key props:
+- `days: DayConfig[]` — 10-element array (Mon–Fri × 2 weeks), each with `booked`, `sessionFee`, `sessionStart`, `sessionEnd`, `hasKindy`
+- `kindyToggle?: { label: string; maxPerWeek?: number }` — Optional kindy/preschool checkbox column. `maxPerWeek` enforces a limit (e.g. ACT allows 1 preschool day per week).
+- `fundingLabel: string` — Column header for state funding (e.g. "Free Kindy", "Start Strong", "Preschool", "Free Kinder")
+- `results: DayResult[] | null` — Per-day calculated results mapped from the calculator output
+
+Days default to `booked: false`. The `createDefaultDays` helper creates the initial 10-day array with uniform fee/time defaults and an optional `kindyPattern` boolean array.
+
 ### Form field alignment in grids
 
 When form fields (InputField, SelectField, TimePicker) sit in a 2-column grid, labels of different lengths cause inputs to misalign. This is solved with:
