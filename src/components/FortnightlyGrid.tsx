@@ -155,8 +155,11 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
           day={days[editingDay]}
           dayLabel={`Week ${editingDay < 5 ? 1 : 2} ${WEEKDAYS[editingDay % 5]}`}
           kindyToggle={kindyToggle}
-          onChange={(patch) => updateDay(editingDay, patch)}
-          onClose={() => setEditingDay(null)}
+          onSave={(updated) => {
+            updateDay(editingDay, updated)
+            setEditingDay(null)
+          }}
+          onCancel={() => setEditingDay(null)}
         />
       )}
     </>
@@ -167,22 +170,28 @@ function DayEditModal({
   day,
   dayLabel,
   kindyToggle,
-  onChange,
-  onClose,
+  onSave,
+  onCancel,
 }: {
   day: DayConfig
   dayLabel: string
   kindyToggle?: FortnightlyGridProps['kindyToggle']
-  onChange: (patch: Partial<DayConfig>) => void
-  onClose: () => void
+  onSave: (updated: DayConfig) => void
+  onCancel: () => void
 }) {
+  const [draft, setDraft] = useState<DayConfig>(day)
+
+  function update(patch: Partial<DayConfig>) {
+    setDraft((prev) => ({ ...prev, ...patch }))
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-slate-900">{dayLabel}</h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={onCancel} className="text-slate-400 hover:text-slate-600">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -193,14 +202,14 @@ function DayEditModal({
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
-              checked={day.booked}
-              onChange={(e) => onChange({ booked: e.target.checked })}
+              checked={draft.booked}
+              onChange={(e) => update({ booked: e.target.checked })}
               className="h-5 w-5 rounded border-slate-300 text-accent-500 focus:ring-accent-400"
             />
             <span className="text-sm font-medium text-slate-900">Attending this day</span>
           </label>
 
-          {day.booked && (
+          {draft.booked && (
             <>
               <div>
                 <label className="text-xs font-bold text-slate-700">Session fee</label>
@@ -209,8 +218,8 @@ function DayEditModal({
                   <input
                     type="text"
                     inputMode="decimal"
-                    value={day.sessionFee}
-                    onChange={(e) => onChange({ sessionFee: e.target.value.replace(/[^0-9.]/g, '') })}
+                    value={draft.sessionFee}
+                    onChange={(e) => update({ sessionFee: e.target.value.replace(/[^0-9.]/g, '') })}
                     className="w-full rounded-xl border border-slate-200 py-2.5 pl-8 pr-3 text-sm"
                   />
                 </div>
@@ -220,8 +229,8 @@ function DayEditModal({
                 <div>
                   <label className="text-xs font-bold text-slate-700">Start</label>
                   <select
-                    value={day.sessionStart}
-                    onChange={(e) => onChange({ sessionStart: Number(e.target.value) })}
+                    value={draft.sessionStart}
+                    onChange={(e) => update({ sessionStart: Number(e.target.value) })}
                     className="mt-1 w-full rounded-xl border border-slate-200 py-2.5 px-3 text-sm"
                   >
                     {START_TIMES.map((o) => (
@@ -232,8 +241,8 @@ function DayEditModal({
                 <div>
                   <label className="text-xs font-bold text-slate-700">End</label>
                   <select
-                    value={day.sessionEnd}
-                    onChange={(e) => onChange({ sessionEnd: Number(e.target.value) })}
+                    value={draft.sessionEnd}
+                    onChange={(e) => update({ sessionEnd: Number(e.target.value) })}
                     className="mt-1 w-full rounded-xl border border-slate-200 py-2.5 px-3 text-sm"
                   >
                     {END_TIMES.map((o) => (
@@ -247,8 +256,8 @@ function DayEditModal({
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={day.hasKindy}
-                    onChange={(e) => onChange({ hasKindy: e.target.checked })}
+                    checked={draft.hasKindy}
+                    onChange={(e) => update({ hasKindy: e.target.checked })}
                     className="h-5 w-5 rounded border-slate-300 text-accent-500 focus:ring-accent-400"
                   />
                   <span className="text-sm font-medium text-slate-900">{kindyToggle.label} day</span>
@@ -260,7 +269,7 @@ function DayEditModal({
 
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => onSave(draft)}
           className="mt-6 w-full rounded-xl bg-gradient-to-b from-accent-400 to-accent-600 py-3 text-sm font-bold text-white shadow-md"
         >
           Done
