@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { createRootRoute, Link, Outlet, ScrollRestoration, useLocation } from '@tanstack/react-router'
+import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 
 export const Route = createRootRoute({
@@ -44,7 +44,6 @@ function RootLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
-      <ScrollRestoration />
       <header className="header-glow sticky top-0 z-40 bg-brand-900/80 backdrop-blur-sm">
         <Container className="flex h-16 items-center justify-between">
           <Link to="/" className="text-xl font-bold text-white tracking-tight">
