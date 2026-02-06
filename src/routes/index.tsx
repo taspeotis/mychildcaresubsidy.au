@@ -11,7 +11,7 @@ function HomePage() {
     <>
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-700 to-brand-600" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
           <svg
             className="absolute inset-0 h-full w-full text-white opacity-[0.05]"
             aria-hidden="true"
@@ -59,11 +59,11 @@ function HomePage() {
           />
         </div>
 
-        <div className="mt-12 rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+        <div className="mt-12 rounded-2xl card-glass p-8">
           <h2 className="text-xl font-bold text-slate-900">How does it work?</h2>
           <div className="mt-5 grid gap-8 md:grid-cols-3">
             <div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 1
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Child Care Subsidy</h3>
@@ -72,7 +72,7 @@ function HomePage() {
               </p>
             </div>
             <div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 2
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">State kindy funding</h3>
@@ -81,7 +81,7 @@ function HomePage() {
               </p>
             </div>
             <div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 3
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Your gap fee</h3>

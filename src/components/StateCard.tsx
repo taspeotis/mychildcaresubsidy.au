@@ -14,13 +14,12 @@ export function StateCard({ to, state, program, description, className }: StateC
     <Link
       to={to}
       className={clsx(
-        'group relative block rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25 transition-all',
-        'hover:shadow-lg hover:ring-accent-300',
+        'group relative block rounded-2xl card-glass card-lift p-8',
         className,
       )}
     >
       <div className="flex items-center gap-4">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent-500 text-sm font-bold text-white shadow-sm">
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
           {state}
         </span>
         <div>

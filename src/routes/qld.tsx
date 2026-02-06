@@ -129,7 +129,7 @@ function QldCalculator() {
         <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
           {/* Sidebar panel */}
           <aside className="relative mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-brand-800 p-6 lg:p-8">
+            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
             schemeTag="QLD"
             schemeName="Free Kindy"
@@ -174,7 +174,7 @@ function QldCalculator() {
           <div className="min-w-0 space-y-6">
           {mode === 'daily' ? (
             <>
-              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+              <div className="rounded-2xl card-glass p-8">
                 <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
                 <div className="mt-5 space-y-4">
                   <div>
@@ -208,7 +208,7 @@ function QldCalculator() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+              <div className="rounded-2xl card-glass p-8">
                 <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
                 <div className="mt-5 space-y-4">
                   <InputField
@@ -271,7 +271,7 @@ function QldCalculator() {
             </>
           ) : (
             <>
-              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+              <div className="rounded-2xl card-glass p-8">
                 <h2 className="text-lg font-bold text-slate-900">Fortnightly Setup</h2>
                 <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
                   <InputField
@@ -319,7 +319,7 @@ function QldCalculator() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25">
+              <div className="rounded-2xl card-glass p-8">
                 <h2 className="text-lg font-bold text-slate-900">Kindy Days</h2>
                 <p className="mt-1 text-xs text-slate-500">Select which days have a kindy program (max 15 hrs/week)</p>
                 <div className="mt-5 space-y-3">
@@ -357,7 +357,7 @@ function QldCalculator() {
               </div>
 
               {fortnightlyResult && (
-                <div className="rounded-2xl bg-white p-6 shadow-md ring-2 ring-white/25 overflow-x-auto">
+                <div className="rounded-2xl card-glass p-6 overflow-x-auto">
                   <table className="w-full min-w-[20rem] text-sm">
                     <thead>
                       <tr className="text-left text-slate-700">

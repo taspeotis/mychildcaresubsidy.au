@@ -2,11 +2,10 @@
 
 @theme {
   --shadow-*: initial;
-  --shadow-sm: 0 2px 8px rgb(255 255 255 / 0.1);
-  --shadow-md: 0 4px 16px rgb(255 255 255 / 0.14), 0 2px 6px rgb(255 255 255 / 0.1);
-  --shadow-lg: 0 8px 24px rgb(255 255 255 / 0.18), 0 4px 8px rgb(255 255 255 / 0.12);
-  --shadow-xl:
-    0 16px 40px rgb(255 255 255 / 0.2), 0 4px 12px rgb(255 255 255 / 0.15);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.1), 0 2px 4px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 24px rgb(0 0 0 / 0.12), 0 4px 8px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 40px rgb(0 0 0 / 0.15), 0 8px 16px rgb(0 0 0 / 0.1);
 
   --text-*: initial;
   --text-xs: 0.875rem;
@@ -30,7 +29,7 @@
 
   --radius-4xl: 2rem;
 
-  /* Brand purple palette based on #63198e */
+  /* Brand purple palette */
   --color-brand-50: #f6f0fa;
   --color-brand-100: #ead5f5;
   --color-brand-200: #d4abea;
@@ -43,7 +42,7 @@
   --color-brand-900: #2a0b40;
   --color-brand-950: #1a0628;
 
-  /* Accent orange palette based on #f44e27 */
+  /* Accent orange palette */
   --color-accent-50: #fff5f0;
   --color-accent-100: #fee0d6;
   --color-accent-200: #fdc0a8;
@@ -56,7 +55,78 @@
   --color-accent-900: #6d1e0f;
 }
 
-/* Hide number input spinners to avoid suffix overlap */
+/* Page background with radial gradients for depth */
+.bg-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123, 34, 160, 0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(80, 21, 117, 0.5) 0%, transparent 50%),
+    linear-gradient(180deg, #6b1d95 0%, #63198e 30%, #501575 100%);
+}
+
+/* Glass card with gradient and layered shadows */
+.card-glass {
+  background: linear-gradient(145deg, #ffffff 0%, #faf8fc 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 8px 32px -4px rgba(42, 11, 64, 0.35),
+    0 0 20px rgba(255, 255, 255, 0.08);
+}
+
+/* Interactive card hover lift with accent ring */
+.card-lift {
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 20px 60px -8px rgba(42, 11, 64, 0.5),
+    0 0 40px rgba(255, 255, 255, 0.14),
+    0 0 0 2px rgba(248, 112, 80, 0.3);
+}
+
+/* Sidebar gradient */
+.sidebar-gradient {
+  background: linear-gradient(175deg, #581580 0%, #3d105c 50%, #2a0b40 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Header glow line */
+.header-glow {
+  position: relative;
+}
+.header-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 5%, #f87050 30%, #a856d5 50%, #f87050 70%, transparent 95%);
+  opacity: 0.5;
+}
+
+/* Footer glow line */
+.footer-glow {
+  position: relative;
+}
+.footer-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 5%, #a856d5 30%, #f87050 50%, #a856d5 70%, transparent 95%);
+  opacity: 0.3;
+}
+
+/* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;

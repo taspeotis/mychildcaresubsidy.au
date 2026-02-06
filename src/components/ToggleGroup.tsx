@@ -16,9 +16,9 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
           type="button"
           onClick={() => onChange(option.value)}
           className={clsx(
-            'rounded-lg px-5 py-2 text-sm font-bold transition-all',
+            'rounded-lg px-5 py-2 text-sm font-bold transition-all duration-200',
             value === option.value
-              ? 'bg-accent-500 text-white shadow-md'
+              ? 'bg-gradient-to-b from-accent-400 to-accent-600 text-white shadow-md'
               : 'text-white/60 hover:text-white',
           )}
         >

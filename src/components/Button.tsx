@@ -3,19 +3,19 @@ import clsx from 'clsx'
 
 const baseStyles = {
   solid:
-    'inline-flex justify-center rounded-xl py-3 px-6 text-sm font-bold tracking-tight shadow-md transition-colors',
+    'inline-flex justify-center rounded-xl py-3 px-6 text-sm font-bold tracking-tight shadow-md transition-all duration-200',
   outline:
-    'inline-flex justify-center rounded-xl border-2 py-[calc(theme(spacing.3)-2px)] px-[calc(theme(spacing.6)-2px)] text-sm font-bold tracking-tight transition-colors',
+    'inline-flex justify-center rounded-xl border-2 py-[calc(theme(spacing.3)-2px)] px-[calc(theme(spacing.6)-2px)] text-sm font-bold tracking-tight transition-all duration-200',
 }
 
 const variantStyles = {
   solid: {
     accent:
-      'bg-accent-500 text-white hover:bg-accent-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 active:bg-accent-600',
+      'bg-gradient-to-b from-accent-400 to-accent-600 text-white hover:from-accent-300 hover:to-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 active:from-accent-500 active:to-accent-700',
     slate:
-      'bg-brand-800 text-white hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-800 active:bg-brand-900',
+      'bg-gradient-to-b from-brand-700 to-brand-900 text-white hover:from-brand-600 hover:to-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-800 active:from-brand-800 active:to-brand-950',
     white:
-      'bg-white text-accent-500 hover:text-accent-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-accent-50',
+      'bg-gradient-to-b from-white to-slate-50 text-accent-500 shadow-sm hover:to-white hover:text-accent-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:from-slate-50 active:to-slate-100',
   },
   outline: {
     accent:

@@ -16,7 +16,7 @@ interface ResultCardProps {
 
 export function ResultCard({ title, rows, note, className }: ResultCardProps) {
   return (
-    <div className={clsx('rounded-2xl bg-white p-8 shadow-md ring-2 ring-white/25', className)}>
+    <div className={clsx('rounded-2xl card-glass p-8 border-t-[3px] border-t-accent-500', className)}>
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
       <dl className="mt-5 divide-y divide-slate-100">
         {rows.map((row) => (
@@ -36,7 +36,7 @@ export function ResultCard({ title, rows, note, className }: ResultCardProps) {
         ))}
       </dl>
       {note && (
-        <p className="mt-5 rounded-xl bg-accent-50 px-4 py-3 text-xs text-accent-800">{note}</p>
+        <p className="mt-5 rounded-xl bg-gradient-to-r from-accent-50 to-accent-100/50 px-4 py-3 text-xs text-accent-800">{note}</p>
       )}
     </div>
   )
