@@ -1,4 +1,5 @@
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 
 export const Route = createRootRoute({
@@ -6,6 +7,25 @@ export const Route = createRootRoute({
 })
 
 function RootLayout() {
+  const { pathname } = useLocation()
+  const navRef = useRef<HTMLElement>(null)
+  const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 })
+
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const active = nav.querySelector<HTMLAnchorElement>('.active')
+    if (!active) {
+      setPill((p) => ({ ...p, opacity: 0 }))
+      return
+    }
+    setPill({
+      left: active.offsetLeft,
+      width: active.offsetWidth,
+      opacity: 1,
+    })
+  }, [pathname])
+
   return (
     <div className="flex min-h-screen flex-col bg-page">
       <header className="header-glow sticky top-0 z-40 bg-brand-900/80 backdrop-blur-sm">
@@ -13,16 +33,20 @@ function RootLayout() {
           <Link to="/" className="text-xl font-bold text-white tracking-tight">
             kindy<span className="text-accent-400">.au</span>
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav ref={navRef} className="relative flex items-center gap-1">
+            <div
+              className="absolute top-0 h-full rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 transition-all duration-300 ease-out"
+              style={{ left: pill.left, width: pill.width, opacity: pill.opacity }}
+            />
             <Link
               to="/qld"
-              className="rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white [&.active]:bg-gradient-to-b [&.active]:from-accent-400 [&.active]:to-accent-600 [&.active]:text-white"
+              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
             >
               QLD
             </Link>
             <Link
               to="/act"
-              className="rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white [&.active]:bg-gradient-to-b [&.active]:from-accent-400 [&.active]:to-accent-600 [&.active]:text-white"
+              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
             >
               ACT
             </Link>
