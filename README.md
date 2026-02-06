@@ -2,7 +2,7 @@
 
 A calculator that estimates out-of-pocket childcare costs for Australian families, factoring in the federal Child Care Subsidy (CCS) and state/territory kindy funding programs.
 
-Currently supports **QLD** (Free Kindy) and **ACT** (3-Year-Old Preschool).
+Currently supports **ACT** (3-Year-Old Preschool), **NSW** (Start Strong), and **QLD** (Free Kindy).
 
 ## Tech stack
 
@@ -14,9 +14,9 @@ Currently supports **QLD** (Free Kindy) and **ACT** (3-Year-Old Preschool).
 
 ```
 src/
-  calculators/      # Pure calculation logic (qld, act, ccs)
+  calculators/      # Pure calculation logic (act, ccs, nsw, qld)
   components/       # Reusable UI components
-  routes/           # TanStack file-based routes (__root, index, qld, act)
+  routes/           # TanStack file-based routes (__root, index, act, nsw, qld)
   styles/index.css  # Tailwind theme + custom CSS classes
   config.ts         # Shared default values for calculator inputs
   types.ts          # Shared TypeScript types
@@ -88,3 +88,7 @@ Calculator default values (CCS %, withholding, session fee) are centralised in `
 npm install
 npm run dev
 ```
+
+## Building
+
+`npm run build` runs `tsc -b && vite build` — TypeScript must pass before Vite builds. Running `vite build` alone skips type-checking.

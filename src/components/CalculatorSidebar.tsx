@@ -54,6 +54,15 @@ export function CalculatorSidebar({
 
       <p className="mt-3 text-sm text-white/70 leading-relaxed">{description}</p>
 
+      {children && (
+        <div className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-white/50 mb-3">
+            Calculate
+          </h3>
+          {children}
+        </div>
+      )}
+
       <div className="mt-6">
         <h3 className="text-xs font-bold uppercase tracking-wide text-white/50">
           Key Facts
@@ -91,9 +100,6 @@ export function CalculatorSidebar({
         </div>
       </details>
 
-      {children && (
-        <div className="mt-6 border-t border-white/20 pt-6">{children}</div>
-      )}
     </>
   )
 }

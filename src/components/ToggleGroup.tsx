@@ -38,7 +38,7 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
   }, [value])
 
   return (
-    <div ref={containerRef} className={clsx('relative inline-flex rounded-xl bg-white/10 p-1.5', className)}>
+    <div ref={containerRef} className={clsx('relative flex rounded-xl bg-white/10 p-1.5', className)}>
       <div
         ref={pillRef}
         className="absolute top-1.5 h-[calc(100%-12px)] rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 shadow-md transition-all duration-300 ease-out"
@@ -51,7 +51,7 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
           data-active={value === option.value}
           onClick={() => onChange(option.value)}
           className={clsx(
-            'relative z-10 rounded-lg px-5 py-2 text-sm font-bold transition-colors duration-200',
+            'relative z-10 flex-1 rounded-lg px-5 py-2 text-center text-sm font-bold transition-colors duration-200',
             value === option.value
               ? 'text-white'
               : 'text-white/60 hover:text-white',

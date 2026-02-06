@@ -5,4 +5,4 @@ export const DEFAULTS = {
   sessionFee: '150.00',
   sessionStartHour: 8,
   sessionEndHour: 18,
-} as const
+}
