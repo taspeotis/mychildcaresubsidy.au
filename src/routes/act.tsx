@@ -9,6 +9,7 @@ import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { calculateActDaily, calculateActFortnightly, getActKindyHoursPerWeek } from '../calculators/act'
+import { DEFAULTS } from '../config'
 import type { FortnightlySession } from '../types'
 
 export const Route = createFileRoute('/act')({
@@ -31,9 +32,9 @@ function ActCalculator() {
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // Daily inputs
-  const [ccsPercent, setCcsPercent] = useState('85')
-  const [withholding, setWithholding] = useState('5')
-  const [sessionFee, setSessionFee] = useState('150')
+  const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
+  const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
+  const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(8)
   const [sessionEnd, setSessionEnd] = useState(18)
   const [preschoolHours, setPreschoolHours] = useState('6')
@@ -41,7 +42,7 @@ function ActCalculator() {
 
   // Fortnightly inputs
   const [fnCcsHours, setFnCcsHours] = useState('36')
-  const [fnSessionFee, setFnSessionFee] = useState('150')
+  const [fnSessionFee, setFnSessionFee] = useState(DEFAULTS.sessionFee)
   const [fnSessionStart, setFnSessionStart] = useState(8)
   const [fnSessionEnd, setFnSessionEnd] = useState(18)
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')

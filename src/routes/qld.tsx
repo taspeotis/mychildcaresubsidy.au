@@ -9,6 +9,7 @@ import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
+import { DEFAULTS } from '../config'
 import type { FortnightlySession } from '../types'
 
 export const Route = createFileRoute('/qld')({
@@ -32,9 +33,9 @@ function QldCalculator() {
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // Daily inputs
-  const [ccsPercent, setCcsPercent] = useState('85')
-  const [withholding, setWithholding] = useState('5')
-  const [sessionFee, setSessionFee] = useState('134')
+  const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
+  const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
+  const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(6.5)
   const [sessionEnd, setSessionEnd] = useState(18.5)
   const [kindyHours, setKindyHours] = useState('7.5')
@@ -42,7 +43,7 @@ function QldCalculator() {
 
   // Fortnightly inputs
   const [fnCcsHours, setFnCcsHours] = useState('100')
-  const [fnSessionFee, setFnSessionFee] = useState('134')
+  const [fnSessionFee, setFnSessionFee] = useState(DEFAULTS.sessionFee)
   const [fnSessionStart, setFnSessionStart] = useState(6.5)
   const [fnSessionEnd, setFnSessionEnd] = useState(18.5)
   const [fnKindyHours, setFnKindyHours] = useState('7.5')
