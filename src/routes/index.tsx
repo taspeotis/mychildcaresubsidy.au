@@ -60,7 +60,7 @@ function HomePage() {
         </div>
 
         <div className="mt-12 rounded-2xl card-glass p-8">
-          <h2 className="text-xl font-bold text-slate-900">How does it work?</h2>
+          <h2 className="text-xl font-bold text-slate-900">How Does It Work?</h2>
           <div className="mt-5 grid gap-8 md:grid-cols-3">
             <div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
@@ -75,7 +75,7 @@ function HomePage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 2
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900">State kindy funding</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">State Kindy Funding</h3>
               <p className="mt-1 text-sm text-slate-600">
                 Your state or territory provides additional funding to cover the kindergarten program hours, making them free for families.
               </p>
@@ -84,7 +84,7 @@ function HomePage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 3
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900">Your gap fee</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">Your Gap Fee</h3>
               <p className="mt-1 text-sm text-slate-600">
                 You only pay for the hours of care outside the kindy program, minus your CCS entitlement. This calculator shows you that gap.
               </p>

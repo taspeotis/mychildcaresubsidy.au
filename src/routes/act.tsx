@@ -135,25 +135,25 @@ function ActCalculator() {
             schemeName="3-Year-Old Preschool"
             description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
             keyFacts={[
-              { label: 'Annual hours funded', value: '300 hours' },
-              { label: 'Days per week', value: '1 day' },
-              { label: 'Program length', value: '6\u20137.5 hrs/day' },
+              { label: 'Annual Hours Funded', value: '300 hours' },
+              { label: 'Days per Week', value: '1 day' },
+              { label: 'Program Length', value: '6\u20137.5 hrs/day' },
             ]}
             guidance={[
               {
-                title: 'Your CCS percentage',
+                title: 'Your CCS Percentage',
                 description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income.',
               },
               {
-                title: 'Session fees',
+                title: 'Session Fees',
                 description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
               },
               {
-                title: 'CCS hours per fortnight',
+                title: 'CCS Hours per Fortnight',
                 description: 'The number of subsidised hours you are approved for each fortnight. Check your Centrelink CCS assessment.',
               },
               {
-                title: 'Preschool day selection',
+                title: 'Preschool Day Selection',
                 description: 'Pick which day each week your child attends the preschool program. Only one day per week is funded.',
               },
             ]}
@@ -259,11 +259,11 @@ function ActCalculator() {
                 <ResultCard
                   title="Daily Cost Estimate"
                   rows={[
-                    { label: 'Session fee', value: fmt(Number(sessionFee)) },
-                    { label: `CCS entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                    { label: 'Gap before preschool funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
-                    { label: 'Preschool funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                    { label: 'Your estimated gap fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                    { label: 'Session Fee', value: fmt(Number(sessionFee)) },
+                    { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                    { label: 'Gap Before Preschool Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
+                    { label: 'Preschool Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
+                    { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
                   ]}
                   note="Assumes 1 preschool day per week. The preschool program hours are fully funded. You only pay for the care hours outside the program, minus CCS."
                 />
@@ -393,10 +393,10 @@ function ActCalculator() {
                 <ResultCard
                   title="Fortnightly Total"
                   rows={[
-                    { label: 'Total session fees', value: fmt(fortnightlyResult.totalSessionFees) },
-                    { label: 'Total CCS entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
-                    { label: 'Total preschool funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
-                    { label: 'Your estimated gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
+                    { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },
+                    { label: 'Total CCS Entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
+                    { label: 'Total Preschool Funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
+                    { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
                   ]}
                 />
               )}

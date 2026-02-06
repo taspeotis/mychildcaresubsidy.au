@@ -135,25 +135,25 @@ function QldCalculator() {
             schemeName="Free Kindy"
             description="Queensland's Free Kindy program provides 15 hours per week of funded kindergarten in approved long day care centres. The program covers two 7.5-hour sessions or can be split across multiple days."
             keyFacts={[
-              { label: 'Weekly hours funded', value: '15 hours' },
-              { label: 'Fortnight total', value: '30 hours' },
-              { label: 'Typical arrangement', value: '2 days/week' },
+              { label: 'Weekly Hours Funded', value: '15 hours' },
+              { label: 'Fortnight Total', value: '30 hours' },
+              { label: 'Typical Arrangement', value: '2 days/week' },
             ]}
             guidance={[
               {
-                title: 'Your CCS percentage',
+                title: 'Your CCS Percentage',
                 description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income.',
               },
               {
-                title: 'Session fees',
+                title: 'Session Fees',
                 description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
               },
               {
-                title: 'Session times',
+                title: 'Session Times',
                 description: 'The hours you drop off and pick up (e.g. 6:30 AM to 6:30 PM).',
               },
               {
-                title: 'Kindy program hours',
+                title: 'Kindy Program Hours',
                 description: 'How many hours per day the funded kindy program runs at your centre. Common options are 7.5 or 6 hours.',
               },
             ]}
@@ -259,11 +259,11 @@ function QldCalculator() {
                 <ResultCard
                   title="Daily Cost Estimate"
                   rows={[
-                    { label: 'Session fee', value: fmt(Number(sessionFee)) },
-                    { label: `CCS entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                    { label: 'Gap before kindy funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
-                    { label: 'Free Kindy funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                    { label: 'Your estimated gap fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                    { label: 'Session Fee', value: fmt(Number(sessionFee)) },
+                    { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                    { label: 'Gap Before Kindy Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
+                    { label: 'Free Kindy Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
+                    { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
                   ]}
                   note={kindyNote}
                 />
@@ -389,10 +389,10 @@ function QldCalculator() {
                 <ResultCard
                   title="Fortnightly Total"
                   rows={[
-                    { label: 'Total session fees', value: fmt(fortnightlyResult.totalSessionFees) },
-                    { label: 'Total CCS entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
-                    { label: 'Total Free Kindy funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
-                    { label: 'Your estimated gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
+                    { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },
+                    { label: 'Total CCS Entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
+                    { label: 'Total Free Kindy Funding', value: `- ${fmt(fortnightlyResult.totalKindyFunding)}` },
+                    { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
                   ]}
                 />
               )}

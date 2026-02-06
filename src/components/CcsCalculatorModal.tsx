@@ -28,7 +28,7 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-brand-950/70 backdrop-blur-md" onClick={onClose} />
       <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl card-glass p-8">
-        <h2 className="text-xl font-bold text-slate-900">Estimate your CCS %</h2>
+        <h2 className="text-xl font-bold text-slate-900">Estimate Your CCS %</h2>
         <p className="mt-1 text-sm text-slate-600">
           Based on FY2026 Child Care Subsidy rates
         </p>
