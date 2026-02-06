@@ -28,16 +28,14 @@ function HomePage() {
         <Container className="pt-20 pb-14 sm:pt-28 sm:pb-20">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              What will kindy{' '}
-              <span className="text-accent-400">actually</span> cost you?
+              What will <span className="text-accent-400">kindy</span> cost you?
             </h1>
             <p className="mt-5 text-lg text-white/80">
-              Australian families can access free or subsidised kindergarten programs.
-              Between the federal Child Care Subsidy and your state's kindy funding,
-              the out-of-pocket costs might be less than you think.
+              A simple calculator to estimate your out-of-pocket childcare costs,
+              factoring in the federal Child Care Subsidy and your state's kindy funding.
             </p>
             <p className="mt-3 text-base text-white/70">
-              Select your state below to get a personalised estimate.
+              Select your state below to get started.
             </p>
           </div>
         </Container>
