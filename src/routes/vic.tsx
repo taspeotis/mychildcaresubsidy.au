@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { CalculatorSidebar } from '../components/CalculatorSidebar'
+import { CcsDetailsCard } from '../components/CcsDetailsCard'
 import { InputField } from '../components/InputField'
 import { SelectField } from '../components/SelectField'
 import { TimePicker } from '../components/TimePicker'
@@ -175,42 +176,18 @@ function VicCalculator() {
 
           {/* Main content */}
           <div className="min-w-0 space-y-6">
+            <CcsDetailsCard
+              ccsPercent={ccsPercent}
+              onCcsPercentChange={setCcsPercent}
+              withholding={withholding}
+              onWithholdingChange={setWithholding}
+              ccsHours={fnCcsHours}
+              onCcsHoursChange={setFnCcsHours}
+              onOpenCcsModal={() => setCcsModalOpen(true)}
+            />
+
             {mode === 'daily' ? (
               <>
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
-                  <div className="mt-5 space-y-4">
-                    <div>
-                      <InputField
-                        label="CCS percentage"
-                        value={ccsPercent}
-                        onChange={(e) => setCcsPercent(e.target.value)}
-                        suffix="%"
-                        format="percent"
-                        min={0}
-                        max={95}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setCcsModalOpen(true)}
-                        className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
-                      >
-                        Don't know your CCS %? Calculate it
-                      </button>
-                    </div>
-                    <InputField
-                      label="CCS withholding"
-                      value={withholding}
-                      onChange={(e) => setWithholding(e.target.value)}
-                      suffix="%"
-                      hint="Usually 5%"
-                      format="integer"
-                      min={0}
-                      max={100}
-                    />
-                  </div>
-                </div>
-
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
                   <div className="mt-5 space-y-4">
@@ -285,48 +262,8 @@ function VicCalculator() {
             ) : (
               <>
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
-                  <div className="mt-5 space-y-4">
-                    <div>
-                      <InputField
-                        label="CCS percentage"
-                        value={ccsPercent}
-                        onChange={(e) => setCcsPercent(e.target.value)}
-                        suffix="%"
-                        format="percent"
-                        min={0}
-                        max={95}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setCcsModalOpen(true)}
-                        className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
-                      >
-                        Don't know your CCS %? Calculate it
-                      </button>
-                    </div>
-                    <InputField
-                      label="CCS withholding"
-                      value={withholding}
-                      onChange={(e) => setWithholding(e.target.value)}
-                      suffix="%"
-                      hint="Usually 5%"
-                      format="integer"
-                      min={0}
-                      max={100}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
-                  <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
-                    <InputField
-                      label="CCS hours/fortnight"
-                      type="number"
-                      value={fnCcsHours}
-                      onChange={(e) => setFnCcsHours(e.target.value)}
-                    />
+                  <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
                       label="Kinder program"
                       options={AGE_OPTIONS}
