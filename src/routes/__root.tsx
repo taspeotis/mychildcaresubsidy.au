@@ -73,6 +73,12 @@ function RootLayout() {
             >
               QLD
             </Link>
+            <Link
+              to="/vic"
+              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+            >
+              VIC
+            </Link>
           </nav>
         </Container>
       </header>

@@ -1,10 +1,36 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Container } from '../components/Container'
-import { StateCard } from '../components/StateCard'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
 })
+
+const PROGRAMS = [
+  {
+    to: '/act',
+    state: 'ACT',
+    program: '3-Year-Old Preschool',
+    description: 'Funded preschool for 3-year-olds. 6 to 7.5 hours on one day per week at participating long day care services.',
+  },
+  {
+    to: '/nsw',
+    state: 'NSW',
+    program: 'Start Strong',
+    description: 'Annual fee relief for 3 and 4+ year olds in long day care preschool programs. Applied weekly after CCS.',
+  },
+  {
+    to: '/qld',
+    state: 'QLD',
+    program: 'Free Kindy',
+    description: '15 hours per week of funded kindergarten in long day care. Covers two 7.5-hour sessions across the week.',
+  },
+  {
+    to: '/vic',
+    state: 'VIC',
+    program: 'Free Kinder',
+    description: 'Annual fee offset for 3 and 4-year-olds in long day care kinder programs. Applied weekly after CCS.',
+  },
+]
 
 function HomePage() {
   return (
@@ -42,25 +68,33 @@ function HomePage() {
       </div>
 
       <Container className="-mt-2 sm:mt-0">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <StateCard
-            to="/act"
-            state="ACT"
-            program="3-Year-Old Preschool"
-            description="Funded preschool for 3-year-olds. 6 to 7.5 hours on one day per week at participating long day care services."
-          />
-          <StateCard
-            to="/nsw"
-            state="NSW"
-            program="Start Strong"
-            description="Annual fee relief for 3 and 4+ year olds in long day care preschool programs. Applied weekly after CCS to reduce your gap fee."
-          />
-          <StateCard
-            to="/qld"
-            state="QLD"
-            program="Free Kindy"
-            description="15 hours per week of funded kindergarten in long day care. Covers two 7.5-hour sessions or a 6-hour split across the fortnight."
-          />
+        <div className="rounded-2xl card-glass p-6 sm:p-8">
+          <h2 className="text-xl font-bold text-slate-900">Calculators</h2>
+          <div className="mt-4 divide-y divide-slate-100">
+            {PROGRAMS.map((p) => (
+              <Link
+                key={p.to}
+                to={p.to}
+                className="group flex items-center gap-4 py-4 first:pt-0 last:pb-0 transition-colors"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-xs font-bold text-white shadow-md">
+                  {p.state}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-accent-500 transition-colors">
+                      {p.program}
+                    </h3>
+                    <span className="text-xs text-slate-400">{p.state}</span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-slate-600">{p.description}</p>
+                </div>
+                <svg className="h-5 w-5 shrink-0 text-slate-300 transition-all group-hover:text-accent-500 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="mt-12 rounded-2xl card-glass p-8">

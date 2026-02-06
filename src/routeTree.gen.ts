@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VicRouteImport } from './routes/vic'
 import { Route as QldRouteImport } from './routes/qld'
 import { Route as NswRouteImport } from './routes/nsw'
 import { Route as ActRouteImport } from './routes/act'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VicRoute = VicRouteImport.update({
+  id: '/vic',
+  path: '/vic',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QldRoute = QldRouteImport.update({
   id: '/qld',
   path: '/qld',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/act': typeof ActRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
+  '/vic': typeof VicRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
+  '/vic': typeof VicRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/act': typeof ActRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
+  '/vic': typeof VicRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/act' | '/nsw' | '/qld'
+  fullPaths: '/' | '/act' | '/nsw' | '/qld' | '/vic'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/act' | '/nsw' | '/qld'
-  id: '__root__' | '/' | '/act' | '/nsw' | '/qld'
+  to: '/' | '/act' | '/nsw' | '/qld' | '/vic'
+  id: '__root__' | '/' | '/act' | '/nsw' | '/qld' | '/vic'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +76,18 @@ export interface RootRouteChildren {
   ActRoute: typeof ActRoute
   NswRoute: typeof NswRoute
   QldRoute: typeof QldRoute
+  VicRoute: typeof VicRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vic': {
+      id: '/vic'
+      path: '/vic'
+      fullPath: '/vic'
+      preLoaderRoute: typeof VicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/qld': {
       id: '/qld'
       path: '/qld'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActRoute: ActRoute,
   NswRoute: NswRoute,
   QldRoute: QldRoute,
+  VicRoute: VicRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
