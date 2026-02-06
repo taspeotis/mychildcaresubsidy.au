@@ -142,7 +142,7 @@ function ActCalculator() {
             guidance={[
               {
                 title: 'Your CCS Percentage',
-                description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income.',
+                description: 'Find this in your myGov account under Centrelink. It ranges from 0% to 90% based on family income, or up to 95% for second and subsequent children in care.',
               },
               {
                 title: 'Session Fees',

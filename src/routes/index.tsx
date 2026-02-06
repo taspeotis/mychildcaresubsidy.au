@@ -66,7 +66,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Child Care Subsidy</h3>
               <p className="mt-1 text-sm text-slate-600">
-                The federal government subsidises your childcare fees based on your family income, up to 90% for lower incomes.
+                The federal government subsidises your childcare fees based on your family income, up to 90% (or 95% for second and subsequent children).
               </p>
             </div>
             <div>
