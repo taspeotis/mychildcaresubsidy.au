@@ -214,7 +214,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                     'w-full rounded-xl border-2 p-3 text-left transition-colors mb-1.5',
                     day.booked
                       ? 'border-slate-200 bg-white hover:border-accent-300'
-                      : 'border-dashed border-slate-200 bg-slate-50/50',
+                      : 'border-transparent bg-slate-100/50',
                   )}
                 >
                   <div className="flex items-center justify-between">

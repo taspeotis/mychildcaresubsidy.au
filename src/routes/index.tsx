@@ -57,7 +57,7 @@ function HomePage() {
               What will <span className="text-accent-400">kindy</span> cost you?
             </h1>
             <p className="mt-5 text-lg text-white/80">
-              A simple calculator to estimate your out-of-pocket childcare costs,
+              A simple calculator to estimate your out-of-pocket child care costs,
               factoring in the federal Child Care Subsidy and your state or territory's kindy funding.
             </p>
             <p className="mt-3 text-base text-white/70">
@@ -106,7 +106,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Child Care Subsidy</h3>
               <p className="mt-1 text-sm text-slate-600">
-                The federal government subsidises your childcare fees based on your family income, up to 90% (or 95% for second and subsequent children).
+                The federal government subsidises your child care fees based on your family income, up to 90% (or 95% for second and subsequent children).
               </p>
             </div>
             <div>

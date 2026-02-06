@@ -49,7 +49,7 @@ function RootLayout() {
           <Link to="/" className="text-xl font-bold text-white tracking-tight">
             kindy<span className="text-accent-400">.au</span>
           </Link>
-          <nav ref={navRef} className="relative flex items-center gap-1">
+          <nav ref={navRef} className="relative flex flex-1 items-center justify-evenly sm:flex-none sm:gap-1">
             <div
               ref={pillRef}
               className="absolute top-0 h-full rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 transition-all duration-300 ease-out"
@@ -57,25 +57,25 @@ function RootLayout() {
             />
             <Link
               to="/act"
-              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+              className="relative z-10 rounded-lg px-3 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white sm:px-4 [&.active]:text-white"
             >
               ACT
             </Link>
             <Link
               to="/nsw"
-              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+              className="relative z-10 rounded-lg px-3 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white sm:px-4 [&.active]:text-white"
             >
               NSW
             </Link>
             <Link
               to="/qld"
-              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+              className="relative z-10 rounded-lg px-3 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white sm:px-4 [&.active]:text-white"
             >
               QLD
             </Link>
             <Link
               to="/vic"
-              className="relative z-10 rounded-lg px-4 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white [&.active]:text-white"
+              className="relative z-10 rounded-lg px-3 py-2 text-sm font-bold text-white/70 transition-colors hover:text-white sm:px-4 [&.active]:text-white"
             >
               VIC
             </Link>
