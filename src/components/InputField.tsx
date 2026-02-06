@@ -10,12 +10,12 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export function InputField({ label, hint, suffix, error, className, id, ...props }: InputFieldProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   return (
-    <div className={clsx('space-y-1.5', className)}>
+    <div className={clsx('flex flex-col', className)}>
       <label htmlFor={inputId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      <div className="relative">
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      <div className="relative mt-auto pt-1.5">
         <input
           id={inputId}
           className={clsx(
@@ -33,7 +33,7 @@ export function InputField({ label, hint, suffix, error, className, id, ...props
           </span>
         )}
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
     </div>
   )
 }

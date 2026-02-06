@@ -33,12 +33,12 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
   const options = generateTimeOptions(min, max, step)
 
   return (
-    <div className={clsx('space-y-1.5', className)}>
+    <div className={clsx('flex flex-col', className)}>
       <label htmlFor={pickerId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      <div className="relative">
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      <div className="relative mt-auto pt-1.5">
         <select
           id={pickerId}
           value={value}
