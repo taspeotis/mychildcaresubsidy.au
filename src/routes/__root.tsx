@@ -8,7 +8,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-page">
-      <header className="header-glow sticky top-0 z-40 bg-brand-900/80 backdrop-blur-sm">
+      <header className="header-glow sticky top-0 z-40 bg-brand-900/60 backdrop-blur-xl">
         <Container className="flex h-16 items-center justify-between">
           <Link to="/" className="text-xl font-bold text-white tracking-tight">
             kindy<span className="text-accent-400">.au</span>
