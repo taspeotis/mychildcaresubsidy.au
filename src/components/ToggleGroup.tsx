@@ -9,7 +9,7 @@ interface ToggleGroupProps {
 
 export function ToggleGroup({ options, value, onChange, className }: ToggleGroupProps) {
   return (
-    <div className={clsx('inline-flex rounded-xl bg-white/10 backdrop-blur-sm p-1.5', className)}>
+    <div className={clsx('inline-flex rounded-xl bg-white/10 p-1.5', className)}>
       {options.map((option) => (
         <button
           key={option.value}
