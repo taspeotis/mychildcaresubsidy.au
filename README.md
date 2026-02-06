@@ -68,10 +68,7 @@ Each calculator page uses a two-column layout on desktop: a sticky `CalculatorSi
 
 ### FortnightlyGrid component
 
-The `FortnightlyGrid` component (`src/components/FortnightlyGrid.tsx`) is a reusable fortnightly schedule editor used by all four state calculators. It renders:
-
-- **Desktop**: An inline-editable table with columns for day (booked checkbox), session fee, start/end time selects, optional kindy/preschool toggle, CCS, state funding, and gap fee.
-- **Mobile**: Tappable card list grouped by week. Tapping a card opens a `DayEditModal` bottom sheet for editing that day's settings.
+The `FortnightlyGrid` component (`src/components/FortnightlyGrid.tsx`) is a reusable fortnightly schedule editor used by all four state calculators. It renders two stacked week cards, each containing tappable day rows. Tapping a day opens a `DayEditModal` for editing that day's settings (fee, times, kindy toggle). Booked days show fee, times, and calculated results inline; unbooked days are minimal with just the day name.
 
 Key props:
 - `days: DayConfig[]` — 10-element array (Mon–Fri × 2 weeks), each with `booked`, `sessionFee`, `sessionStart`, `sessionEnd`, `hasKindy`

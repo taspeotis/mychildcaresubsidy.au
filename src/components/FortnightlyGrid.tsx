@@ -88,165 +88,68 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
 
   return (
     <>
-      {/* Desktop table */}
-      <div className="hidden md:block rounded-2xl card-glass p-6 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-slate-700">
-              <th className="py-2 pr-2 font-bold">Day</th>
-              <th className="py-2 px-1 font-bold">Fee</th>
-              <th className="py-2 px-1 font-bold">Start</th>
-              <th className="py-2 px-1 font-bold">End</th>
-              {kindyToggle && (
-                <th className="py-2 px-1 font-bold text-center">{kindyToggle.label}</th>
-              )}
-              <th className="py-2 px-1 font-bold text-right">CCS</th>
-              <th className="py-2 px-1 font-bold text-right">{fundingLabel}</th>
-              <th className="py-2 pl-1 font-bold text-right">Gap</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {days.map((day, i) => {
-              const week = i < 5 ? 1 : 2
-              const dayName = WEEKDAYS[i % 5]
-              const result = results?.[i]
-
-              return (
-                <tr
-                  key={i}
-                  className={clsx(
-                    i === 5 && 'border-t-4 border-slate-100',
-                    !day.booked && 'opacity-40',
-                  )}
-                >
-                  <td className="py-2 pr-2">
-                    <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={day.booked}
-                        onChange={(e) => updateDay(i, { booked: e.target.checked })}
-                        className="rounded border-slate-300 text-accent-500 focus:ring-accent-400"
-                      />
-                      <span className="text-slate-400 text-xs">W{week}</span>
-                      <span className="text-slate-900 font-medium">{dayName}</span>
-                    </label>
-                  </td>
-                  <td className="py-2 px-1">
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-xs text-slate-400 pointer-events-none">$</span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={day.booked ? day.sessionFee : ''}
-                        onChange={(e) => updateDay(i, { sessionFee: e.target.value.replace(/[^0-9.]/g, '') })}
-                        disabled={!day.booked}
-                        className="w-[5.5rem] rounded-lg border border-slate-200 py-1.5 pl-6 pr-2 text-sm tabular-nums disabled:bg-slate-50"
-                      />
-                    </div>
-                  </td>
-                  <td className="py-2 px-1">
-                    <select
-                      value={day.sessionStart}
-                      onChange={(e) => updateDay(i, { sessionStart: Number(e.target.value) })}
-                      disabled={!day.booked}
-                      className="rounded-lg border border-slate-200 py-1.5 px-2 text-sm disabled:bg-slate-50"
-                    >
-                      {START_TIMES.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="py-2 px-1">
-                    <select
-                      value={day.sessionEnd}
-                      onChange={(e) => updateDay(i, { sessionEnd: Number(e.target.value) })}
-                      disabled={!day.booked}
-                      className="rounded-lg border border-slate-200 py-1.5 px-2 text-sm disabled:bg-slate-50"
-                    >
-                      {END_TIMES.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </td>
-                  {kindyToggle && (
-                    <td className="py-2 px-1 text-center">
-                      <input
-                        type="checkbox"
-                        checked={day.hasKindy}
-                        onChange={(e) => updateDay(i, { hasKindy: e.target.checked })}
-                        disabled={!day.booked}
-                        className="rounded border-slate-300 text-accent-500 focus:ring-accent-400"
-                      />
-                    </td>
-                  )}
-                  <td className="py-2 px-1 text-right tabular-nums text-slate-700">
-                    {day.booked && result ? fmt(result.ccsEntitlement) : '\u2014'}
-                  </td>
-                  <td className="py-2 px-1 text-right tabular-nums text-accent-500 font-semibold">
-                    {day.booked && result ? fmt(result.kindyFunding) : '\u2014'}
-                  </td>
-                  <td className="py-2 pl-1 text-right tabular-nums font-bold">
-                    {day.booked && result ? fmt(result.gapFee) : '\u2014'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="md:hidden space-y-2">
+      <div className="space-y-4">
         {[1, 2].map((week) => (
-          <div key={week}>
-            <p className="text-xs font-bold text-slate-500 mb-2 mt-4 first:mt-0">Week {week}</p>
-            {WEEKDAYS.map((dayName, dayIdx) => {
-              const i = (week - 1) * 5 + dayIdx
-              const day = days[i]
-              const result = results?.[i]
+          <div key={week} className="rounded-2xl card-glass p-4 sm:p-5">
+            <p className="text-xs font-bold text-slate-400 mb-3">Week {week}</p>
+            <div className="space-y-1.5">
+              {WEEKDAYS.map((dayName, dayIdx) => {
+                const i = (week - 1) * 5 + dayIdx
+                const day = days[i]
+                const result = results?.[i]
 
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setEditingDay(i)}
-                  className={clsx(
-                    'w-full rounded-xl border-2 p-3 text-left transition-colors mb-1.5',
-                    day.booked
-                      ? 'border-slate-200 bg-white hover:border-accent-300'
-                      : 'border-transparent bg-slate-100/50',
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={clsx('text-sm font-bold', day.booked ? 'text-slate-900' : 'text-slate-400')}>
-                        {dayName}
-                      </span>
-                      {day.booked && day.hasKindy && kindyToggle && (
-                        <span className="rounded bg-accent-100 px-1.5 py-0.5 text-[10px] font-bold text-accent-700">
-                          {kindyToggle.label}
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setEditingDay(i)}
+                    className={clsx(
+                      'w-full rounded-xl p-3 text-left transition-colors',
+                      day.booked
+                        ? 'bg-slate-50 hover:bg-slate-100'
+                        : 'hover:bg-slate-50',
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={clsx('text-sm font-bold', day.booked ? 'text-slate-900' : 'text-slate-300')}>
+                          {dayName}
                         </span>
-                      )}
+                        {day.booked && day.hasKindy && kindyToggle && (
+                          <span className="rounded bg-accent-100 px-1.5 py-0.5 text-[10px] font-bold text-accent-700">
+                            {kindyToggle.label}
+                          </span>
+                        )}
+                      </div>
+                      {day.booked && result ? (
+                        <span className="text-sm font-bold tabular-nums">{fmt(result.gapFee)}</span>
+                      ) : !day.booked ? (
+                        <span className="text-xs text-slate-300">Not booked</span>
+                      ) : null}
                     </div>
-                    {day.booked && result ? (
-                      <span className="text-sm font-bold tabular-nums">{fmt(result.gapFee)}</span>
-                    ) : !day.booked ? (
-                      <span className="text-xs text-slate-400">Not booked</span>
-                    ) : null}
-                  </div>
-                  {day.booked && (
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      ${day.sessionFee} &middot; {fmtTime(day.sessionStart)}&ndash;{fmtTime(day.sessionEnd)}
-                    </p>
-                  )}
-                </button>
-              )
-            })}
+                    {day.booked && (
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className="text-xs text-slate-500">
+                          ${day.sessionFee} &middot; {fmtTime(day.sessionStart)}&ndash;{fmtTime(day.sessionEnd)}
+                        </p>
+                        {result && (result.ccsEntitlement > 0 || result.kindyFunding > 0) && (
+                          <p className="text-xs tabular-nums text-slate-400">
+                            CCS {fmt(result.ccsEntitlement)}
+                            {result.kindyFunding > 0 && (
+                              <span className="text-accent-500 font-semibold"> + {fundingLabel} {fmt(result.kindyFunding)}</span>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Day edit modal */}
       {editingDay !== null && (
         <DayEditModal
           day={days[editingDay]}
