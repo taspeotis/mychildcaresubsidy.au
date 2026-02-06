@@ -38,7 +38,8 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
         {label}
       </label>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
-      <div className="relative mt-auto pt-1.5">
+      <div className="mt-auto pt-1.5">
+      <div className="relative">
         <select
           id={pickerId}
           value={value}
@@ -60,6 +61,7 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
             <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
+      </div>
       </div>
     </div>
   )

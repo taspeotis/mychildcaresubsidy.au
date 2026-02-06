@@ -16,7 +16,8 @@ export function InputField({ label, hint, prefix, suffix, error, className, id, 
         {label}
       </label>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
-      <div className="relative mt-auto pt-1.5">
+      <div className="mt-auto pt-1.5">
+      <div className="relative">
         <input
           id={inputId}
           className={clsx(
@@ -39,6 +40,7 @@ export function InputField({ label, hint, prefix, suffix, error, className, id, 
             {suffix}
           </span>
         )}
+      </div>
       </div>
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
     </div>

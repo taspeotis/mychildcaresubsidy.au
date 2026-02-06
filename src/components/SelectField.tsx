@@ -14,7 +14,8 @@ export function SelectField({ label, hint, options, className, id, ...props }: S
         {label}
       </label>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
-      <div className="relative mt-auto pt-1.5">
+      <div className="mt-auto pt-1.5">
+      <div className="relative">
         <select
           id={selectId}
           className={clsx(
@@ -35,6 +36,7 @@ export function SelectField({ label, hint, options, className, id, ...props }: S
             <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
+      </div>
       </div>
     </div>
   )

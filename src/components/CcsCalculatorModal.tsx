@@ -40,8 +40,9 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
             type="number"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
-            placeholder="e.g. 120000"
-            suffix="$/yr"
+            placeholder="e.g. 120,000"
+            prefix="$"
+            suffix="/yr"
           />
 
           <InputField
