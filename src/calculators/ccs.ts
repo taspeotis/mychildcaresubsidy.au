@@ -8,11 +8,11 @@ export const FDC_HOURLY_RATE_CAP = 13.56
 // CCS Withholding default
 export const DEFAULT_WITHHOLDING_PERCENT = 5
 
-// Activity test hours per fortnight
+// Activity test hours per fortnight (from January 2026 "3 Day Guarantee")
+// All CCS-eligible families get at least 72 hrs; 100 hrs if both parents do 48+ hrs of activity
 export const ACTIVITY_TEST_HOURS = {
-  '8-16': 36,
-  '17-48': 72,
-  '48+': 100,
+  base: 72,
+  higher: 100,
 } as const
 
 /**

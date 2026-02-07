@@ -14,6 +14,7 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateActDaily, calculateActFortnightly, getActKindyHoursPerWeek } from '../calculators/act'
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
+import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
 
 export const Route = createFileRoute('/act')({
@@ -46,81 +47,73 @@ function fmt(n: number): string {
 }
 
 function ActCalculator() {
+  const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
-  // Shared inputs
-  const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
-  const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
-
-  // Daily inputs
-  const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
-  const [sessionStart, setSessionStart] = useState(8)
-  const [sessionEnd, setSessionEnd] = useState(18)
-  const [daysPerWeek, setDaysPerWeek] = useState('3')
+  // ACT-specific inputs
   const [preschoolHours, setPreschoolHours] = useState('6')
   const [preschoolStart, setPreschoolStart] = useState(8.5)
 
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')
   const [fnPreschoolStart, setFnPreschoolStart] = useState(8.5)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
-      { sessionFee: DEFAULTS.sessionFee, sessionStart: 8, sessionEnd: 18 },
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
       DEFAULT_PRESCHOOL,
     ),
   )
 
   const dailyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const fee = Number(sessionFee) || 0
+    const ccs = Number(shared.ccsPercent) || 0
+    const fee = Number(shared.sessionFee) || 0
     const ph = Number(preschoolHours) || 0
-    const wh = Number(withholding) || 0
+    const wh = Number(shared.withholding) || 0
 
-    if (fee <= 0 || sessionEnd <= sessionStart) return null
+    if (fee <= 0 || shared.sessionEnd <= shared.sessionStart) return null
 
     return calculateActDaily({
       ccsPercent: ccs,
       ccsWithholdingPercent: wh,
       sessionFee: fee,
-      sessionStartHour: sessionStart,
-      sessionEndHour: sessionEnd,
+      sessionStartHour: shared.sessionStart,
+      sessionEndHour: shared.sessionEnd,
       kindyProgramHours: ph,
       sessionCoveredByCcs: true,
     })
-  }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, preschoolHours])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, preschoolHours])
 
   const weeklyGaps = useMemo(() => {
     if (!dailyResult) return null
     return computeWeeklyGaps({
-      sessionFee: Number(sessionFee) || 0,
-      sessionHours: sessionEnd - sessionStart,
-      daysPerWeek: Number(daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      sessionFee: Number(shared.sessionFee) || 0,
+      sessionHours: shared.sessionEnd - shared.sessionStart,
+      daysPerWeek: Number(shared.daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
       fullDailyCcs: dailyResult.ccsEntitlement,
       dailyStateFunding: dailyResult.kindyFundingAmount,
     })
-  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const weeklyNonPreschoolGaps = useMemo(() => {
     if (!dailyResult) return null
     return computeWeeklyGaps({
-      sessionFee: Number(sessionFee) || 0,
-      sessionHours: sessionEnd - sessionStart,
-      daysPerWeek: Number(daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      sessionFee: Number(shared.sessionFee) || 0,
+      sessionHours: shared.sessionEnd - shared.sessionStart,
+      daysPerWeek: Number(shared.daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
       fullDailyCcs: dailyResult.ccsEntitlement,
       dailyStateFunding: 0,
     })
-  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fnProgramWeeks = Math.round(300 / (Number(fnPreschoolHours) || 6))
 
   const fortnightlyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const wh = Number(withholding) || 0
-    const ccsHours = Number(fnCcsHours) || 36
+    const ccs = Number(shared.ccsPercent) || 0
+    const wh = Number(shared.withholding) || 0
+    const ccsHours = Number(shared.ccsHours) || 72
     const ph = Number(fnPreschoolHours) || 6
 
     const sessions: FortnightlySession[] = days.map((d, i) => {
@@ -147,7 +140,7 @@ function ActCalculator() {
       },
       fnProgramWeeks,
     )
-  }, [ccsPercent, withholding, fnCcsHours, fnPreschoolHours, fnPreschoolStart, fnProgramWeeks, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnPreschoolHours, fnPreschoolStart, fnProgramWeeks, days])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -159,13 +152,13 @@ function ActCalculator() {
 
   const kindyHoursPerWeek = getActKindyHoursPerWeek(fnProgramWeeks)
 
-  const dpw = Number(daysPerWeek) || 3
+  const dpw = Number(shared.daysPerWeek) || 3
   const hasNonPreschoolDays = dpw > 1
 
   const dailyNote = (() => {
     if (!dailyResult) return ''
-    const totalHrs = ((sessionEnd - sessionStart) * dpw * 2).toFixed(0)
-    const ccsWarning = `Your ${fnCcsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
+    const totalHrs = ((shared.sessionEnd - shared.sessionStart) * dpw * 2).toFixed(0)
+    const ccsWarning = `Your ${shared.ccsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
     if (weeklyGaps && hasNonPreschoolDays) return `${ccsWarning} 1 preschool + ${dpw - 1} non-preschool days per week.`
     if (weeklyGaps) return `${ccsWarning} Week 2 has reduced CCS coverage.`
     if (hasNonPreschoolDays) return `1 preschool + ${dpw - 1} non-preschool days per week. Non-preschool days have no preschool funding.`
@@ -177,7 +170,7 @@ function ActCalculator() {
       <CcsCalculatorModal
         open={ccsModalOpen}
         onClose={() => setCcsModalOpen(false)}
-        onApply={(pct) => setCcsPercent(String(pct))}
+        onApply={(pct) => shared.setCcsPercent(String(pct))}
       />
 
       <Container className="py-10">
@@ -204,8 +197,8 @@ function ActCalculator() {
                     description: 'The daily fee your centre charges before any subsidies. Check your invoice or ask your centre.',
                   },
                   {
-                    title: 'CCS Hours per Fortnight',
-                    description: 'The number of subsidised hours you are approved for each fortnight. Check your Centrelink CCS assessment.',
+                    title: '3 Day Guarantee',
+                    description: 'From January 2026, all families get at least 72 subsidised hours per fortnight (3 days/week). 100 hours if both parents do 48+ hours of activity.',
                   },
                   {
                     title: 'Preschool Day Selection',
@@ -228,12 +221,12 @@ function ActCalculator() {
           {/* Main content */}
           <div className="min-w-0 space-y-6">
             <CcsDetailsCard
-              ccsPercent={ccsPercent}
-              onCcsPercentChange={setCcsPercent}
-              withholding={withholding}
-              onWithholdingChange={setWithholding}
-              ccsHours={fnCcsHours}
-              onCcsHoursChange={setFnCcsHours}
+              ccsPercent={shared.ccsPercent}
+              onCcsPercentChange={shared.setCcsPercent}
+              withholding={shared.withholding}
+              onWithholdingChange={shared.setWithholding}
+              ccsHours={shared.ccsHours}
+              onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
             />
 
@@ -244,8 +237,8 @@ function ActCalculator() {
                   <div className="mt-5 space-y-4">
                     <InputField
                       label="Daily session fee"
-                      value={sessionFee}
-                      onChange={(e) => setSessionFee(e.target.value)}
+                      value={shared.sessionFee}
+                      onChange={(e) => shared.setSessionFee(e.target.value)}
                       prefix="$"
                       format="currency"
                       min={0}
@@ -253,15 +246,15 @@ function ActCalculator() {
                     <div className="grid grid-cols-2 gap-4">
                       <TimePicker
                         label="Session start"
-                        value={sessionStart}
-                        onChange={setSessionStart}
+                        value={shared.sessionStart}
+                        onChange={shared.setSessionStart}
                         min={5}
                         max={12}
                       />
                       <TimePicker
                         label="Session end"
-                        value={sessionEnd}
-                        onChange={setSessionEnd}
+                        value={shared.sessionEnd}
+                        onChange={shared.setSessionEnd}
                         min={12}
                         max={21}
                       />
@@ -269,8 +262,8 @@ function ActCalculator() {
                     <SelectField
                       label="Days per week"
                       options={DAYS_OPTIONS}
-                      value={daysPerWeek}
-                      onChange={(e) => setDaysPerWeek(e.target.value)}
+                      value={shared.daysPerWeek}
+                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
@@ -296,8 +289,8 @@ function ActCalculator() {
                   <ResultCard
                     title="Daily Cost Estimate"
                     rows={[
-                      { label: 'Session Fee', value: fmt(Number(sessionFee)) },
-                      { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
+                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
                       { label: 'Gap Before Preschool Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
                       { label: 'Preschool Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
                       ...(weeklyGaps

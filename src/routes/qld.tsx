@@ -14,11 +14,14 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
+import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
 
 export const Route = createFileRoute('/qld')({
   component: QldCalculator,
 })
+
+const QLD_KINDY_HOURS_PER_FORTNIGHT = QLD_KINDY_HOURS_PER_WEEK * 2
 
 const DAYS_OPTIONS = [
   { value: '1', label: '1 day' },
@@ -47,79 +50,71 @@ function fmt(n: number): string {
 }
 
 function QldCalculator() {
+  const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
-  // Shared inputs
-  const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
-  const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
-
-  // Daily inputs
-  const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
-  const [sessionStart, setSessionStart] = useState(6.5)
-  const [sessionEnd, setSessionEnd] = useState(18.5)
-  const [daysPerWeek, setDaysPerWeek] = useState('3')
+  // QLD-specific inputs
   const [kindyHours, setKindyHours] = useState('7.5')
   const [kindyStart, setKindyStart] = useState(8)
 
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [fnKindyHours, setFnKindyHours] = useState('7.5')
   const [fnKindyStart, setFnKindyStart] = useState(8)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
-      { sessionFee: DEFAULTS.sessionFee, sessionStart: 6.5, sessionEnd: 18.5 },
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
       DEFAULT_KINDY,
     ),
   )
 
   const dailyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const fee = Number(sessionFee) || 0
+    const ccs = Number(shared.ccsPercent) || 0
+    const fee = Number(shared.sessionFee) || 0
     const kh = Number(kindyHours) || 0
-    const wh = Number(withholding) || 0
+    const wh = Number(shared.withholding) || 0
 
-    if (fee <= 0 || sessionEnd <= sessionStart) return null
+    if (fee <= 0 || shared.sessionEnd <= shared.sessionStart) return null
 
     return calculateQldDaily({
       ccsPercent: ccs,
       ccsWithholdingPercent: wh,
       sessionFee: fee,
-      sessionStartHour: sessionStart,
-      sessionEndHour: sessionEnd,
+      sessionStartHour: shared.sessionStart,
+      sessionEndHour: shared.sessionEnd,
       kindyProgramHours: kh,
       sessionCoveredByCcs: true,
     })
-  }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, kindyHours])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, kindyHours])
 
   const weeklyGaps = useMemo(() => {
     if (!dailyResult) return null
     return computeWeeklyGaps({
-      sessionFee: Number(sessionFee) || 0,
-      sessionHours: sessionEnd - sessionStart,
-      daysPerWeek: Number(daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      sessionFee: Number(shared.sessionFee) || 0,
+      sessionHours: shared.sessionEnd - shared.sessionStart,
+      daysPerWeek: Number(shared.daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
       fullDailyCcs: dailyResult.ccsEntitlement,
       dailyStateFunding: dailyResult.kindyFundingAmount,
     })
-  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const weeklyNonKindyGaps = useMemo(() => {
     if (!dailyResult) return null
     return computeWeeklyGaps({
-      sessionFee: Number(sessionFee) || 0,
-      sessionHours: sessionEnd - sessionStart,
-      daysPerWeek: Number(daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      sessionFee: Number(shared.sessionFee) || 0,
+      sessionHours: shared.sessionEnd - shared.sessionStart,
+      daysPerWeek: Number(shared.daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
       fullDailyCcs: dailyResult.ccsEntitlement,
       dailyStateFunding: 0,
     })
-  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fortnightlyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const wh = Number(withholding) || 0
-    const ccsHours = Number(fnCcsHours) || 100
+    const ccs = Number(shared.ccsPercent) || 0
+    const wh = Number(shared.withholding) || 0
+    const ccsHours = Number(shared.ccsHours) || 100
     const kh = Number(fnKindyHours) || 7.5
 
     const sessions: FortnightlySession[] = days.map((d, i) => {
@@ -144,7 +139,7 @@ function QldCalculator() {
       fortnightlyCcsHours: ccsHours,
       sessions,
     })
-  }, [ccsPercent, withholding, fnCcsHours, fnKindyHours, fnKindyStart, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnKindyHours, fnKindyStart, days])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -155,7 +150,7 @@ function QldCalculator() {
     : null
 
   const kindyHoursNum = Number(kindyHours) || 7.5
-  const dpw = Number(daysPerWeek) || 3
+  const dpw = Number(shared.daysPerWeek) || 3
   const kindyDaysPerFortnight = Math.round(QLD_KINDY_HOURS_PER_FORTNIGHT / kindyHoursNum)
   const kindyDaysWk1 = Math.min(Math.floor(kindyDaysPerFortnight / 2), dpw)
   const kindyDaysWk2 = Math.min(kindyDaysPerFortnight - Math.floor(kindyDaysPerFortnight / 2), dpw)
@@ -163,8 +158,8 @@ function QldCalculator() {
 
   const dailyNote = (() => {
     if (!dailyResult) return ''
-    const totalHrs = ((sessionEnd - sessionStart) * dpw * 2).toFixed(0)
-    const ccsWarning = `Your ${fnCcsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
+    const totalHrs = ((shared.sessionEnd - shared.sessionStart) * dpw * 2).toFixed(0)
+    const ccsWarning = `Your ${shared.ccsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
     const kindySplit = kindyDaysWk1 === kindyDaysWk2
       ? `${kindyDaysWk1} kindy + ${dpw - kindyDaysWk1} non-kindy days per week`
       : `${kindyDaysWk1} kindy days in week 1, ${kindyDaysWk2} in week 2`
@@ -179,7 +174,7 @@ function QldCalculator() {
       <CcsCalculatorModal
         open={ccsModalOpen}
         onClose={() => setCcsModalOpen(false)}
-        onApply={(pct) => setCcsPercent(String(pct))}
+        onApply={(pct) => shared.setCcsPercent(String(pct))}
       />
 
       <Container className="py-10">
@@ -230,12 +225,12 @@ function QldCalculator() {
           {/* Main content */}
           <div className="min-w-0 space-y-6">
             <CcsDetailsCard
-              ccsPercent={ccsPercent}
-              onCcsPercentChange={setCcsPercent}
-              withholding={withholding}
-              onWithholdingChange={setWithholding}
-              ccsHours={fnCcsHours}
-              onCcsHoursChange={setFnCcsHours}
+              ccsPercent={shared.ccsPercent}
+              onCcsPercentChange={shared.setCcsPercent}
+              withholding={shared.withholding}
+              onWithholdingChange={shared.setWithholding}
+              ccsHours={shared.ccsHours}
+              onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
             />
 
@@ -246,8 +241,8 @@ function QldCalculator() {
                   <div className="mt-5 space-y-4">
                     <InputField
                       label="Daily session fee"
-                      value={sessionFee}
-                      onChange={(e) => setSessionFee(e.target.value)}
+                      value={shared.sessionFee}
+                      onChange={(e) => shared.setSessionFee(e.target.value)}
                       prefix="$"
                       format="currency"
                       min={0}
@@ -255,15 +250,15 @@ function QldCalculator() {
                     <div className="grid grid-cols-2 gap-4">
                       <TimePicker
                         label="Session start"
-                        value={sessionStart}
-                        onChange={setSessionStart}
+                        value={shared.sessionStart}
+                        onChange={shared.setSessionStart}
                         min={5}
                         max={12}
                       />
                       <TimePicker
                         label="Session end"
-                        value={sessionEnd}
-                        onChange={setSessionEnd}
+                        value={shared.sessionEnd}
+                        onChange={shared.setSessionEnd}
                         min={12}
                         max={21}
                       />
@@ -271,8 +266,8 @@ function QldCalculator() {
                     <SelectField
                       label="Days per week"
                       options={DAYS_OPTIONS}
-                      value={daysPerWeek}
-                      onChange={(e) => setDaysPerWeek(e.target.value)}
+                      value={shared.daysPerWeek}
+                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
@@ -298,8 +293,8 @@ function QldCalculator() {
                   <ResultCard
                     title="Daily Cost Estimate"
                     rows={[
-                      { label: 'Session Fee', value: fmt(Number(sessionFee)) },
-                      { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
+                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
                       { label: 'Gap Before Kindy Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
                       { label: 'Free Kindy Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
                       ...(weeklyGaps

@@ -122,9 +122,19 @@ The navbar and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (not the deprecated `<ScrollRestoration />` component).
 
+### Shared calculator state
+
+Common inputs (CCS %, withholding, CCS hours/fortnight, session fee, session start/end, days per week) are shared across all calculators via `SharedCalculatorProvider` in `src/context/SharedCalculatorState.tsx`. Changing a value on one calculator page carries over when you navigate to another. Calculator-specific inputs (kindy hours, care type, cohort, etc.) remain local to each route.
+
+The provider wraps the `<Outlet />` in `__root.tsx`. Each calculator calls `useSharedCalculatorState()` to read and write shared values.
+
+### Activity test (CCS hours)
+
+From January 2026, the CCS activity test was replaced by the "3 Day Guarantee". All CCS-eligible families get at least 72 subsidised hours per fortnight. Families where both parents do 48+ hours of recognised activity per fortnight get 100 hours. The CCS hours input in `CcsDetailsCard` is a 72/100 toggle, not a free-text field.
+
 ### Shared defaults
 
-Calculator default values (CCS %, withholding, session fee) are centralised in `src/config.ts` so all calculators stay consistent.
+Initial default values (CCS %, withholding, session fee) are centralised in `src/config.ts`.
 
 ## Running locally
 

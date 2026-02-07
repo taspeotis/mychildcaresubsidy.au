@@ -52,13 +52,40 @@ export function CcsDetailsCard({
             min={0}
             max={100}
           />
-          <InputField
-            label="CCS hours/fortnight"
-            value={ccsHours}
-            onChange={(e) => onCcsHoursChange(e.target.value)}
-            type="number"
-          />
+          <div className="flex flex-col">
+            <label className="block text-sm font-bold text-slate-700">
+              CCS hours/fortnight
+            </label>
+            <p className="text-xs text-slate-500 mt-0.5">3 Day Guarantee</p>
+            <div className="mt-auto pt-1.5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => onCcsHoursChange('72')}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                  ccsHours === '72'
+                    ? 'bg-accent-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                72 hrs
+              </button>
+              <button
+                type="button"
+                onClick={() => onCcsHoursChange('100')}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                  ccsHours === '100'
+                    ? 'bg-accent-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                100 hrs
+              </button>
+            </div>
+          </div>
         </div>
+        <p className="text-xs text-slate-500">
+          All families get 72 hrs/fortnight. 100 hrs if both parents do 48+ hrs of recognised activity per fortnight.
+        </p>
       </div>
     </div>
   )

@@ -15,6 +15,7 @@ import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEE
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS } from '../config'
+import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
 export const Route = createFileRoute('/vic')({
   component: VicCalculator,
@@ -45,67 +46,59 @@ function fmt(n: number): string {
 }
 
 function VicCalculator() {
+  const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
-  // Shared inputs
-  const [ccsPercent, setCcsPercent] = useState(DEFAULTS.ccsPercent)
-  const [withholding, setWithholding] = useState(DEFAULTS.ccsWithholding)
+  // VIC-specific inputs
   const [kinderHours, setKinderHours] = useState('15')
   const [cohort, setCohort] = useState<VicCohort>('standard')
 
-  // Daily inputs
-  const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
-  const [sessionStart, setSessionStart] = useState(8)
-  const [sessionEnd, setSessionEnd] = useState(18)
-  const [daysPerWeek, setDaysPerWeek] = useState('3')
-
   // Fortnightly inputs
-  const [fnCcsHours, setFnCcsHours] = useState(DEFAULTS.ccsHoursPerFortnight)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
-      { sessionFee: DEFAULTS.sessionFee, sessionStart: 8, sessionEnd: 18 },
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ),
   )
 
   const kinderHoursNum = kinderHours === '15-3yo' ? 15 : Number(kinderHours) || 15
 
   const dailyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const fee = Number(sessionFee) || 0
-    const wh = Number(withholding) || 0
-    const dpw = Number(daysPerWeek) || 3
+    const ccs = Number(shared.ccsPercent) || 0
+    const fee = Number(shared.sessionFee) || 0
+    const wh = Number(shared.withholding) || 0
+    const dpw = Number(shared.daysPerWeek) || 3
 
-    if (fee <= 0 || sessionEnd <= sessionStart || dpw <= 0) return null
+    if (fee <= 0 || shared.sessionEnd <= shared.sessionStart || dpw <= 0) return null
 
     return calculateVicDaily({
       ccsPercent: ccs,
       ccsWithholdingPercent: wh,
       sessionFee: fee,
-      sessionStartHour: sessionStart,
-      sessionEndHour: sessionEnd,
+      sessionStartHour: shared.sessionStart,
+      sessionEndHour: shared.sessionEnd,
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
       daysPerWeek: dpw,
     })
-  }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, cohort, kinderHoursNum, daysPerWeek])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek])
 
   const weeklyGaps = useMemo(() => {
     if (!dailyResult) return null
     return computeWeeklyGaps({
-      sessionFee: Number(sessionFee) || 0,
-      sessionHours: sessionEnd - sessionStart,
-      daysPerWeek: Number(daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      sessionFee: Number(shared.sessionFee) || 0,
+      sessionHours: shared.sessionEnd - shared.sessionStart,
+      daysPerWeek: Number(shared.daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
       fullDailyCcs: dailyResult.ccsEntitlement,
       dailyStateFunding: dailyResult.dailyOffset,
     })
-  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fortnightlyResult = useMemo(() => {
-    const ccs = Number(ccsPercent) || 0
-    const wh = Number(withholding) || 0
-    const ccsHours = Number(fnCcsHours) || 36
+    const ccs = Number(shared.ccsPercent) || 0
+    const wh = Number(shared.withholding) || 0
+    const ccsHours = Number(shared.ccsHours) || 72
 
     const sessions = days.map((d) => ({
       booked: d.booked,
@@ -124,7 +117,7 @@ function VicCalculator() {
       kinderHoursPerWeek: kinderHoursNum,
       sessions,
     })
-  }, [ccsPercent, withholding, fnCcsHours, cohort, kinderHoursNum, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, days])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -139,7 +132,7 @@ function VicCalculator() {
       <CcsCalculatorModal
         open={ccsModalOpen}
         onClose={() => setCcsModalOpen(false)}
-        onApply={(pct) => setCcsPercent(String(pct))}
+        onApply={(pct) => shared.setCcsPercent(String(pct))}
       />
 
       <Container className="py-10">
@@ -190,12 +183,12 @@ function VicCalculator() {
           {/* Main content */}
           <div className="min-w-0 space-y-6">
             <CcsDetailsCard
-              ccsPercent={ccsPercent}
-              onCcsPercentChange={setCcsPercent}
-              withholding={withholding}
-              onWithholdingChange={setWithholding}
-              ccsHours={fnCcsHours}
-              onCcsHoursChange={setFnCcsHours}
+              ccsPercent={shared.ccsPercent}
+              onCcsPercentChange={shared.setCcsPercent}
+              withholding={shared.withholding}
+              onWithholdingChange={shared.setWithholding}
+              ccsHours={shared.ccsHours}
+              onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
             />
 
@@ -206,8 +199,8 @@ function VicCalculator() {
                   <div className="mt-5 space-y-4">
                     <InputField
                       label="Daily session fee"
-                      value={sessionFee}
-                      onChange={(e) => setSessionFee(e.target.value)}
+                      value={shared.sessionFee}
+                      onChange={(e) => shared.setSessionFee(e.target.value)}
                       prefix="$"
                       format="currency"
                       min={0}
@@ -215,15 +208,15 @@ function VicCalculator() {
                     <div className="grid grid-cols-2 gap-4">
                       <TimePicker
                         label="Session start"
-                        value={sessionStart}
-                        onChange={setSessionStart}
+                        value={shared.sessionStart}
+                        onChange={shared.setSessionStart}
                         min={5}
                         max={12}
                       />
                       <TimePicker
                         label="Session end"
-                        value={sessionEnd}
-                        onChange={setSessionEnd}
+                        value={shared.sessionEnd}
+                        onChange={shared.setSessionEnd}
                         min={12}
                         max={21}
                       />
@@ -231,8 +224,8 @@ function VicCalculator() {
                     <SelectField
                       label="Days per week"
                       options={DAYS_OPTIONS}
-                      value={daysPerWeek}
-                      onChange={(e) => setDaysPerWeek(e.target.value)}
+                      value={shared.daysPerWeek}
+                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
                     />
                   </div>
                 </div>
@@ -262,8 +255,8 @@ function VicCalculator() {
                   <ResultCard
                     title="Daily Cost Estimate"
                     rows={[
-                      { label: 'Session Fee', value: fmt(Number(sessionFee)) },
-                      { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
+                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
+                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
                       { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), muted: true },
                       { label: 'Free Kinder Offset', value: `- ${fmt(dailyResult.dailyOffset)}` },
                       ...(weeklyGaps
@@ -277,8 +270,8 @@ function VicCalculator() {
                       ),
                     ]}
                     note={weeklyGaps
-                      ? `Your ${fnCcsHours} CCS hours don't cover all ${((sessionEnd - sessionStart) * Number(daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
-                      : `Based on ${fmt(dailyResult.annualOffset)}/yr offset across ${VIC_FREE_KINDER_WEEKS} weeks and ${daysPerWeek} days/week (${fmt(dailyResult.weeklyOffset)}/week).`
+                      ? `Your ${shared.ccsHours} CCS hours don't cover all ${((shared.sessionEnd - shared.sessionStart) * Number(shared.daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
+                      : `Based on ${fmt(dailyResult.annualOffset)}/yr offset across ${VIC_FREE_KINDER_WEEKS} weeks and ${shared.daysPerWeek} days/week (${fmt(dailyResult.weeklyOffset)}/week).`
                     }
                   />
                 )}

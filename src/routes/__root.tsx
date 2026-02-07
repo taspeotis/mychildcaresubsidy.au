@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
+import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -93,7 +94,9 @@ function RootLayout() {
       </header>
 
       <main className="flex-1 pb-16">
-        <Outlet />
+        <SharedCalculatorProvider>
+          <Outlet />
+        </SharedCalculatorProvider>
       </main>
 
       <footer className="footer-glow bg-brand-900">
