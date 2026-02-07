@@ -3,9 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { CalculatorSidebar } from '../components/CalculatorSidebar'
 import { CcsDetailsCard } from '../components/CcsDetailsCard'
-import { InputField } from '../components/InputField'
+import { SessionDetailsCard } from '../components/SessionDetailsCard'
 import { SelectField } from '../components/SelectField'
-import { TimePicker } from '../components/TimePicker'
 import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
@@ -14,7 +13,7 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateCcsDaily, calculateCcsFortnightly, getHourlyRateCap } from '../calculators/ccsCalculator'
 import type { CareType } from '../calculators/ccsCalculator'
 import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { DEFAULTS } from '../config'
+import { DEFAULTS, fmt } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
 export const Route = createFileRoute('/ccs')({
@@ -31,10 +30,6 @@ const CHILD_AGE_OPTIONS = [
   { value: 'below', label: 'Below school age' },
   { value: 'school', label: 'School age' },
 ]
-
-function fmt(n: number): string {
-  return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
-}
 
 function CcsCalculator() {
   const shared = useSharedCalculatorState()
@@ -177,38 +172,15 @@ function CcsCalculator() {
 
             {mode === 'daily' ? (
               <>
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
-                  <div className="mt-5 space-y-4">
-                    <InputField
-                      label="Daily session fee"
-                      value={shared.sessionFee}
-                      onChange={(e) => shared.setSessionFee(e.target.value)}
-                      prefix="$"
-                      format="currency"
-                      min={0}
-                      colorScheme="brand"
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <TimePicker
-                        label="Session start"
-                        value={shared.sessionStart}
-                        onChange={shared.setSessionStart}
-                        min={5}
-                        max={12}
-                        colorScheme="brand"
-                      />
-                      <TimePicker
-                        label="Session end"
-                        value={shared.sessionEnd}
-                        onChange={shared.setSessionEnd}
-                        min={12}
-                        max={21}
-                        colorScheme="brand"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                  colorScheme="brand"
+                />
 
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Care Type</h2>

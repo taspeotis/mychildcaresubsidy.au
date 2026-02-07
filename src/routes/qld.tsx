@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { CalculatorSidebar } from '../components/CalculatorSidebar'
 import { CcsDetailsCard } from '../components/CcsDetailsCard'
-import { InputField } from '../components/InputField'
+import { SessionDetailsCard } from '../components/SessionDetailsCard'
 import { SelectField } from '../components/SelectField'
 import { TimePicker } from '../components/TimePicker'
 import { ToggleGroup } from '../components/ToggleGroup'
@@ -13,7 +13,7 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { DEFAULTS } from '../config'
+import { DEFAULTS, fmt, WEEKDAYS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
 
@@ -27,17 +27,11 @@ const KINDY_PROGRAM_OPTIONS = [
   { value: '5', label: '5 hours' },
 ]
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-
 // Default kindy pattern: W1 Mon+Tue, W2 Mon+Tue
 const DEFAULT_KINDY = [
   true, true, false, false, false,
   true, true, false, false, false,
 ]
-
-function fmt(n: number): string {
-  return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
-}
 
 function QldCalculator() {
   const shared = useSharedCalculatorState()
@@ -183,35 +177,14 @@ function QldCalculator() {
 
             {mode === 'daily' ? (
               <>
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
-                  <div className="mt-5 space-y-4">
-                    <InputField
-                      label="Daily session fee"
-                      value={shared.sessionFee}
-                      onChange={(e) => shared.setSessionFee(e.target.value)}
-                      prefix="$"
-                      format="currency"
-                      min={0}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <TimePicker
-                        label="Session start"
-                        value={shared.sessionStart}
-                        onChange={shared.setSessionStart}
-                        min={5}
-                        max={12}
-                      />
-                      <TimePicker
-                        label="Session end"
-                        value={shared.sessionEnd}
-                        onChange={shared.setSessionEnd}
-                        min={12}
-                        max={21}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
 
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Free Kindy Details</h2>

@@ -1,4 +1,5 @@
 import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from './ccs'
+import { computeSessionCcs, roundTo } from './shared'
 
 export type CareType = 'centre-based' | 'family-day-care' | 'oshc'
 
@@ -30,28 +31,27 @@ export interface CcsDailyResult {
 }
 
 export function calculateCcsDaily(inputs: CcsDailyInputs): CcsDailyResult | null {
-  const sessionHours = inputs.sessionEndHour - inputs.sessionStartHour
-  if (sessionHours <= 0 || inputs.sessionFee <= 0) return null
+  if (inputs.sessionEndHour - inputs.sessionStartHour <= 0 || inputs.sessionFee <= 0) return null
 
-  const hourlySessionFee = inputs.sessionFee / sessionHours
   const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge)
-  const ccsRate = inputs.ccsPercent / 100
-  const ccsHourlyRate = roundTo(Math.min(hourlySessionFee, hourlyRateCap) * ccsRate, 2)
-
-  const ccsAmount = roundTo(Math.min(ccsHourlyRate * sessionHours, inputs.sessionFee), 4)
-  const ccsWithholding = roundTo(ccsAmount * (inputs.ccsWithholdingPercent / 100), 4)
-  const ccsEntitlement = roundTo(ccsAmount - ccsWithholding, 4)
-  const estimatedGapFee = roundTo(Math.max(0, inputs.sessionFee - ccsEntitlement), 2)
+  const ccs = computeSessionCcs({
+    sessionFee: inputs.sessionFee,
+    sessionStartHour: inputs.sessionStartHour,
+    sessionEndHour: inputs.sessionEndHour,
+    ccsPercent: inputs.ccsPercent,
+    ccsWithholdingPercent: inputs.ccsWithholdingPercent,
+    hourlyRateCap,
+  })
 
   return {
-    sessionHours,
-    hourlySessionFee: roundTo(hourlySessionFee, 4),
+    sessionHours: ccs.sessionHours,
+    hourlySessionFee: ccs.hourlySessionFee,
     hourlyRateCap,
-    ccsHourlyRate,
-    ccsAmount,
-    ccsWithholding,
-    ccsEntitlement,
-    estimatedGapFee,
+    ccsHourlyRate: ccs.applicableCcsHourlyRate,
+    ccsAmount: ccs.ccsAmount,
+    ccsWithholding: ccs.ccsWithholding,
+    ccsEntitlement: ccs.ccsEntitlement,
+    estimatedGapFee: roundTo(Math.max(0, inputs.sessionFee - ccs.ccsEntitlement), 2),
   }
 }
 
@@ -88,7 +88,6 @@ export interface CcsFortnightlyResult {
 
 export function calculateCcsFortnightly(inputs: CcsFortnightlyInputs): CcsFortnightlyResult | null {
   const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge)
-  const ccsRate = inputs.ccsPercent / 100
   let remainingCcsHours = inputs.fortnightlyCcsHours
 
   const hasBookedDay = inputs.sessions.some((s) => s.booked && s.sessionFee > 0)
@@ -99,19 +98,24 @@ export function calculateCcsFortnightly(inputs: CcsFortnightlyInputs): CcsFortni
       return { sessionHours: 0, ccsAmount: 0, ccsWithholding: 0, ccsEntitlement: 0, gapFee: 0 }
     }
 
-    const sessionHours = session.sessionEndHour - session.sessionStartHour
-    const hourlySessionFee = sessionHours > 0 ? session.sessionFee / sessionHours : 0
-    const ccsHourlyRate = roundTo(Math.min(hourlySessionFee, hourlyRateCap) * ccsRate, 2)
+    const ccs = computeSessionCcs({
+      sessionFee: session.sessionFee,
+      sessionStartHour: session.sessionStartHour,
+      sessionEndHour: session.sessionEndHour,
+      ccsPercent: inputs.ccsPercent,
+      ccsWithholdingPercent: inputs.ccsWithholdingPercent,
+      hourlyRateCap,
+      ccsHoursAvailable: remainingCcsHours,
+    })
+    remainingCcsHours -= ccs.applicableCcsHours
 
-    const applicableCcsHours = Math.min(sessionHours, Math.max(0, remainingCcsHours))
-    remainingCcsHours -= applicableCcsHours
-
-    const ccsAmount = roundTo(Math.min(ccsHourlyRate * applicableCcsHours, session.sessionFee), 4)
-    const ccsWithholding = roundTo(ccsAmount * (inputs.ccsWithholdingPercent / 100), 4)
-    const ccsEntitlement = roundTo(ccsAmount - ccsWithholding, 4)
-    const gapFee = roundTo(Math.max(0, session.sessionFee - ccsEntitlement), 2)
-
-    return { sessionHours, ccsAmount, ccsWithholding, ccsEntitlement, gapFee }
+    return {
+      sessionHours: ccs.sessionHours,
+      ccsAmount: ccs.ccsAmount,
+      ccsWithholding: ccs.ccsWithholding,
+      ccsEntitlement: ccs.ccsEntitlement,
+      gapFee: roundTo(Math.max(0, session.sessionFee - ccs.ccsEntitlement), 2),
+    }
   })
 
   return {
@@ -120,9 +124,4 @@ export function calculateCcsFortnightly(inputs: CcsFortnightlyInputs): CcsFortni
     totalCcsEntitlement: roundTo(results.reduce((s, r) => s + r.ccsEntitlement, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.gapFee, 0), 2),
   }
-}
-
-function roundTo(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals)
-  return Math.round(value * factor) / factor
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import type { ColorScheme } from '../types'
+import { InputField } from './InputField'
+import { TimePicker } from './TimePicker'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
@@ -52,16 +54,6 @@ function fmtTime(h: number): string {
   return `${display}:${mins.toString().padStart(2, '0')} ${period}`
 }
 
-function timeOptions(min: number, max: number) {
-  const opts: { value: string; label: string }[] = []
-  for (let h = min; h <= max; h += 0.5) {
-    opts.push({ value: String(h), label: fmtTime(h) })
-  }
-  return opts
-}
-
-const START_TIMES = timeOptions(5, 12)
-const END_TIMES = timeOptions(12, 21)
 
 export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent' }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
@@ -216,76 +208,33 @@ function DayEditModal({
 
           {draft.booked && (
             <>
-              <div>
-                <label className="text-xs font-bold text-slate-700">Session fee</label>
-                <div className="relative mt-1.5">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm text-slate-400">$</span>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={draft.sessionFee}
-                    onChange={(e) => update({ sessionFee: e.target.value.replace(/[^0-9.]/g, '') })}
-                    className={clsx(
-                      'block w-full rounded-xl border-2 border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 shadow-sm transition-colors',
-                      colorScheme === 'brand'
-                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
-                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
-                    )}
-                  />
-                </div>
-              </div>
+              <InputField
+                label="Session fee"
+                value={draft.sessionFee}
+                onChange={(e) => update({ sessionFee: e.target.value })}
+                prefix="$"
+                format="currency"
+                min={0}
+                colorScheme={colorScheme}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700">Start</label>
-                  <div className="relative mt-1.5">
-                    <select
-                      value={draft.sessionStart}
-                      onChange={(e) => update({ sessionStart: Number(e.target.value) })}
-                      className={clsx(
-                        'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
-                        colorScheme === 'brand'
-                          ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
-                          : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
-                      )}
-                    >
-                      {START_TIMES.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg className="h-5 w-5 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-                        <path d="M5.75 10.75L8 13L10.25 10.75" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700">End</label>
-                  <div className="relative mt-1.5">
-                    <select
-                      value={draft.sessionEnd}
-                      onChange={(e) => update({ sessionEnd: Number(e.target.value) })}
-                      className={clsx(
-                        'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
-                        colorScheme === 'brand'
-                          ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
-                          : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
-                      )}
-                    >
-                      {END_TIMES.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg className="h-5 w-5 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-                        <path d="M5.75 10.75L8 13L10.25 10.75" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
+                <TimePicker
+                  label="Start"
+                  value={draft.sessionStart}
+                  onChange={(v) => update({ sessionStart: v })}
+                  min={5}
+                  max={12}
+                  colorScheme={colorScheme}
+                />
+                <TimePicker
+                  label="End"
+                  value={draft.sessionEnd}
+                  onChange={(v) => update({ sessionEnd: v })}
+                  min={12}
+                  max={21}
+                  colorScheme={colorScheme}
+                />
               </div>
 
               {kindyToggle && (

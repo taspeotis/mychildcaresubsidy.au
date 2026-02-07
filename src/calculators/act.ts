@@ -1,5 +1,6 @@
 import type { DailyInputs, DailyResult, FortnightlyInputs, FortnightlyResult, FortnightlySessionResult } from '../types'
 import { CCS_HOURLY_RATE_CAP } from './ccs'
+import { computeSessionCcs, roundTo } from './shared'
 
 // ACT 3-Year-Old Preschool: $2,575/year for 300 hours, paid to provider
 // Default 40 program weeks/year
@@ -16,43 +17,41 @@ export function getActKindyHoursPerWeek(programWeeks: number = ACT_PROGRAM_WEEKS
  * ($2,575/year) is paid directly to the provider.
  */
 export function calculateActDaily(inputs: DailyInputs): DailyResult {
-  const sessionHoursDecimal = inputs.sessionEndHour - inputs.sessionStartHour
-  const hourlySessionFee = sessionHoursDecimal > 0 ? inputs.sessionFee / sessionHoursDecimal : 0
+  const ccs = computeSessionCcs({
+    sessionFee: inputs.sessionFee,
+    sessionStartHour: inputs.sessionStartHour,
+    sessionEndHour: inputs.sessionEndHour,
+    ccsPercent: inputs.ccsPercent,
+    ccsWithholdingPercent: inputs.ccsWithholdingPercent,
+    hourlyRateCap: CCS_HOURLY_RATE_CAP,
+  })
 
-  const ccsRate = inputs.ccsPercent / 100
-  const applicableCcsHourlyRate = roundTo(Math.min(hourlySessionFee, CCS_HOURLY_RATE_CAP) * ccsRate, 2)
-  const applicableCcsHours = inputs.sessionCoveredByCcs ? sessionHoursDecimal : 0
+  // CCS per hour (for gap on preschool hours) — uses ccsAmount (pre-withholding)
+  const ccsPerHour = ccs.applicableCcsHours > 0 ? ccs.ccsAmount / ccs.applicableCcsHours : 0
 
-  const ccsAmount = roundTo(Math.min(applicableCcsHours * applicableCcsHourlyRate, inputs.sessionFee), 4)
-  const ccsWithholding = roundTo(ccsAmount * (inputs.ccsWithholdingPercent / 100), 4)
-  const ccsEntitlement = roundTo(ccsAmount - ccsWithholding, 4)
-
-  // CCS per hour (for gap on preschool hours)
-  const ccsPerHour = applicableCcsHours > 0 ? ccsAmount / applicableCcsHours : 0
-
-  const gapBeforeKindy = roundTo(inputs.sessionFee - ccsAmount, 2)
+  const gapBeforeKindy = roundTo(inputs.sessionFee - ccs.ccsAmount, 2)
 
   // Preschool funding: covers the gap between session fee and CCS for preschool hours
   const kindyHoursDecimal = inputs.kindyProgramHours
-  const ccsFundedKindyHours = applicableCcsHours >= sessionHoursDecimal
+  const ccsFundedKindyHours = ccs.applicableCcsHours >= ccs.sessionHours
     ? kindyHoursDecimal
-    : Math.min(kindyHoursDecimal, Math.max(0, applicableCcsHours))
+    : Math.min(kindyHoursDecimal, Math.max(0, ccs.applicableCcsHours))
   const nonCcsFundedKindyHours = kindyHoursDecimal - ccsFundedKindyHours
 
-  const kindyFundingCcsHours = ccsFundedKindyHours * (hourlySessionFee - ccsPerHour)
-  const kindyFundingNonCcsHours = nonCcsFundedKindyHours * hourlySessionFee
+  const kindyFundingCcsHours = ccsFundedKindyHours * (ccs.hourlySessionFee - ccsPerHour)
+  const kindyFundingNonCcsHours = nonCcsFundedKindyHours * ccs.hourlySessionFee
   const kindyFundingAmount = roundTo(Math.max(0, kindyFundingCcsHours + kindyFundingNonCcsHours), 2)
 
   const estimatedGapFee = roundTo(Math.max(0, gapBeforeKindy - kindyFundingAmount), 2)
 
   return {
-    sessionHoursDecimal,
-    hourlySessionFee: roundTo(hourlySessionFee, 4),
-    applicableCcsHourlyRate,
-    applicableCcsHours,
-    ccsAmount,
-    ccsWithholding,
-    ccsEntitlement,
+    sessionHoursDecimal: ccs.sessionHours,
+    hourlySessionFee: ccs.hourlySessionFee,
+    applicableCcsHourlyRate: ccs.applicableCcsHourlyRate,
+    applicableCcsHours: ccs.applicableCcsHours,
+    ccsAmount: ccs.ccsAmount,
+    ccsWithholding: ccs.ccsWithholding,
+    ccsEntitlement: ccs.ccsEntitlement,
     gapBeforeKindy,
     kindyFundingAmount,
     estimatedGapFee,
@@ -73,37 +72,35 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
   let remainingKindyHoursWeek2 = kindyHoursPerWeek
 
   for (const session of inputs.sessions) {
-    const sessionHoursDecimal = session.sessionEndHour - session.sessionStartHour
-    const hourlySessionFee = sessionHoursDecimal > 0 ? session.sessionFee / sessionHoursDecimal : 0
+    const ccs = computeSessionCcs({
+      sessionFee: session.sessionFee,
+      sessionStartHour: session.sessionStartHour,
+      sessionEndHour: session.sessionEndHour,
+      ccsPercent: inputs.ccsPercent,
+      ccsWithholdingPercent: inputs.ccsWithholdingPercent,
+      hourlyRateCap: CCS_HOURLY_RATE_CAP,
+      ccsHoursAvailable: remainingCcsHours,
+    })
+    remainingCcsHours -= ccs.applicableCcsHours
 
-    const ccsRate = inputs.ccsPercent / 100
-    const applicableCcsHourlyRate = roundTo(Math.min(hourlySessionFee, CCS_HOURLY_RATE_CAP) * ccsRate, 2)
-
-    const applicableCcsHours = Math.min(sessionHoursDecimal, Math.max(0, remainingCcsHours))
-    remainingCcsHours -= applicableCcsHours
-
-    const ccsAmount = roundTo(Math.min(applicableCcsHours * applicableCcsHourlyRate, session.sessionFee), 4)
-    const ccsWithholding = roundTo(ccsAmount * (inputs.ccsWithholdingPercent / 100), 4)
-    const ccsEntitlement = roundTo(ccsAmount - ccsWithholding, 4)
-    const ccsPerHour = applicableCcsHours > 0 ? ccsAmount / applicableCcsHours : 0
-
-    const gapBeforeKindy = roundTo(session.sessionFee - ccsAmount, 2)
+    const ccsPerHour = ccs.applicableCcsHours > 0 ? ccs.ccsAmount / ccs.applicableCcsHours : 0
+    const gapBeforeKindy = roundTo(session.sessionFee - ccs.ccsAmount, 2)
 
     let kindyFundingAmount = 0
     const remainingKindyHours = session.week === 1 ? remainingKindyHoursWeek1 : remainingKindyHoursWeek2
 
     if (session.kindyProgramStartHour !== null && session.kindyProgramEndHour !== null) {
       const kindyHoursDecimal = session.kindyProgramEndHour - session.kindyProgramStartHour
-      const ccsFundedKindyHours = applicableCcsHours >= sessionHoursDecimal
+      const ccsFundedKindyHours = ccs.applicableCcsHours >= ccs.sessionHours
         ? kindyHoursDecimal
-        : Math.max(0, Math.min(kindyHoursDecimal, applicableCcsHours - (session.kindyProgramStartHour - session.sessionStartHour)))
+        : Math.max(0, Math.min(kindyHoursDecimal, ccs.applicableCcsHours - (session.kindyProgramStartHour - session.sessionStartHour)))
       const nonCcsFundedKindyHours = kindyHoursDecimal - ccsFundedKindyHours
       const applicableKindyHours = Math.min(kindyHoursDecimal, remainingKindyHours)
       const applicableKindyFundedCcsHours = Math.min(applicableKindyHours, ccsFundedKindyHours)
       const applicableKindyFundedNonCcsHours = Math.min(Math.max(0, applicableKindyHours - applicableKindyFundedCcsHours), nonCcsFundedKindyHours)
 
       kindyFundingAmount = roundTo(
-        Math.max(0, applicableKindyFundedCcsHours * (hourlySessionFee - ccsPerHour) + applicableKindyFundedNonCcsHours * hourlySessionFee),
+        Math.max(0, applicableKindyFundedCcsHours * (ccs.hourlySessionFee - ccsPerHour) + applicableKindyFundedNonCcsHours * ccs.hourlySessionFee),
         2,
       )
 
@@ -119,13 +116,13 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
     results.push({
       week: session.week,
       day: session.day,
-      sessionHoursDecimal,
-      hourlySessionFee: roundTo(hourlySessionFee, 4),
-      applicableCcsHourlyRate,
-      applicableCcsHours,
-      ccsAmount,
-      ccsWithholding,
-      ccsEntitlement,
+      sessionHoursDecimal: ccs.sessionHours,
+      hourlySessionFee: ccs.hourlySessionFee,
+      applicableCcsHourlyRate: ccs.applicableCcsHourlyRate,
+      applicableCcsHours: ccs.applicableCcsHours,
+      ccsAmount: ccs.ccsAmount,
+      ccsWithholding: ccs.ccsWithholding,
+      ccsEntitlement: ccs.ccsEntitlement,
       gapBeforeKindy,
       kindyFundingAmount,
       estimatedGapFee,
@@ -141,9 +138,4 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
     totalKindyFunding: roundTo(results.reduce((s, r) => s + r.kindyFundingAmount, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.estimatedGapFee, 0), 2),
   }
-}
-
-function roundTo(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals)
-  return Math.round(value * factor) / factor
 }

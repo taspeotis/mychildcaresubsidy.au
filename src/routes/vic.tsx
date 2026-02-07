@@ -3,9 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { CalculatorSidebar } from '../components/CalculatorSidebar'
 import { CcsDetailsCard } from '../components/CcsDetailsCard'
-import { InputField } from '../components/InputField'
+import { SessionDetailsCard } from '../components/SessionDetailsCard'
 import { SelectField } from '../components/SelectField'
-import { TimePicker } from '../components/TimePicker'
 import { ToggleGroup } from '../components/ToggleGroup'
 import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
@@ -14,7 +13,7 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import type { VicCohort } from '../calculators/vic'
-import { DEFAULTS } from '../config'
+import { DEFAULTS, fmt, DAYS_OPTIONS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
 export const Route = createFileRoute('/vic')({
@@ -32,18 +31,6 @@ const COHORT_OPTIONS = [
   { value: 'standard', label: 'Standard' },
   { value: 'priority', label: 'Priority cohort' },
 ]
-
-const DAYS_OPTIONS = [
-  { value: '1', label: '1 day' },
-  { value: '2', label: '2 days' },
-  { value: '3', label: '3 days' },
-  { value: '4', label: '4 days' },
-  { value: '5', label: '5 days' },
-]
-
-function fmt(n: number): string {
-  return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
-}
 
 function VicCalculator() {
   const shared = useSharedCalculatorState()
@@ -183,35 +170,14 @@ function VicCalculator() {
 
             {mode === 'daily' ? (
               <>
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
-                  <div className="mt-5 space-y-4">
-                    <InputField
-                      label="Daily session fee"
-                      value={shared.sessionFee}
-                      onChange={(e) => shared.setSessionFee(e.target.value)}
-                      prefix="$"
-                      format="currency"
-                      min={0}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <TimePicker
-                        label="Session start"
-                        value={shared.sessionStart}
-                        onChange={shared.setSessionStart}
-                        min={5}
-                        max={12}
-                      />
-                      <TimePicker
-                        label="Session end"
-                        value={shared.sessionEnd}
-                        onChange={shared.setSessionEnd}
-                        min={12}
-                        max={21}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
 
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Free Kinder Details</h2>
