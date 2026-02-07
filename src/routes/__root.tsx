@@ -66,11 +66,11 @@ function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-page">
       <header className="header-glow sticky top-0 z-40 bg-brand-900/80 backdrop-blur-sm">
-        <Container className="flex h-auto min-h-[4rem] items-center justify-between gap-4 py-2">
-          <Link to="/" className="shrink-0 text-lg font-bold text-white tracking-tight sm:text-xl">
-            my<span className="text-accent-400">ccs</span>.au
+        <Container className="flex h-auto min-h-[4rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
+          <Link to="/" className="shrink-0 text-base font-bold text-white tracking-tight sm:text-lg">
+            mychildcare<span className="text-accent-400">subsidy</span>.au
           </Link>
-          <nav ref={navRef} className="relative flex flex-wrap items-center justify-end gap-x-0.5 gap-y-1 sm:gap-x-1">
+          <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div
               ref={pillRef}
               className="absolute top-0 h-full rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 transition-all duration-300 ease-out"
