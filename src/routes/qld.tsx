@@ -12,12 +12,21 @@ import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
+import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
 import type { FortnightlySession } from '../types'
 
 export const Route = createFileRoute('/qld')({
   component: QldCalculator,
 })
+
+const DAYS_OPTIONS = [
+  { value: '1', label: '1 day' },
+  { value: '2', label: '2 days' },
+  { value: '3', label: '3 days' },
+  { value: '4', label: '4 days' },
+  { value: '5', label: '5 days' },
+]
 
 const KINDY_PROGRAM_OPTIONS = [
   { value: '7.5', label: '7.5 hours' },
@@ -49,6 +58,7 @@ function QldCalculator() {
   const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(6.5)
   const [sessionEnd, setSessionEnd] = useState(18.5)
+  const [daysPerWeek, setDaysPerWeek] = useState('3')
   const [kindyHours, setKindyHours] = useState('7.5')
   const [kindyStart, setKindyStart] = useState(8)
 
@@ -81,6 +91,18 @@ function QldCalculator() {
       sessionCoveredByCcs: true,
     })
   }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, kindyHours])
+
+  const weeklyGaps = useMemo(() => {
+    if (!dailyResult) return null
+    return computeWeeklyGaps({
+      sessionFee: Number(sessionFee) || 0,
+      sessionHours: sessionEnd - sessionStart,
+      daysPerWeek: Number(daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      fullDailyCcs: dailyResult.ccsEntitlement,
+      dailyStateFunding: dailyResult.kindyFundingAmount,
+    })
+  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(ccsPercent) || 0
@@ -221,6 +243,12 @@ function QldCalculator() {
                         max={21}
                       />
                     </div>
+                    <SelectField
+                      label="Days per week"
+                      options={DAYS_OPTIONS}
+                      value={daysPerWeek}
+                      onChange={(e) => setDaysPerWeek(e.target.value)}
+                    />
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
                         label="Kindy program hours"
@@ -249,9 +277,20 @@ function QldCalculator() {
                       { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
                       { label: 'Gap Before Kindy Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
                       { label: 'Free Kindy Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                      { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                      ...(weeklyGaps
+                        ? [
+                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
+                          ]
+                        : [
+                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                          ]
+                      ),
                     ]}
-                    note={kindyNote}
+                    note={weeklyGaps
+                      ? `Your ${fnCcsHours} CCS hours don't cover all ${((sessionEnd - sessionStart) * Number(daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
+                      : kindyNote
+                    }
                   />
                 )}
               </>

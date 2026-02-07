@@ -12,6 +12,7 @@ import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateActDaily, calculateActFortnightly, getActKindyHoursPerWeek } from '../calculators/act'
+import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
 import type { FortnightlySession } from '../types'
 
@@ -22,6 +23,14 @@ export const Route = createFileRoute('/act')({
 const PRESCHOOL_OPTIONS = [
   { value: '7.5', label: '7.5 hours' },
   { value: '6', label: '6 hours' },
+]
+
+const DAYS_OPTIONS = [
+  { value: '1', label: '1 day' },
+  { value: '2', label: '2 days' },
+  { value: '3', label: '3 days' },
+  { value: '4', label: '4 days' },
+  { value: '5', label: '5 days' },
 ]
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
@@ -48,6 +57,7 @@ function ActCalculator() {
   const [sessionFee, setSessionFee] = useState(DEFAULTS.sessionFee)
   const [sessionStart, setSessionStart] = useState(8)
   const [sessionEnd, setSessionEnd] = useState(18)
+  const [daysPerWeek, setDaysPerWeek] = useState('3')
   const [preschoolHours, setPreschoolHours] = useState('6')
   const [preschoolStart, setPreschoolStart] = useState(8.5)
 
@@ -80,6 +90,18 @@ function ActCalculator() {
       sessionCoveredByCcs: true,
     })
   }, [ccsPercent, withholding, sessionFee, sessionStart, sessionEnd, preschoolHours])
+
+  const weeklyGaps = useMemo(() => {
+    if (!dailyResult) return null
+    return computeWeeklyGaps({
+      sessionFee: Number(sessionFee) || 0,
+      sessionHours: sessionEnd - sessionStart,
+      daysPerWeek: Number(daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      fullDailyCcs: dailyResult.ccsEntitlement,
+      dailyStateFunding: dailyResult.kindyFundingAmount,
+    })
+  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
 
   const fnProgramWeeks = Math.round(300 / (Number(fnPreschoolHours) || 6))
 
@@ -219,6 +241,12 @@ function ActCalculator() {
                         max={21}
                       />
                     </div>
+                    <SelectField
+                      label="Days per week"
+                      options={DAYS_OPTIONS}
+                      value={daysPerWeek}
+                      onChange={(e) => setDaysPerWeek(e.target.value)}
+                    />
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
                         label="Preschool program hours"
@@ -247,9 +275,20 @@ function ActCalculator() {
                       { label: `CCS Entitlement (${ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
                       { label: 'Gap Before Preschool Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
                       { label: 'Preschool Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                      { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                      ...(weeklyGaps
+                        ? [
+                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
+                          ]
+                        : [
+                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                          ]
+                      ),
                     ]}
-                    note="Assumes 1 preschool day per week. The preschool program hours are fully funded. You only pay for the care hours outside the program, minus CCS."
+                    note={weeklyGaps
+                      ? `Your ${fnCcsHours} CCS hours don't cover all ${((sessionEnd - sessionStart) * Number(daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
+                      : 'Assumes 1 preschool day per week. The preschool program hours are fully funded. You only pay for the care hours outside the program, minus CCS.'
+                    }
                   />
                 )}
               </>
