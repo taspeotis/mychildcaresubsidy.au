@@ -104,7 +104,7 @@ function RootLayout() {
           </p>
           <p>
             Federal CCS rates based on FY2025-26 (July 2025 &ndash; June 2026).
-            State and territory program rates based on calendar year 2025-26.
+            State and territory program rates based on calendar year 2026.
           </p>
         </Container>
       </footer>

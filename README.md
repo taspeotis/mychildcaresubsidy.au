@@ -18,7 +18,7 @@ A free calculator that estimates out-of-pocket child care costs for Australian f
 
 ## Rates
 
-Federal CCS rates are based on **FY2025-26** (July 2025 - June 2026). State and territory program rates are based on **calendar year 2025-26**.
+Federal CCS rates are based on **FY2025-26** (July 2025 - June 2026). State and territory program rates are based on **calendar year 2026**.
 
 This calculator provides estimates only and should not be taken as financial advice. Actual costs may vary.
 

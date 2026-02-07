@@ -270,14 +270,14 @@ function VicCalculator() {
                       title="Daily Cost Estimate"
                       detailedToggle
                       rows={[
-                        { label: 'Session Fee', value: fmt(fee) },
+                        { label: 'Session Fee', value: fmt(fee), type: 'debit' as const },
                         { label: 'Session Length', value: `${hrs} hours`, detailOnly: true },
                         { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs`, detailOnly: true },
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
-                        { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding` },
+                        { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
-                        { label: 'Free Kinder Offset', value: `– ${fmt(dailyResult.dailyOffset)}`, detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days` },
+                        { label: 'Free Kinder Offset', value: fmt(dailyResult.dailyOffset), detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days`, type: 'credit' as const },
                         ...(weeklyGaps
                           ? [
                               { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
@@ -324,9 +324,9 @@ function VicCalculator() {
                   <ResultCard
                     title="Fortnightly Total"
                     rows={[
-                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },
-                      { label: 'Total CCS Entitlement', value: `- ${fmt(fortnightlyResult.totalCcsEntitlement)}` },
-                      { label: 'Total Free Kinder Offset', value: `- ${fmt(fortnightlyResult.totalFreeKinder)}` },
+                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
+                      { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                      { label: 'Total Free Kinder Offset', value: fmt(fortnightlyResult.totalFreeKinder), type: 'credit' as const },
                       { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
                     ]}
                   />

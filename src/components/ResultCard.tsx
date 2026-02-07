@@ -9,6 +9,7 @@ interface ResultRow {
   highlight?: boolean
   muted?: boolean
   detailOnly?: boolean
+  type?: 'credit' | 'debit'
 }
 
 interface ResultCardProps {
@@ -68,10 +69,19 @@ export function ResultCard({ title, rows, note, colorScheme = 'accent', classNam
               <dd
                 className={clsx(
                   'text-sm font-bold tabular-nums',
-                  row.highlight ? (isBrand ? 'text-brand-600 text-xl' : 'text-accent-500 text-xl') : row.muted ? 'text-slate-400' : 'text-slate-900',
+                  row.highlight
+                    ? clsx('text-xl', isBrand ? 'text-brand-600' : 'text-accent-500')
+                    : row.type === 'credit'
+                      ? 'text-green-700'
+                      : row.type === 'debit'
+                        ? 'text-red-700'
+                        : row.muted
+                          ? 'text-slate-400'
+                          : 'text-slate-900',
                 )}
               >
                 {row.value}
+                {row.type && <span className="ml-1 text-xs font-normal text-slate-400">{row.type === 'credit' ? 'cr.' : 'dr.'}</span>}
               </dd>
             </div>
             {detailed && row.detail && (
