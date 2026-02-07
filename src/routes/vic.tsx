@@ -11,7 +11,8 @@ import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
-import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS } from '../calculators/vic'
+import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
+import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS } from '../config'
@@ -251,30 +252,44 @@ function VicCalculator() {
                   </div>
                 </div>
 
-                {dailyResult && (
-                  <ResultCard
-                    title="Daily Cost Estimate"
-                    rows={[
-                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
-                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                      { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), muted: true },
-                      { label: 'Free Kinder Offset', value: `- ${fmt(dailyResult.dailyOffset)}` },
-                      ...(weeklyGaps
-                        ? [
-                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                          ]
-                        : [
-                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                          ]
-                      ),
-                    ]}
-                    note={weeklyGaps
-                      ? `Your ${shared.ccsHours} CCS hours don't cover all ${((shared.sessionEnd - shared.sessionStart) * Number(shared.daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
-                      : `Based on ${fmt(dailyResult.annualOffset)}/yr offset across ${VIC_FREE_KINDER_WEEKS} weeks and ${shared.daysPerWeek} days/week (${fmt(dailyResult.weeklyOffset)}/week).`
-                    }
-                  />
-                )}
+                {dailyResult && (() => {
+                  const fee = Number(shared.sessionFee)
+                  const hrs = dailyResult.sessionHoursDecimal
+                  const hrly = dailyResult.hourlySessionFee
+                  const cap = CCS_HOURLY_RATE_CAP
+                  const ccsPct = Number(shared.ccsPercent) || 0
+                  const whPct = Number(shared.withholding) || 0
+                  const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100
+                  const net = dailyResult.ccsEntitlement
+                  const dpw = Number(shared.daysPerWeek) || 3
+                  const khrs = Number(kinderHours) || 15
+                  const baseOffset = VIC_FREE_KINDER_OFFSET[cohort]
+
+                  return (
+                    <ResultCard
+                      title="Daily Cost Estimate"
+                      rows={[
+                        { label: 'Session Fee', value: fmt(fee) },
+                        { label: 'Session Length', value: `${hrs} hours` },
+                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
+                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%` },
+                        { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding` },
+                        { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        { label: 'Free Kinder Offset', value: `– ${fmt(dailyResult.dailyOffset)}`, detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days` },
+                        ...(weeklyGaps
+                          ? [
+                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
+                            ]
+                          : [
+                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
+                            ]
+                        ),
+                      ]}
+                    />
+                  )
+                })()}
               </>
             ) : (
               <>

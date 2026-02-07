@@ -38,10 +38,10 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
         <div className="mt-5 space-y-4">
           <InputField
             label="Family adjusted taxable income"
-            hint="Combined annual income"
+            hint="Your household's combined annual income"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
-            placeholder="e.g. 120,000"
+            placeholder="e.g. 180,000"
             prefix="$"
             suffix="/yr"
             format="integer"

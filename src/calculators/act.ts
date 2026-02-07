@@ -56,6 +56,9 @@ export function calculateActDaily(inputs: DailyInputs): DailyResult {
     gapBeforeKindy,
     kindyFundingAmount,
     estimatedGapFee,
+    kindyCcsCoveredHours: ccsFundedKindyHours,
+    kindyNonCcsCoveredHours: nonCcsFundedKindyHours,
+    kindyCcsPerHour: roundTo(ccsPerHour, 4),
   }
 }
 

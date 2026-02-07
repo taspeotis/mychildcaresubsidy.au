@@ -21,6 +21,9 @@ export interface DailyResult {
   gapBeforeKindy: number
   kindyFundingAmount: number
   estimatedGapFee: number
+  kindyCcsCoveredHours?: number
+  kindyNonCcsCoveredHours?: number
+  kindyCcsPerHour?: number
 }
 
 export interface FortnightlySession {

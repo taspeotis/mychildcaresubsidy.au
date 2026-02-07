@@ -11,7 +11,8 @@ import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
-import { calculateNswDaily, calculateNswFortnightlySessions } from '../calculators/nsw'
+import { calculateNswDaily, calculateNswFortnightlySessions, NSW_FEE_RELIEF } from '../calculators/nsw'
+import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
 import { DEFAULTS } from '../config'
@@ -261,30 +262,44 @@ function NswCalculator() {
                   </div>
                 </div>
 
-                {dailyResult && (
-                  <ResultCard
-                    title="Daily Cost Estimate"
-                    rows={[
-                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
-                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                      { label: 'Gap Before Fee Relief', value: fmt(dailyResult.gapBeforeFeeRelief), muted: true },
-                      { label: `Start Strong Fee Relief`, value: `- ${fmt(dailyResult.dailyFeeRelief)}` },
-                      ...(weeklyGaps
-                        ? [
-                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                          ]
-                        : [
-                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                          ]
-                      ),
-                    ]}
-                    note={weeklyGaps
-                      ? `Your ${shared.ccsHours} CCS hours don't cover all ${((shared.sessionEnd - shared.sessionStart) * Number(shared.daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
-                      : `Based on ${fmt(dailyResult.annualFeeRelief)}/yr fee relief across ${serviceWeeks} weeks and ${shared.daysPerWeek} days/week (${fmt(dailyResult.weeklyFeeRelief)}/week).`
-                    }
-                  />
-                )}
+                {dailyResult && (() => {
+                  const fee = Number(shared.sessionFee)
+                  const hrs = dailyResult.sessionHoursDecimal
+                  const hrly = dailyResult.hourlySessionFee
+                  const cap = CCS_HOURLY_RATE_CAP
+                  const ccsPct = Number(shared.ccsPercent) || 0
+                  const whPct = Number(shared.withholding) || 0
+                  const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100
+                  const net = dailyResult.ccsEntitlement
+                  const annualRelief = NSW_FEE_RELIEF[ageGroup][feeReliefTier]
+                  const weeks = Number(serviceWeeks) || 50
+                  const dpw = Number(shared.daysPerWeek) || 3
+
+                  return (
+                    <ResultCard
+                      title="Daily Cost Estimate"
+                      rows={[
+                        { label: 'Session Fee', value: fmt(fee) },
+                        { label: 'Session Length', value: `${hrs} hours` },
+                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
+                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%` },
+                        { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding` },
+                        { label: 'Gap Before Fee Relief', value: fmt(dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        { label: 'Start Strong Fee Relief', value: `– ${fmt(dailyResult.dailyFeeRelief)}`, detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days` },
+                        ...(weeklyGaps
+                          ? [
+                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
+                            ]
+                          : [
+                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFeeRelief)} – ${fmt(dailyResult.dailyFeeRelief)}` },
+                            ]
+                        ),
+                      ]}
+                    />
+                  )
+                })()}
               </>
             ) : (
               <>

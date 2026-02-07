@@ -218,14 +218,19 @@ function DayEditModal({
             <>
               <div>
                 <label className="text-xs font-bold text-slate-700">Session fee</label>
-                <div className="relative mt-1">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-slate-400 pointer-events-none">$</span>
+                <div className="relative mt-1.5">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm text-slate-400">$</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={draft.sessionFee}
                     onChange={(e) => update({ sessionFee: e.target.value.replace(/[^0-9.]/g, '') })}
-                    className="w-full rounded-xl border border-slate-200 py-2.5 pl-8 pr-3 text-sm"
+                    className={clsx(
+                      'block w-full rounded-xl border-2 border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 shadow-sm transition-colors',
+                      colorScheme === 'brand'
+                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+                    )}
                   />
                 </div>
               </div>
@@ -236,7 +241,12 @@ function DayEditModal({
                   <select
                     value={draft.sessionStart}
                     onChange={(e) => update({ sessionStart: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 py-2.5 px-3 text-sm"
+                    className={clsx(
+                      'mt-1.5 block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition-colors',
+                      colorScheme === 'brand'
+                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+                    )}
                   >
                     {START_TIMES.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
@@ -248,7 +258,12 @@ function DayEditModal({
                   <select
                     value={draft.sessionEnd}
                     onChange={(e) => update({ sessionEnd: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 py-2.5 px-3 text-sm"
+                    className={clsx(
+                      'mt-1.5 block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition-colors',
+                      colorScheme === 'brand'
+                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+                    )}
                   >
                     {END_TIMES.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>

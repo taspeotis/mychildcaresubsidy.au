@@ -58,6 +58,9 @@ export function calculateQldDaily(inputs: DailyInputs): DailyResult {
     gapBeforeKindy: roundTo(gapBeforeKindy, 2),
     kindyFundingAmount,
     estimatedGapFee,
+    kindyCcsCoveredHours: applicableKindyFundedCcsHours,
+    kindyNonCcsCoveredHours: applicableKindyFundedNonCcsHours,
+    kindyCcsPerHour: roundTo(normalisedCcsPerHour, 4),
   }
 }
 

@@ -12,6 +12,7 @@ import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateActDaily, calculateActFortnightly, getActKindyHoursPerWeek } from '../calculators/act'
+import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
@@ -285,41 +286,70 @@ function ActCalculator() {
                   </div>
                 </div>
 
-                {dailyResult && (
-                  <ResultCard
-                    title="Daily Cost Estimate"
-                    rows={[
-                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
-                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                      { label: 'Gap Before Preschool Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
-                      { label: 'Preschool Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
-                      ...(weeklyGaps
-                        ? (hasNonPreschoolDays
-                          ? [
-                              { label: 'Preschool Day Gap (Wk 1)', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                              { label: 'Preschool Day Gap (Wk 2)', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                              { label: 'Non-preschool Day (Wk 1)', value: fmt(weeklyNonPreschoolGaps!.week1Gap), highlight: true },
-                              { label: 'Non-preschool Day (Wk 2)', value: fmt(weeklyNonPreschoolGaps!.week2Gap), highlight: true },
-                            ]
-                          : [
-                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                            ]
-                        )
-                        : (hasNonPreschoolDays
-                          ? [
-                              { label: 'Preschool Day Gap', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                              { label: 'Non-preschool Day Gap', value: fmt(dailyResult.gapBeforeKindy), highlight: true },
-                            ]
-                          : [
-                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                            ]
-                        )
-                      ),
-                    ]}
-                    note={dailyNote}
-                  />
-                )}
+                {dailyResult && (() => {
+                  const fee = Number(shared.sessionFee)
+                  const hrs = dailyResult.sessionHoursDecimal
+                  const hrly = dailyResult.hourlySessionFee
+                  const cap = CCS_HOURLY_RATE_CAP
+                  const ccsPct = Number(shared.ccsPercent) || 0
+                  const whPct = Number(shared.withholding) || 0
+                  const ccsRate = dailyResult.applicableCcsHourlyRate
+                  const net = dailyResult.ccsEntitlement
+                  const ph = Number(preschoolHours) || 6
+                  const ccsCovHrs = dailyResult.kindyCcsCoveredHours ?? ph
+                  const nonCcsCovHrs = dailyResult.kindyNonCcsCoveredHours ?? 0
+                  const ccsPerHr = dailyResult.kindyCcsPerHour ?? 0
+                  const gapPerHr = Math.max(0, hrly - ccsPerHr)
+
+                  const preschoolRows = nonCcsCovHrs > 0
+                    ? [
+                        { label: 'Preschool (CCS-covered)', value: `– ${fmt(ccsCovHrs * gapPerHr)}`, detail: `${ccsCovHrs} hrs × (${fmt(hrly)} – ${fmt(ccsPerHr)})/hr gap` },
+                        { label: 'Preschool (non-CCS)', value: `– ${fmt(nonCcsCovHrs * hrly)}`, detail: `${nonCcsCovHrs} hrs × ${fmt(hrly)}/hr (full rate)` },
+                      ]
+                    : [
+                        { label: 'Preschool Funding', value: `– ${fmt(dailyResult.kindyFundingAmount)}`, detail: `${ccsCovHrs} hrs × (${fmt(hrly)} – ${fmt(ccsPerHr)})/hr gap` },
+                      ]
+
+                  return (
+                    <ResultCard
+                      title="Daily Cost Estimate"
+                      rows={[
+                        { label: 'Session Fee', value: fmt(fee) },
+                        { label: 'Session Length', value: `${hrs} hours` },
+                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
+                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%` },
+                        { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding` },
+                        { label: 'Gap Before Preschool', value: fmt(dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        ...preschoolRows,
+                        ...(weeklyGaps
+                          ? (hasNonPreschoolDays
+                            ? [
+                                { label: 'Preschool Day Gap (Wk 1)', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                                { label: 'Preschool Day Gap (Wk 2)', value: fmt(weeklyGaps.week2Gap), highlight: true },
+                                { label: 'Non-preschool Day (Wk 1)', value: fmt(weeklyNonPreschoolGaps!.week1Gap), highlight: true },
+                                { label: 'Non-preschool Day (Wk 2)', value: fmt(weeklyNonPreschoolGaps!.week2Gap), highlight: true },
+                              ]
+                            : [
+                                { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                                { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
+                              ]
+                          )
+                          : (hasNonPreschoolDays
+                            ? [
+                                { label: 'Preschool Day Gap', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
+                                { label: 'Non-preschool Day Gap', value: fmt(dailyResult.gapBeforeKindy), highlight: true, detail: `No preschool funding on non-preschool days` },
+                              ]
+                            : [
+                                { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
+                              ]
+                          )
+                        ),
+                      ]}
+                      note={dailyNote}
+                    />
+                  )
+                })()}
               </>
             ) : (
               <>

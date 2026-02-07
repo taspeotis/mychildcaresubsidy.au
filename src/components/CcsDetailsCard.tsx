@@ -62,7 +62,7 @@ export function CcsDetailsCard({
             <label className="block text-sm font-bold text-slate-700">
               CCS hours/fortnight
             </label>
-            <p className="text-xs text-slate-500 mt-0.5">3 Day Guarantee</p>
+            <p className="text-xs text-slate-500 mt-0.5">Based on activity test</p>
             <div className="mt-auto pt-1.5">
               <ToggleGroup
                 options={[

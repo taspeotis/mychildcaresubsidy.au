@@ -284,7 +284,7 @@ function CcsCalculator() {
                         { label: 'Session Length', value: `${hrs} hours` },
                         { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
-                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `min(${fmt(hrly)}, ${fmt(cap)}) × ${shared.ccsPercent}%` },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${shared.ccsPercent}%` },
                         { label: `CCS Amount`, value: `– ${fmt(gross)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs` },
                         { label: 'Withholding', value: `– ${fmt(wh)}`, detail: `${fmt(gross)} × ${whPct}%`, muted: true },
                         { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(gross)} – ${fmt(wh)}` },
