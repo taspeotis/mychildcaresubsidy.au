@@ -47,9 +47,9 @@ export function createDefaultDays(
 function fmtTime(h: number): string {
   const hours = Math.floor(h)
   const mins = Math.round((h - hours) * 60)
-  const ampm = hours >= 12 ? 'pm' : 'am'
+  const period = hours >= 12 ? 'PM' : 'AM'
   const display = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours
-  return `${display}:${mins.toString().padStart(2, '0')}${ampm}`
+  return `${display}:${mins.toString().padStart(2, '0')} ${period}`
 }
 
 function timeOptions(min: number, max: number) {
@@ -238,37 +238,53 @@ function DayEditModal({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-700">Start</label>
-                  <select
-                    value={draft.sessionStart}
-                    onChange={(e) => update({ sessionStart: Number(e.target.value) })}
-                    className={clsx(
-                      'mt-1.5 block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition-colors',
-                      colorScheme === 'brand'
-                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
-                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
-                    )}
-                  >
-                    {START_TIMES.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+                  <div className="relative mt-1.5">
+                    <select
+                      value={draft.sessionStart}
+                      onChange={(e) => update({ sessionStart: Number(e.target.value) })}
+                      className={clsx(
+                        'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
+                        colorScheme === 'brand'
+                          ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+                          : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+                      )}
+                    >
+                      {START_TIMES.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg className="h-5 w-5 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                        <path d="M5.75 10.75L8 13L10.25 10.75" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-700">End</label>
-                  <select
-                    value={draft.sessionEnd}
-                    onChange={(e) => update({ sessionEnd: Number(e.target.value) })}
-                    className={clsx(
-                      'mt-1.5 block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 px-4 text-sm text-slate-900 shadow-sm transition-colors',
-                      colorScheme === 'brand'
-                        ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
-                        : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
-                    )}
-                  >
-                    {END_TIMES.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
+                  <div className="relative mt-1.5">
+                    <select
+                      value={draft.sessionEnd}
+                      onChange={(e) => update({ sessionEnd: Number(e.target.value) })}
+                      className={clsx(
+                        'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
+                        colorScheme === 'brand'
+                          ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+                          : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+                      )}
+                    >
+                      {END_TIMES.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg className="h-5 w-5 text-slate-400" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                        <path d="M5.75 10.75L8 13L10.25 10.75" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10.25 5.25L8 3L5.75 5.25" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -13,7 +13,6 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateNswDaily, calculateNswFortnightlySessions, NSW_FEE_RELIEF } from '../calculators/nsw'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
@@ -82,18 +81,6 @@ function NswCalculator() {
       daysPerWeek: dpw,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, ageGroup, feeReliefTier, serviceWeeks, shared.daysPerWeek])
-
-  const weeklyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: dailyResult.dailyFeeRelief,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -192,6 +179,7 @@ function NswCalculator() {
               ccsHours={shared.ccsHours}
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
+              hideCcsHours={mode === 'daily'}
             />
 
             {mode === 'daily' ? (
@@ -223,12 +211,6 @@ function NswCalculator() {
                         max={21}
                       />
                     </div>
-                    <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={shared.daysPerWeek}
-                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
-                    />
                   </div>
                 </div>
 
@@ -250,15 +232,24 @@ function NswCalculator() {
                         onChange={(e) => setFeeReliefTier(e.target.value as NswFeeReliefTier)}
                       />
                     </div>
-                    <InputField
-                      label="Service operating weeks"
-                      hint="Weeks per year your centre operates"
-                      value={serviceWeeks}
-                      onChange={(e) => setServiceWeeks(e.target.value)}
-                      type="number"
-                      min={48}
-                      max={52}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <SelectField
+                        label="Days per week"
+                        hint="For fee relief pro-rating"
+                        options={DAYS_OPTIONS}
+                        value={shared.daysPerWeek}
+                        onChange={(e) => shared.setDaysPerWeek(e.target.value)}
+                      />
+                      <InputField
+                        label="Service operating weeks"
+                        hint="Weeks per year your centre operates"
+                        value={serviceWeeks}
+                        onChange={(e) => setServiceWeeks(e.target.value)}
+                        type="number"
+                        min={48}
+                        max={52}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -288,15 +279,7 @@ function NswCalculator() {
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Fee Relief', value: fmt(dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
                         { label: 'Start Strong Fee Relief', value: fmt(dailyResult.dailyFeeRelief), detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
-                        ...(weeklyGaps
-                          ? [
-                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
-                            ]
-                          : [
-                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFeeRelief)} – ${fmt(dailyResult.dailyFeeRelief)}` },
-                            ]
-                        ),
+                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFeeRelief)} – ${fmt(dailyResult.dailyFeeRelief)}` },
                       ]}
                     />
                   )

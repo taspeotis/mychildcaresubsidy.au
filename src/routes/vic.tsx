@@ -13,7 +13,6 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
@@ -83,18 +82,6 @@ function VicCalculator() {
       daysPerWeek: dpw,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek])
-
-  const weeklyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: dailyResult.dailyOffset,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -191,6 +178,7 @@ function VicCalculator() {
               ccsHours={shared.ccsHours}
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
+              hideCcsHours={mode === 'daily'}
             />
 
             {mode === 'daily' ? (
@@ -222,12 +210,6 @@ function VicCalculator() {
                         max={21}
                       />
                     </div>
-                    <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={shared.daysPerWeek}
-                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
-                    />
                   </div>
                 </div>
 
@@ -249,6 +231,13 @@ function VicCalculator() {
                         onChange={(e) => setCohort(e.target.value as VicCohort)}
                       />
                     </div>
+                    <SelectField
+                      label="Days per week"
+                      hint="For offset pro-rating"
+                      options={DAYS_OPTIONS}
+                      value={shared.daysPerWeek}
+                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -262,7 +251,7 @@ function VicCalculator() {
                   const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100
                   const net = dailyResult.ccsEntitlement
                   const dpw = Number(shared.daysPerWeek) || 3
-                  const khrs = Number(kinderHours) || 15
+                  const khrs = kinderHoursNum
                   const baseOffset = VIC_FREE_KINDER_OFFSET[cohort]
 
                   return (
@@ -278,15 +267,7 @@ function VicCalculator() {
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
                         { label: 'Free Kinder Offset', value: fmt(dailyResult.dailyOffset), detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days`, type: 'credit' as const },
-                        ...(weeklyGaps
-                          ? [
-                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
-                            ]
-                          : [
-                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
-                            ]
-                        ),
+                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
                       ]}
                     />
                   )

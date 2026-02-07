@@ -13,7 +13,6 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
@@ -21,16 +20,6 @@ import type { FortnightlySession } from '../types'
 export const Route = createFileRoute('/qld')({
   component: QldCalculator,
 })
-
-const QLD_KINDY_HOURS_PER_FORTNIGHT = QLD_KINDY_HOURS_PER_WEEK * 2
-
-const DAYS_OPTIONS = [
-  { value: '1', label: '1 day' },
-  { value: '2', label: '2 days' },
-  { value: '3', label: '3 days' },
-  { value: '4', label: '4 days' },
-  { value: '5', label: '5 days' },
-]
 
 const KINDY_PROGRAM_OPTIONS = [
   { value: '7.5', label: '7.5 hours' },
@@ -88,30 +77,6 @@ function QldCalculator() {
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, kindyHours])
 
-  const weeklyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: dailyResult.kindyFundingAmount,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
-
-  const weeklyNonKindyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: 0,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
-
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
     const wh = Number(shared.withholding) || 0
@@ -149,26 +114,6 @@ function QldCalculator() {
         gapFee: s.estimatedGapFee,
       }))
     : null
-
-  const kindyHoursNum = Number(kindyHours) || 7.5
-  const dpw = Number(shared.daysPerWeek) || 3
-  const kindyDaysPerFortnight = Math.round(QLD_KINDY_HOURS_PER_FORTNIGHT / kindyHoursNum)
-  const kindyDaysWk1 = Math.min(Math.floor(kindyDaysPerFortnight / 2), dpw)
-  const kindyDaysWk2 = Math.min(kindyDaysPerFortnight - Math.floor(kindyDaysPerFortnight / 2), dpw)
-  const hasNonKindyDays = (dpw - kindyDaysWk1) > 0 || (dpw - kindyDaysWk2) > 0
-
-  const dailyNote = (() => {
-    if (!dailyResult) return ''
-    const totalHrs = ((shared.sessionEnd - shared.sessionStart) * dpw * 2).toFixed(0)
-    const ccsWarning = `Your ${shared.ccsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
-    const kindySplit = kindyDaysWk1 === kindyDaysWk2
-      ? `${kindyDaysWk1} kindy + ${dpw - kindyDaysWk1} non-kindy days per week`
-      : `${kindyDaysWk1} kindy days in week 1, ${kindyDaysWk2} in week 2`
-    if (weeklyGaps && hasNonKindyDays) return `${ccsWarning} ${kindySplit}.`
-    if (weeklyGaps) return `${ccsWarning} Week 2 has reduced CCS coverage.`
-    if (hasNonKindyDays) return `${kindySplit}. Non-kindy days have no Free Kindy funding.`
-    return `Based on ${kindyHoursNum} hrs/day kindy program, ${QLD_KINDY_HOURS_PER_WEEK} hrs/week funded.`
-  })()
 
   return (
     <>
@@ -233,6 +178,7 @@ function QldCalculator() {
               ccsHours={shared.ccsHours}
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
+              hideCcsHours={mode === 'daily'}
             />
 
             {mode === 'daily' ? (
@@ -264,29 +210,27 @@ function QldCalculator() {
                         max={21}
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Free Kindy Details</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={shared.daysPerWeek}
-                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
+                      label="Kindy program hours"
+                      hint="Hours per day"
+                      options={KINDY_PROGRAM_OPTIONS}
+                      value={kindyHours}
+                      onChange={(e) => setKindyHours(e.target.value)}
                     />
-                    <div className="grid grid-cols-2 gap-4">
-                      <SelectField
-                        label="Kindy program hours"
-                        hint="Hours per day"
-                        options={KINDY_PROGRAM_OPTIONS}
-                        value={kindyHours}
-                        onChange={(e) => setKindyHours(e.target.value)}
-                      />
-                      <TimePicker
-                        label="Kindy start time"
-                        hint="When the kindy program starts"
-                        value={kindyStart}
-                        onChange={setKindyStart}
-                        min={7}
-                        max={12}
-                      />
-                    </div>
+                    <TimePicker
+                      label="Kindy start time"
+                      hint="When the kindy program starts"
+                      value={kindyStart}
+                      onChange={setKindyStart}
+                      min={7}
+                      max={12}
+                    />
                   </div>
                 </div>
 
@@ -313,6 +257,7 @@ function QldCalculator() {
                     <ResultCard
                       title="Daily Cost Estimate"
                       detailedToggle
+                      note={`Based on a kindy day with ${kh} hrs of funded program. ${QLD_KINDY_HOURS_PER_WEEK} hrs/week funded. Use the fortnightly calculator for non-kindy days or if your CCS hours run short.`}
                       rows={[
                         { label: 'Session Fee', value: fmt(fee), type: 'debit' as const },
                         { label: 'Session Length', value: `${hrs} hours`, detailOnly: true },
@@ -322,31 +267,8 @@ function QldCalculator() {
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Free Kindy', value: fmt(dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
                         { label: 'Free Kindy Funding', value: fmt(dailyResult.kindyFundingAmount), detail: kindyDetail, type: 'credit' as const },
-                        ...(weeklyGaps
-                          ? (hasNonKindyDays
-                            ? [
-                                { label: 'Kindy Day Gap (Wk 1)', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                                { label: 'Kindy Day Gap (Wk 2)', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                                { label: 'Non-kindy Day (Wk 1)', value: fmt(weeklyNonKindyGaps!.week1Gap), highlight: true },
-                                { label: 'Non-kindy Day (Wk 2)', value: fmt(weeklyNonKindyGaps!.week2Gap), highlight: true },
-                              ]
-                            : [
-                                { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                                { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
-                              ]
-                          )
-                          : (hasNonKindyDays
-                            ? [
-                                { label: 'Kindy Day Gap', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
-                                { label: 'Non-kindy Day Gap', value: fmt(dailyResult.gapBeforeKindy), highlight: true, detail: `No Free Kindy funding on non-kindy days` },
-                              ]
-                            : [
-                                { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
-                              ]
-                          )
-                        ),
+                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
                       ]}
-                      note={dailyNote}
                     />
                   )
                 })()}

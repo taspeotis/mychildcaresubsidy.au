@@ -11,6 +11,7 @@ interface CcsDetailsCardProps {
   onCcsHoursChange: (value: string) => void
   onOpenCcsModal: () => void
   colorScheme?: ColorScheme
+  hideCcsHours?: boolean
 }
 
 export function CcsDetailsCard({
@@ -22,6 +23,7 @@ export function CcsDetailsCard({
   onCcsHoursChange,
   onOpenCcsModal,
   colorScheme = 'accent',
+  hideCcsHours,
 }: CcsDetailsCardProps) {
   return (
     <div className="rounded-2xl card-glass p-8">
@@ -46,7 +48,7 @@ export function CcsDetailsCard({
             Don't know your CCS %? Calculate it
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        {hideCcsHours ? (
           <InputField
             label="CCS withholding"
             value={withholding}
@@ -58,28 +60,44 @@ export function CcsDetailsCard({
             max={100}
             colorScheme={colorScheme}
           />
-          <div className="flex flex-col">
-            <label className="block text-sm font-bold text-slate-700">
-              CCS hours/fortnight
-            </label>
-            <p className="text-xs text-slate-500 mt-0.5">Based on activity test</p>
-            <div className="mt-auto pt-1.5">
-              <ToggleGroup
-                options={[
-                  { value: '72', label: '72 hrs' },
-                  { value: '100', label: '100 hrs' },
-                ]}
-                value={ccsHours}
-                onChange={onCcsHoursChange}
-                variant="light"
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="CCS withholding"
+                value={withholding}
+                onChange={(e) => onWithholdingChange(e.target.value)}
+                hint="Usually 5%"
+                format="integer"
+                suffix="%"
+                min={0}
+                max={100}
                 colorScheme={colorScheme}
               />
+              <div className="flex flex-col">
+                <label className="block text-sm font-bold text-slate-700">
+                  CCS hours/fortnight
+                </label>
+                <p className="text-xs text-slate-500 mt-0.5">Based on activity test</p>
+                <div className="mt-auto pt-1.5">
+                  <ToggleGroup
+                    options={[
+                      { value: '72', label: '72 hrs' },
+                      { value: '100', label: '100 hrs' },
+                    ]}
+                    value={ccsHours}
+                    onChange={onCcsHoursChange}
+                    variant="light"
+                    colorScheme={colorScheme}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <p className="text-xs text-slate-500">
-          All families get 72 hrs/fortnight. 100 hrs if both parents do 48+ hrs of recognised activity per fortnight.
-        </p>
+            <p className="text-xs text-slate-500">
+              All families get 72 hrs/fortnight. 100 hrs if both parents do 48+ hrs of recognised activity per fortnight.
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

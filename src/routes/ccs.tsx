@@ -13,7 +13,6 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateCcsDaily, calculateCcsFortnightly, getHourlyRateCap } from '../calculators/ccsCalculator'
 import type { CareType } from '../calculators/ccsCalculator'
-import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
@@ -31,14 +30,6 @@ const CARE_TYPE_OPTIONS = [
 const CHILD_AGE_OPTIONS = [
   { value: 'below', label: 'Below school age' },
   { value: 'school', label: 'School age' },
-]
-
-const DAYS_OPTIONS = [
-  { value: '1', label: '1 day' },
-  { value: '2', label: '2 days' },
-  { value: '3', label: '3 days' },
-  { value: '4', label: '4 days' },
-  { value: '5', label: '5 days' },
 ]
 
 function fmt(n: number): string {
@@ -82,18 +73,6 @@ function CcsCalculator() {
       schoolAge: effectiveSchoolAge,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, careType, effectiveSchoolAge])
-
-  const weeklyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: 0,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -193,6 +172,7 @@ function CcsCalculator() {
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
               colorScheme="brand"
+              hideCcsHours={mode === 'daily'}
             />
 
             {mode === 'daily' ? (
@@ -227,13 +207,6 @@ function CcsCalculator() {
                         colorScheme="brand"
                       />
                     </div>
-                    <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={shared.daysPerWeek}
-                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
-                      colorScheme="brand"
-                    />
                   </div>
                 </div>
 
@@ -289,15 +262,7 @@ function CcsCalculator() {
                         { label: 'CCS Amount', value: fmt(gross), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs`, type: 'credit' as const },
                         { label: 'Withholding', value: fmt(wh), detail: `${fmt(gross)} × ${whPct}%`, type: 'debit' as const },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(gross)} – ${fmt(wh)}`, type: 'credit' as const },
-                        ...(weeklyGaps
-                          ? [
-                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
-                            ]
-                          : [
-                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(fee)} – ${fmt(net)}` },
-                            ]
-                        ),
+                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(fee)} – ${fmt(net)}` },
                       ]}
                     />
                   )

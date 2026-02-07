@@ -13,7 +13,6 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateActDaily, calculateActFortnightly, getActKindyHoursPerWeek } from '../calculators/act'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { computeWeeklyGaps } from '../calculators/ccsWeekly'
 import { DEFAULTS } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
@@ -25,14 +24,6 @@ export const Route = createFileRoute('/act')({
 const PRESCHOOL_OPTIONS = [
   { value: '7.5', label: '7.5 hours' },
   { value: '6', label: '6 hours' },
-]
-
-const DAYS_OPTIONS = [
-  { value: '1', label: '1 day' },
-  { value: '2', label: '2 days' },
-  { value: '3', label: '3 days' },
-  { value: '4', label: '4 days' },
-  { value: '5', label: '5 days' },
 ]
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
@@ -85,30 +76,6 @@ function ActCalculator() {
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, preschoolHours])
 
-  const weeklyGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: dailyResult.kindyFundingAmount,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
-
-  const weeklyNonPreschoolGaps = useMemo(() => {
-    if (!dailyResult) return null
-    return computeWeeklyGaps({
-      sessionFee: Number(shared.sessionFee) || 0,
-      sessionHours: shared.sessionEnd - shared.sessionStart,
-      daysPerWeek: Number(shared.daysPerWeek) || 3,
-      ccsHoursPerFortnight: Number(shared.ccsHours) || 72,
-      fullDailyCcs: dailyResult.ccsEntitlement,
-      dailyStateFunding: 0,
-    })
-  }, [dailyResult, shared.sessionFee, shared.sessionStart, shared.sessionEnd, shared.daysPerWeek, shared.ccsHours])
-
   const fnProgramWeeks = Math.round(300 / (Number(fnPreschoolHours) || 6))
 
   const fortnightlyResult = useMemo(() => {
@@ -152,19 +119,6 @@ function ActCalculator() {
     : null
 
   const kindyHoursPerWeek = getActKindyHoursPerWeek(fnProgramWeeks)
-
-  const dpw = Number(shared.daysPerWeek) || 3
-  const hasNonPreschoolDays = dpw > 1
-
-  const dailyNote = (() => {
-    if (!dailyResult) return ''
-    const totalHrs = ((shared.sessionEnd - shared.sessionStart) * dpw * 2).toFixed(0)
-    const ccsWarning = `Your ${shared.ccsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
-    if (weeklyGaps && hasNonPreschoolDays) return `${ccsWarning} 1 preschool + ${dpw - 1} non-preschool days per week.`
-    if (weeklyGaps) return `${ccsWarning} Week 2 has reduced CCS coverage.`
-    if (hasNonPreschoolDays) return `1 preschool + ${dpw - 1} non-preschool days per week. Non-preschool days have no preschool funding.`
-    return 'Assumes 1 preschool day per week. The preschool program hours are fully funded.'
-  })()
 
   return (
     <>
@@ -229,6 +183,7 @@ function ActCalculator() {
               ccsHours={shared.ccsHours}
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
+              hideCcsHours={mode === 'daily'}
             />
 
             {mode === 'daily' ? (
@@ -260,29 +215,27 @@ function ActCalculator() {
                         max={21}
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Preschool Details</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Days per week"
-                      options={DAYS_OPTIONS}
-                      value={shared.daysPerWeek}
-                      onChange={(e) => shared.setDaysPerWeek(e.target.value)}
+                      label="Preschool program hours"
+                      hint="Hours per day"
+                      options={PRESCHOOL_OPTIONS}
+                      value={preschoolHours}
+                      onChange={(e) => setPreschoolHours(e.target.value)}
                     />
-                    <div className="grid grid-cols-2 gap-4">
-                      <SelectField
-                        label="Preschool program hours"
-                        hint="Hours per day"
-                        options={PRESCHOOL_OPTIONS}
-                        value={preschoolHours}
-                        onChange={(e) => setPreschoolHours(e.target.value)}
-                      />
-                      <TimePicker
-                        label="Preschool start time"
-                        hint="When the program starts"
-                        value={preschoolStart}
-                        onChange={setPreschoolStart}
-                        min={7}
-                        max={12}
-                      />
-                    </div>
+                    <TimePicker
+                      label="Preschool start time"
+                      hint="When the program starts"
+                      value={preschoolStart}
+                      onChange={setPreschoolStart}
+                      min={7}
+                      max={12}
+                    />
                   </div>
                 </div>
 
@@ -309,6 +262,7 @@ function ActCalculator() {
                     <ResultCard
                       title="Daily Cost Estimate"
                       detailedToggle
+                      note={`Based on a preschool day with ${ph} hrs of funded program. Use the fortnightly calculator for non-preschool days or if your CCS hours run short.`}
                       rows={[
                         { label: 'Session Fee', value: fmt(fee), type: 'debit' as const },
                         { label: 'Session Length', value: `${hrs} hours`, detailOnly: true },
@@ -318,31 +272,8 @@ function ActCalculator() {
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Preschool', value: fmt(dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
                         { label: 'Preschool Funding', value: fmt(dailyResult.kindyFundingAmount), detail: preschoolDetail, type: 'credit' as const },
-                        ...(weeklyGaps
-                          ? (hasNonPreschoolDays
-                            ? [
-                                { label: 'Preschool Day Gap (Wk 1)', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                                { label: 'Preschool Day Gap (Wk 2)', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                                { label: 'Non-preschool Day (Wk 1)', value: fmt(weeklyNonPreschoolGaps!.week1Gap), highlight: true },
-                                { label: 'Non-preschool Day (Wk 2)', value: fmt(weeklyNonPreschoolGaps!.week2Gap), highlight: true },
-                              ]
-                            : [
-                                { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                                { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
-                              ]
-                          )
-                          : (hasNonPreschoolDays
-                            ? [
-                                { label: 'Preschool Day Gap', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
-                                { label: 'Non-preschool Day Gap', value: fmt(dailyResult.gapBeforeKindy), highlight: true, detail: `No preschool funding on non-preschool days` },
-                              ]
-                            : [
-                                { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
-                              ]
-                          )
-                        ),
+                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
                       ]}
-                      note={dailyNote}
                     />
                   )
                 })()}
