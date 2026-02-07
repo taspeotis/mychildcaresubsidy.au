@@ -1,4 +1,5 @@
 import { InputField } from './InputField'
+import { ToggleGroup } from './ToggleGroup'
 
 interface CcsDetailsCardProps {
   ccsPercent: string
@@ -57,29 +58,16 @@ export function CcsDetailsCard({
               CCS hours/fortnight
             </label>
             <p className="text-xs text-slate-500 mt-0.5">3 Day Guarantee</p>
-            <div className="mt-auto pt-1.5 flex gap-2">
-              <button
-                type="button"
-                onClick={() => onCcsHoursChange('72')}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                  ccsHours === '72'
-                    ? 'bg-accent-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                72 hrs
-              </button>
-              <button
-                type="button"
-                onClick={() => onCcsHoursChange('100')}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                  ccsHours === '100'
-                    ? 'bg-accent-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                100 hrs
-              </button>
+            <div className="mt-auto pt-1.5">
+              <ToggleGroup
+                options={[
+                  { value: '72', label: '72 hrs' },
+                  { value: '100', label: '100 hrs' },
+                ]}
+                value={ccsHours}
+                onChange={onCcsHoursChange}
+                variant="light"
+              />
             </div>
           </div>
         </div>

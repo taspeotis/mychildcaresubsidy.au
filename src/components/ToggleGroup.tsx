@@ -5,10 +5,11 @@ interface ToggleGroupProps {
   options: { value: string; label: string }[]
   value: string
   onChange: (value: string) => void
+  variant?: 'dark' | 'light'
   className?: string
 }
 
-export function ToggleGroup({ options, value, onChange, className }: ToggleGroupProps) {
+export function ToggleGroup({ options, value, onChange, variant = 'dark', className }: ToggleGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
   const mounted = useRef(false)
@@ -58,7 +59,11 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
   }, [])
 
   return (
-    <div ref={containerRef} className={clsx('relative flex rounded-xl bg-white/10 p-1.5', className)}>
+    <div ref={containerRef} className={clsx(
+      'relative flex rounded-xl p-1.5',
+      variant === 'dark' ? 'bg-white/10' : 'bg-slate-100',
+      className,
+    )}>
       <div
         ref={pillRef}
         className="absolute top-1.5 h-[calc(100%-12px)] rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 shadow-md transition-all duration-300 ease-out"
@@ -74,7 +79,9 @@ export function ToggleGroup({ options, value, onChange, className }: ToggleGroup
             'relative z-10 flex-1 rounded-lg px-5 py-2 text-center text-sm font-bold transition-colors duration-200',
             value === option.value
               ? 'text-white'
-              : 'text-white/60 hover:text-white',
+              : variant === 'dark'
+                ? 'text-white/60 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900',
           )}
         >
           {option.label}
