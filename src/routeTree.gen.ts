@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VicRouteImport } from './routes/vic'
 import { Route as QldRouteImport } from './routes/qld'
 import { Route as NswRouteImport } from './routes/nsw'
+import { Route as CcsRouteImport } from './routes/ccs'
 import { Route as ActRouteImport } from './routes/act'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const NswRoute = NswRouteImport.update({
   path: '/nsw',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CcsRoute = CcsRouteImport.update({
+  id: '/ccs',
+  path: '/ccs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActRoute = ActRouteImport.update({
   id: '/act',
   path: '/act',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
+  '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/vic': typeof VicRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
+  '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/vic': typeof VicRoute
@@ -59,21 +67,23 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/act': typeof ActRoute
+  '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/vic': typeof VicRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/act' | '/nsw' | '/qld' | '/vic'
+  fullPaths: '/' | '/act' | '/ccs' | '/nsw' | '/qld' | '/vic'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/act' | '/nsw' | '/qld' | '/vic'
-  id: '__root__' | '/' | '/act' | '/nsw' | '/qld' | '/vic'
+  to: '/' | '/act' | '/ccs' | '/nsw' | '/qld' | '/vic'
+  id: '__root__' | '/' | '/act' | '/ccs' | '/nsw' | '/qld' | '/vic'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActRoute: typeof ActRoute
+  CcsRoute: typeof CcsRoute
   NswRoute: typeof NswRoute
   QldRoute: typeof QldRoute
   VicRoute: typeof VicRoute
@@ -102,6 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NswRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ccs': {
+      id: '/ccs'
+      path: '/ccs'
+      fullPath: '/ccs'
+      preLoaderRoute: typeof CcsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/act': {
       id: '/act'
       path: '/act'
@@ -122,6 +139,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActRoute: ActRoute,
+  CcsRoute: CcsRoute,
   NswRoute: NswRoute,
   QldRoute: QldRoute,
   VicRoute: VicRoute,

@@ -5,7 +5,7 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
-const PROGRAMS = [
+const STATE_PROGRAMS = [
   {
     to: '/act',
     state: 'ACT',
@@ -54,24 +54,51 @@ function HomePage() {
         <Container className="pt-20 pb-14 sm:pt-28 sm:pb-20">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              What will <span className="text-accent-400">kindy</span> cost you?
+              What will <span className="text-accent-400">child care</span> cost you?
             </h1>
             <p className="mt-5 text-lg text-white/80">
               A simple calculator to estimate your out-of-pocket child care costs,
               factoring in the federal Child Care Subsidy and your state or territory's kindy funding.
             </p>
             <p className="mt-3 text-base text-white/70">
-              Select your state or territory below to get started.
+              Start with the CCS calculator, or select your state or territory program below.
             </p>
           </div>
         </Container>
       </div>
 
-      <Container className="-mt-2 sm:mt-0">
+      <Container className="-mt-2 sm:mt-0 space-y-8">
+        {/* Federal CCS Calculator - prominent card */}
+        <Link
+          to="/ccs"
+          className="group block rounded-2xl card-glass p-6 sm:p-8 border-l-4 border-l-accent-500 transition-all hover:shadow-lg"
+        >
+          <div className="flex items-center gap-4">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-lg">
+              CCS
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl font-bold text-slate-900 group-hover:text-accent-500 transition-colors">
+                Child Care Subsidy Calculator
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Estimate your federal CCS entitlement for centre-based day care, family day care, or outside school hours care (OSHC). Supports all ages including school-age children.
+              </p>
+            </div>
+            <svg className="h-6 w-6 shrink-0 text-slate-300 transition-all group-hover:text-accent-500 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </div>
+        </Link>
+
+        {/* State/territory calculators */}
         <div className="rounded-2xl card-glass p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-slate-900">Calculators</h2>
+          <h2 className="text-xl font-bold text-slate-900">State &amp; Territory Programs</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            These calculators combine your CCS with state or territory kindy and preschool programs.
+          </p>
           <div className="mt-4 divide-y divide-slate-100">
-            {PROGRAMS.map((p) => (
+            {STATE_PROGRAMS.map((p) => (
               <Link
                 key={p.to}
                 to={p.to}
@@ -97,7 +124,7 @@ function HomePage() {
           </div>
         </div>
 
-        <div className="mt-12 rounded-2xl card-glass p-8">
+        <div className="rounded-2xl card-glass p-8">
           <h2 className="text-xl font-bold text-slate-900">How Does It Work?</h2>
           <div className="mt-5 grid gap-8 md:grid-cols-3">
             <div>
@@ -113,9 +140,9 @@ function HomePage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-sm font-bold text-white shadow-md">
                 2
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900">State Kindy Funding</h3>
+              <h3 className="mt-3 text-base font-bold text-slate-900">State &amp; Territory Funding</h3>
               <p className="mt-1 text-sm text-slate-600">
-                Your state or territory provides additional funding to cover the kindergarten program hours, making them free for families.
+                Your state or territory may provide additional funding to cover the kindergarten program hours, further reducing your costs.
               </p>
             </div>
             <div>
@@ -124,7 +151,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Your Gap Fee</h3>
               <p className="mt-1 text-sm text-slate-600">
-                You only pay for the hours of care outside the kindy program, minus your CCS entitlement. This calculator shows you that gap.
+                You only pay the remaining amount after CCS and any state or territory funding are applied. These calculators show you that gap.
               </p>
             </div>
           </div>
