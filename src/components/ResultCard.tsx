@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import clsx from 'clsx'
 import type { ColorScheme } from '../types'
 
@@ -7,6 +8,7 @@ interface ResultRow {
   detail?: string
   highlight?: boolean
   muted?: boolean
+  detailOnly?: boolean
 }
 
 interface ResultCardProps {
@@ -15,15 +17,49 @@ interface ResultCardProps {
   note?: string
   colorScheme?: ColorScheme
   className?: string
+  detailedToggle?: boolean
 }
 
-export function ResultCard({ title, rows, note, colorScheme = 'accent', className }: ResultCardProps) {
+export function ResultCard({ title, rows, note, colorScheme = 'accent', className, detailedToggle }: ResultCardProps) {
+  const [detailed, setDetailed] = useState(false)
   const isBrand = colorScheme === 'brand'
+  const visibleRows = detailed ? rows : rows.filter((r) => !r.detailOnly)
+
   return (
     <div className={clsx('rounded-2xl card-glass p-8 border-t-[3px]', isBrand ? 'border-t-brand-600' : 'border-t-accent-500', className)}>
-      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+        {detailedToggle && (
+          <div className="flex rounded-lg bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setDetailed(false)}
+              className={clsx(
+                'rounded-md px-3 py-1 text-xs font-bold transition-colors',
+                !detailed
+                  ? clsx('text-white shadow-sm', isBrand ? 'bg-brand-600' : 'bg-accent-500')
+                  : 'text-slate-500 hover:text-slate-700',
+              )}
+            >
+              Simple
+            </button>
+            <button
+              type="button"
+              onClick={() => setDetailed(true)}
+              className={clsx(
+                'rounded-md px-3 py-1 text-xs font-bold transition-colors',
+                detailed
+                  ? clsx('text-white shadow-sm', isBrand ? 'bg-brand-600' : 'bg-accent-500')
+                  : 'text-slate-500 hover:text-slate-700',
+              )}
+            >
+              Detailed
+            </button>
+          </div>
+        )}
+      </div>
       <dl className="mt-5 divide-y divide-slate-100">
-        {rows.map((row) => (
+        {visibleRows.map((row) => (
           <div key={row.label} className="py-3">
             <div className="flex items-center justify-between">
               <dt className={clsx('text-sm', row.muted ? 'text-slate-400' : 'text-slate-700')}>
@@ -38,7 +74,7 @@ export function ResultCard({ title, rows, note, colorScheme = 'accent', classNam
                 {row.value}
               </dd>
             </div>
-            {row.detail && (
+            {detailed && row.detail && (
               <p className="mt-0.5 text-xs text-slate-400">{row.detail}</p>
             )}
           </div>

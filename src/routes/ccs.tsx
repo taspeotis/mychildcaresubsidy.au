@@ -279,12 +279,13 @@ function CcsCalculator() {
                     <ResultCard
                       colorScheme="brand"
                       title="Daily Cost Estimate"
+                      detailedToggle
                       rows={[
                         { label: 'Session Fee', value: fmt(fee) },
-                        { label: 'Session Length', value: `${hrs} hours` },
-                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
-                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
-                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${shared.ccsPercent}%` },
+                        { label: 'Session Length', value: `${hrs} hours`, detailOnly: true },
+                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs`, detailOnly: true },
+                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${shared.ccsPercent}%`, detailOnly: true },
                         { label: `CCS Amount`, value: `– ${fmt(gross)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs` },
                         { label: 'Withholding', value: `– ${fmt(wh)}`, detail: `${fmt(gross)} × ${whPct}%`, muted: true },
                         { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(gross)} – ${fmt(wh)}` },
