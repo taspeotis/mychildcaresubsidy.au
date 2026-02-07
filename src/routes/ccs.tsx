@@ -264,29 +264,43 @@ function CcsCalculator() {
                   </div>
                 </div>
 
-                {dailyResult && (
-                  <ResultCard
-                    colorScheme="brand"
-                    title="Daily Cost Estimate"
-                    rows={[
-                      { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
-                      { label: `CCS Entitlement (${shared.ccsPercent}%)`, value: `- ${fmt(dailyResult.ccsEntitlement)}` },
-                      ...(weeklyGaps
-                        ? [
-                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                          ]
-                        : [
-                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                          ]
-                      ),
-                    ]}
-                    note={weeklyGaps
-                      ? `Your ${shared.ccsHours} CCS hours don't cover all ${((shared.sessionEnd - shared.sessionStart) * Number(shared.daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
-                      : `Based on ${fmt(hourlyRateCap)}/hr rate cap. ${dailyResult.hourlySessionFee > hourlyRateCap ? 'Your hourly fee exceeds the cap, so CCS is calculated on the capped rate.' : 'Your hourly fee is within the rate cap.'}`
-                    }
-                  />
-                )}
+                {dailyResult && (() => {
+                  const fee = Number(shared.sessionFee)
+                  const hrs = dailyResult.sessionHours
+                  const hrly = dailyResult.hourlySessionFee
+                  const cap = dailyResult.hourlyRateCap
+                  const ccsRate = dailyResult.ccsHourlyRate
+                  const gross = dailyResult.ccsAmount
+                  const wh = dailyResult.ccsWithholding
+                  const net = dailyResult.ccsEntitlement
+                  const whPct = Number(shared.withholding) || 0
+
+                  return (
+                    <ResultCard
+                      colorScheme="brand"
+                      title="Daily Cost Estimate"
+                      rows={[
+                        { label: 'Session Fee', value: fmt(fee) },
+                        { label: 'Session Length', value: `${hrs} hours` },
+                        { label: 'Hourly Rate', value: `${fmt(hrly)}/hr`, detail: `${fmt(fee)} ÷ ${hrs} hrs` },
+                        { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap` },
+                        { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `min(${fmt(hrly)}, ${fmt(cap)}) × ${shared.ccsPercent}%` },
+                        { label: `CCS Amount`, value: `– ${fmt(gross)}`, detail: `${fmt(ccsRate)}/hr × ${hrs} hrs` },
+                        { label: 'Withholding', value: `– ${fmt(wh)}`, detail: `${fmt(gross)} × ${whPct}%`, muted: true },
+                        { label: 'CCS Entitlement', value: `– ${fmt(net)}`, detail: `${fmt(gross)} – ${fmt(wh)}` },
+                        ...(weeklyGaps
+                          ? [
+                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true, detail: `CCS hours exhausted partway through fortnight` },
+                            ]
+                          : [
+                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(fee)} – ${fmt(net)}` },
+                            ]
+                        ),
+                      ]}
+                    />
+                  )
+                })()}
               </>
             ) : (
               <>
