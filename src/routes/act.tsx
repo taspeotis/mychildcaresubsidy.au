@@ -103,6 +103,18 @@ function ActCalculator() {
     })
   }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
 
+  const weeklyNonPreschoolGaps = useMemo(() => {
+    if (!dailyResult) return null
+    return computeWeeklyGaps({
+      sessionFee: Number(sessionFee) || 0,
+      sessionHours: sessionEnd - sessionStart,
+      daysPerWeek: Number(daysPerWeek) || 3,
+      ccsHoursPerFortnight: Number(fnCcsHours) || 72,
+      fullDailyCcs: dailyResult.ccsEntitlement,
+      dailyStateFunding: 0,
+    })
+  }, [dailyResult, sessionFee, sessionStart, sessionEnd, daysPerWeek, fnCcsHours])
+
   const fnProgramWeeks = Math.round(300 / (Number(fnPreschoolHours) || 6))
 
   const fortnightlyResult = useMemo(() => {
@@ -146,6 +158,19 @@ function ActCalculator() {
     : null
 
   const kindyHoursPerWeek = getActKindyHoursPerWeek(fnProgramWeeks)
+
+  const dpw = Number(daysPerWeek) || 3
+  const hasNonPreschoolDays = dpw > 1
+
+  const dailyNote = (() => {
+    if (!dailyResult) return ''
+    const totalHrs = ((sessionEnd - sessionStart) * dpw * 2).toFixed(0)
+    const ccsWarning = `Your ${fnCcsHours} CCS hours don't cover all ${totalHrs} session hours in the fortnight.`
+    if (weeklyGaps && hasNonPreschoolDays) return `${ccsWarning} 1 preschool + ${dpw - 1} non-preschool days per week.`
+    if (weeklyGaps) return `${ccsWarning} Week 2 has reduced CCS coverage.`
+    if (hasNonPreschoolDays) return `1 preschool + ${dpw - 1} non-preschool days per week. Non-preschool days have no preschool funding.`
+    return 'Assumes 1 preschool day per week. The preschool program hours are fully funded.'
+  })()
 
   return (
     <>
@@ -276,19 +301,30 @@ function ActCalculator() {
                       { label: 'Gap Before Preschool Funding', value: fmt(dailyResult.gapBeforeKindy), muted: true },
                       { label: 'Preschool Funding', value: `- ${fmt(dailyResult.kindyFundingAmount)}` },
                       ...(weeklyGaps
-                        ? [
-                            { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
-                            { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
-                          ]
-                        : [
-                            { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
-                          ]
+                        ? (hasNonPreschoolDays
+                          ? [
+                              { label: 'Preschool Day Gap (Wk 1)', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                              { label: 'Preschool Day Gap (Wk 2)', value: fmt(weeklyGaps.week2Gap), highlight: true },
+                              { label: 'Non-preschool Day (Wk 1)', value: fmt(weeklyNonPreschoolGaps!.week1Gap), highlight: true },
+                              { label: 'Non-preschool Day (Wk 2)', value: fmt(weeklyNonPreschoolGaps!.week2Gap), highlight: true },
+                            ]
+                          : [
+                              { label: 'Week 1 Daily Gap', value: fmt(weeklyGaps.week1Gap), highlight: true },
+                              { label: 'Week 2 Daily Gap', value: fmt(weeklyGaps.week2Gap), highlight: true },
+                            ]
+                        )
+                        : (hasNonPreschoolDays
+                          ? [
+                              { label: 'Preschool Day Gap', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                              { label: 'Non-preschool Day Gap', value: fmt(dailyResult.gapBeforeKindy), highlight: true },
+                            ]
+                          : [
+                              { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true },
+                            ]
+                        )
                       ),
                     ]}
-                    note={weeklyGaps
-                      ? `Your ${fnCcsHours} CCS hours don't cover all ${((sessionEnd - sessionStart) * Number(daysPerWeek) * 2).toFixed(0)} session hours in the fortnight. Week 2 has reduced CCS coverage.`
-                      : 'Assumes 1 preschool day per week. The preschool program hours are fully funded. You only pay for the care hours outside the program, minus CCS.'
-                    }
+                    note={dailyNote}
                   />
                 )}
               </>
