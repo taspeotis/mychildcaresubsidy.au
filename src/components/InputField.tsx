@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import clsx from 'clsx'
+import type { ColorScheme } from '../types'
 
 type InputFormat = 'currency' | 'integer' | 'percent'
 
@@ -10,6 +11,7 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   suffix?: string
   error?: string
   format?: InputFormat
+  colorScheme?: ColorScheme
 }
 
 const NUMERIC_PATTERN: Record<InputFormat, RegExp> = {
@@ -34,7 +36,7 @@ function formatOnBlur(value: string, fmt: InputFormat, min?: number, max?: numbe
   }
 }
 
-export function InputField({ label, hint, prefix, suffix, error, format: fmt, className, id, onBlur, onChange, min, max, ...props }: InputFieldProps) {
+export function InputField({ label, hint, prefix, suffix, error, format: fmt, colorScheme = 'accent', className, id, onBlur, onChange, min, max, ...props }: InputFieldProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   const isTextMode = !!fmt
   const numMin = min != null ? Number(min) : undefined
@@ -73,7 +75,9 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, cl
           className={clsx(
             'block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition-colors',
             'placeholder:text-slate-400',
-            'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+            colorScheme === 'brand'
+              ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+              : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
             error ? 'border-red-300' : 'border-slate-200',
             prefix && 'pl-10',
             suffix && 'pr-14',

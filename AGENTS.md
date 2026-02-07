@@ -44,9 +44,23 @@ Annual offset model. A flat annual offset ($2,101 standard / $2,693 priority coh
 
 ### Colour scheme
 
-Purple brand palette (`brand-50` to `brand-950`, primary `#63198e`) for backgrounds. Orange accent palette (`accent-50` to `accent-950`, primary `#f44e27`) for highlights, active states, and CTAs. White for card surfaces, outlines, and shadows against the dark background.
+Two palettes defined as CSS custom properties in `src/styles/index.css` under `@theme`:
 
-Palettes are defined as CSS custom properties in `src/styles/index.css` under `@theme` so Tailwind utilities like `bg-brand-600` and `text-accent-400` work natively.
+- **Brand (purple)** — `brand-50` to `brand-950`, primary `#63198e`. Used for page backgrounds, the header/footer, sidebar gradients, and as the accent colour on the federal CCS calculator route.
+- **Accent (orange)** — `accent-50` to `accent-950`, primary `#f44e27`. Used for highlights, active states, CTAs, and as the accent colour on state/territory calculator routes.
+
+Tailwind utilities like `bg-brand-600` and `text-accent-400` work natively.
+
+### Color scheme prop
+
+Components accept an optional `colorScheme?: 'accent' | 'brand'` prop (type exported from `src/types.ts`). This controls the accent colour used for interactive elements — gradients, focus rings, buttons, badges, highlighted text, etc.
+
+- **`'accent'`** (default) — Orange palette. Used by state/territory calculators (ACT, NSW, QLD, VIC).
+- **`'brand'`** — Purple palette. Used by the federal CCS calculator to visually distinguish it from state/territory schemes.
+
+Components that support `colorScheme`: `ToggleGroup`, `CalculatorSidebar`, `CcsDetailsCard`, `FortnightlyGrid` (including `DayEditModal`), `ResultCard`, `CcsCalculatorModal`, `InputField`, `SelectField`, `TimePicker`, `Button` (via its existing `color` prop with a `'brand'` option).
+
+The navbar pill also changes colour: purple gradient (`from-brand-600 to-brand-800`) when CCS is active, orange gradient (`from-accent-400 to-accent-600`) for state routes. The pill colour is tracked via the `route` field in the pill state to prevent flash on navigation.
 
 ### Custom CSS classes
 

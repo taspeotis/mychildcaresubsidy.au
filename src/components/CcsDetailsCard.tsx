@@ -1,3 +1,4 @@
+import type { ColorScheme } from '../types'
 import { InputField } from './InputField'
 import { ToggleGroup } from './ToggleGroup'
 
@@ -9,6 +10,7 @@ interface CcsDetailsCardProps {
   ccsHours: string
   onCcsHoursChange: (value: string) => void
   onOpenCcsModal: () => void
+  colorScheme?: ColorScheme
 }
 
 export function CcsDetailsCard({
@@ -19,6 +21,7 @@ export function CcsDetailsCard({
   ccsHours,
   onCcsHoursChange,
   onOpenCcsModal,
+  colorScheme = 'accent',
 }: CcsDetailsCardProps) {
   return (
     <div className="rounded-2xl card-glass p-8">
@@ -33,11 +36,12 @@ export function CcsDetailsCard({
             format="percent"
             min={0}
             max={95}
+            colorScheme={colorScheme}
           />
           <button
             type="button"
             onClick={onOpenCcsModal}
-            className="mt-1.5 text-xs font-bold text-accent-500 hover:text-accent-400"
+            className={`mt-1.5 text-xs font-bold ${colorScheme === 'brand' ? 'text-brand-600 hover:text-brand-500' : 'text-accent-500 hover:text-accent-400'}`}
           >
             Don't know your CCS %? Calculate it
           </button>
@@ -52,6 +56,7 @@ export function CcsDetailsCard({
             suffix="%"
             min={0}
             max={100}
+            colorScheme={colorScheme}
           />
           <div className="flex flex-col">
             <label className="block text-sm font-bold text-slate-700">
@@ -67,6 +72,7 @@ export function CcsDetailsCard({
                 value={ccsHours}
                 onChange={onCcsHoursChange}
                 variant="light"
+                colorScheme={colorScheme}
               />
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { estimateCcs } from '../calculators/ccs'
+import type { ColorScheme } from '../types'
 import { InputField } from './InputField'
 import { Button } from './Button'
 
@@ -7,9 +8,10 @@ interface CcsCalculatorModalProps {
   open: boolean
   onClose: () => void
   onApply: (ccsPercent: number) => void
+  colorScheme?: ColorScheme
 }
 
-export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModalProps) {
+export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'accent' }: CcsCalculatorModalProps) {
   const [income, setIncome] = useState('')
   const [numChildren, setNumChildren] = useState('1')
   const [isSecondChild, setIsSecondChild] = useState(false)
@@ -43,6 +45,7 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
             prefix="$"
             suffix="/yr"
             format="integer"
+            colorScheme={colorScheme}
           />
 
           <InputField
@@ -52,6 +55,7 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
             max="10"
             value={numChildren}
             onChange={(e) => setNumChildren(e.target.value)}
+            colorScheme={colorScheme}
           />
 
           <label className="flex items-center gap-2 text-sm text-slate-900">
@@ -59,22 +63,22 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
               type="checkbox"
               checked={isSecondChild}
               onChange={(e) => setIsSecondChild(e.target.checked)}
-              className="rounded border-slate-300 text-accent-500 focus:ring-accent-500"
+              className={`rounded border-slate-300 ${colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500'}`}
             />
             This is the 2nd+ child under 6 (Higher CCS)
           </label>
         </div>
 
         {incomeValue > 0 && (
-          <div className="mt-5 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100/50 p-4">
+          <div className={`mt-5 rounded-xl bg-gradient-to-br p-4 ${colorScheme === 'brand' ? 'from-brand-50 to-brand-100/50' : 'from-accent-50 to-accent-100/50'}`}>
             <div className="flex items-baseline justify-between">
-              <span className="text-sm text-accent-700">Your estimated CCS</span>
-              <span className="text-2xl font-bold text-accent-500">
+              <span className={`text-sm ${colorScheme === 'brand' ? 'text-brand-700' : 'text-accent-700'}`}>Your estimated CCS</span>
+              <span className={`text-2xl font-bold ${colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500'}`}>
                 {result.applicablePercent}%
               </span>
             </div>
             {isSecondChild && result.higherPercent > result.standardPercent && (
-              <p className="mt-1 text-xs text-accent-600">
+              <p className={`mt-1 text-xs ${colorScheme === 'brand' ? 'text-brand-700' : 'text-accent-600'}`}>
                 Higher CCS applied ({result.standardPercent}% standard)
               </p>
             )}
@@ -95,6 +99,7 @@ export function CcsCalculatorModal({ open, onClose, onApply }: CcsCalculatorModa
               onApply(result.applicablePercent)
               onClose()
             }}
+            color={colorScheme === 'brand' ? 'brand' : 'accent'}
             className="flex-1"
             disabled={incomeValue <= 0}
           >

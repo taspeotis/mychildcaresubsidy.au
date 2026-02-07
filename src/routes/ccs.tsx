@@ -131,15 +131,17 @@ function CcsCalculator() {
         open={ccsModalOpen}
         onClose={() => setCcsModalOpen(false)}
         onApply={(pct) => shared.setCcsPercent(String(pct))}
+        colorScheme="brand"
       />
 
       <Container className="py-10">
         <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
           {/* Sidebar panel */}
           <aside className="relative mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl sidebar-gradient p-6 lg:p-8">
+            <div className="lg:sticky lg:top-20 lg:self-start rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="CCS"
+                colorScheme="brand"
                 schemeName="Child Care Subsidy"
                 description="The federal Child Care Subsidy reduces your child care fees based on family income. It applies to centre-based day care, family day care, and outside school hours care (OSHC)."
                 keyFacts={[
@@ -174,6 +176,7 @@ function CcsCalculator() {
                   ]}
                   value={mode}
                   onChange={setMode}
+                  colorScheme="brand"
                 />
               </CalculatorSidebar>
             </div>
@@ -189,6 +192,7 @@ function CcsCalculator() {
               ccsHours={shared.ccsHours}
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
+              colorScheme="brand"
             />
 
             {mode === 'daily' ? (
@@ -203,6 +207,7 @@ function CcsCalculator() {
                       prefix="$"
                       format="currency"
                       min={0}
+                      colorScheme="brand"
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <TimePicker
@@ -211,6 +216,7 @@ function CcsCalculator() {
                         onChange={shared.setSessionStart}
                         min={5}
                         max={12}
+                        colorScheme="brand"
                       />
                       <TimePicker
                         label="Session end"
@@ -218,6 +224,7 @@ function CcsCalculator() {
                         onChange={shared.setSessionEnd}
                         min={12}
                         max={21}
+                        colorScheme="brand"
                       />
                     </div>
                     <SelectField
@@ -225,6 +232,7 @@ function CcsCalculator() {
                       options={DAYS_OPTIONS}
                       value={shared.daysPerWeek}
                       onChange={(e) => shared.setDaysPerWeek(e.target.value)}
+                      colorScheme="brand"
                     />
                   </div>
                 </div>
@@ -238,6 +246,7 @@ function CcsCalculator() {
                         options={CARE_TYPE_OPTIONS}
                         value={careType}
                         onChange={(e) => setCareType(e.target.value as CareType)}
+                        colorScheme="brand"
                       />
                       <SelectField
                         label="Child's age"
@@ -246,6 +255,7 @@ function CcsCalculator() {
                         value={effectiveSchoolAge ? 'school' : 'below'}
                         onChange={(e) => setSchoolAge(e.target.value === 'school')}
                         disabled={careType === 'oshc'}
+                        colorScheme="brand"
                       />
                     </div>
                     <p className="text-xs text-slate-500">
@@ -256,6 +266,7 @@ function CcsCalculator() {
 
                 {dailyResult && (
                   <ResultCard
+                    colorScheme="brand"
                     title="Daily Cost Estimate"
                     rows={[
                       { label: 'Session Fee', value: fmt(Number(shared.sessionFee)) },
@@ -287,6 +298,7 @@ function CcsCalculator() {
                       options={CARE_TYPE_OPTIONS}
                       value={careType}
                       onChange={(e) => setCareType(e.target.value as CareType)}
+                      colorScheme="brand"
                     />
                     <SelectField
                       label="Child's age"
@@ -294,6 +306,7 @@ function CcsCalculator() {
                       value={effectiveSchoolAge ? 'school' : 'below'}
                       onChange={(e) => setSchoolAge(e.target.value === 'school')}
                       disabled={careType === 'oshc'}
+                      colorScheme="brand"
                     />
                   </div>
                 </div>
@@ -304,10 +317,12 @@ function CcsCalculator() {
                   results={dayResults}
                   fundingLabel="CCS"
                   fmt={fmt}
+                  colorScheme="brand"
                 />
 
                 {fortnightlyResult && (
                   <ResultCard
+                    colorScheme="brand"
                     title="Fortnightly Total"
                     rows={[
                       { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees) },

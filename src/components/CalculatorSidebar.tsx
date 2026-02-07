@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import type { ColorScheme } from '../types'
 
 interface KeyFact {
   label: string
@@ -16,6 +17,7 @@ interface CalculatorSidebarProps {
   description: string
   keyFacts: KeyFact[]
   guidance: GuidanceItem[]
+  colorScheme?: ColorScheme
   children?: React.ReactNode
 }
 
@@ -25,13 +27,14 @@ export function CalculatorSidebar({
   description,
   keyFacts,
   guidance,
+  colorScheme = 'accent',
   children,
 }: CalculatorSidebarProps) {
   return (
     <>
       <Link
         to="/"
-        className="inline-flex items-center text-sm font-medium text-white/60 hover:text-accent-400 transition-colors"
+        className={`inline-flex items-center text-sm font-medium text-white/60 transition-colors ${colorScheme === 'brand' ? 'hover:text-brand-400' : 'hover:text-accent-400'}`}
       >
         <svg
           className="mr-1.5 h-4 w-4"
@@ -46,7 +49,7 @@ export function CalculatorSidebar({
       </Link>
 
       <h1 className="mt-4 text-2xl font-bold text-white">
-        <span className="mr-2 inline-flex translate-y-[-1px] items-center rounded-lg bg-accent-500 px-2.5 py-1 align-middle text-xs font-bold text-white">
+        <span className={`mr-2 inline-flex translate-y-[-1px] items-center rounded-lg px-2.5 py-1 align-middle text-xs font-bold text-white ${colorScheme === 'brand' ? 'bg-brand-600' : 'bg-accent-500'}`}>
           {schemeTag}
         </span>
         {schemeName}

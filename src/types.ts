@@ -1,3 +1,5 @@
+export type ColorScheme = 'accent' | 'brand'
+
 export interface DailyInputs {
   ccsPercent: number
   ccsWithholdingPercent: number

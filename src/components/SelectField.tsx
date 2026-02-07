@@ -1,12 +1,14 @@
 import clsx from 'clsx'
+import type { ColorScheme } from '../types'
 
 interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string
   hint?: string
   options: { value: string; label: string }[]
+  colorScheme?: ColorScheme
 }
 
-export function SelectField({ label, hint, options, className, id, ...props }: SelectFieldProps) {
+export function SelectField({ label, hint, options, colorScheme = 'accent', className, id, ...props }: SelectFieldProps) {
   const selectId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   return (
     <div className={clsx('flex flex-col', className)}>
@@ -20,7 +22,9 @@ export function SelectField({ label, hint, options, className, id, ...props }: S
           id={selectId}
           className={clsx(
             'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
-            'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+            colorScheme === 'brand'
+              ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+              : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
           )}
           {...props}
         >

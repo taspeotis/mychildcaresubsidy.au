@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import type { ColorScheme } from '../types'
 
 interface TimePickerProps {
   label: string
@@ -8,6 +9,7 @@ interface TimePickerProps {
   min?: number
   max?: number
   step?: number
+  colorScheme?: ColorScheme
   className?: string
   id?: string
 }
@@ -28,7 +30,7 @@ function generateTimeOptions(min: number, max: number, step: number): { value: n
   return options
 }
 
-export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, step = 0.5, className, id }: TimePickerProps) {
+export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, step = 0.5, colorScheme = 'accent', className, id }: TimePickerProps) {
   const pickerId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   const options = generateTimeOptions(min, max, step)
 
@@ -46,7 +48,9 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
           onChange={(e) => onChange(Number(e.target.value))}
           className={clsx(
             'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
-            'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
+            colorScheme === 'brand'
+              ? 'focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none'
+              : 'focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 focus:outline-none',
           )}
         >
           {options.map((opt) => (

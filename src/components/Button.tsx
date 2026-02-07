@@ -12,6 +12,8 @@ const variantStyles = {
   solid: {
     accent:
       'bg-gradient-to-b from-accent-400 to-accent-600 text-white hover:from-accent-300 hover:to-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 active:from-accent-500 active:to-accent-700',
+    brand:
+      'bg-gradient-to-b from-brand-500 to-brand-700 text-white hover:from-brand-400 hover:to-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 active:from-brand-600 active:to-brand-800',
     slate:
       'bg-gradient-to-b from-brand-700 to-brand-900 text-white hover:from-brand-600 hover:to-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-800 active:from-brand-800 active:to-brand-950',
     white:
@@ -20,6 +22,8 @@ const variantStyles = {
   outline: {
     accent:
       'border-accent-400 text-accent-500 hover:border-accent-300 hover:bg-accent-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500',
+    brand:
+      'border-brand-500 text-brand-600 hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
     slate:
       'border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600',
   },

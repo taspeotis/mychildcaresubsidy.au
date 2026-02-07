@@ -140,7 +140,7 @@ function NswCalculator() {
         <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
           {/* Sidebar panel */}
           <aside className="relative mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl sidebar-gradient p-6 lg:p-8">
+            <div className="lg:sticky lg:top-20 lg:self-start rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="NSW"
                 schemeName="Start Strong"

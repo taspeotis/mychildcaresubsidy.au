@@ -1,15 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
+import type { ColorScheme } from '../types'
 
 interface ToggleGroupProps {
   options: { value: string; label: string }[]
   value: string
   onChange: (value: string) => void
   variant?: 'dark' | 'light'
+  colorScheme?: ColorScheme
   className?: string
 }
 
-export function ToggleGroup({ options, value, onChange, variant = 'dark', className }: ToggleGroupProps) {
+export function ToggleGroup({ options, value, onChange, variant = 'dark', colorScheme = 'accent', className }: ToggleGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
   const mounted = useRef(false)
@@ -66,7 +68,10 @@ export function ToggleGroup({ options, value, onChange, variant = 'dark', classN
     )}>
       <div
         ref={pillRef}
-        className="absolute top-1.5 h-[calc(100%-12px)] rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 shadow-md transition-all duration-300 ease-out"
+        className={clsx(
+          'absolute top-1.5 h-[calc(100%-12px)] rounded-lg bg-gradient-to-b shadow-md transition-all duration-300 ease-out',
+          colorScheme === 'brand' ? 'from-brand-500 to-brand-700' : 'from-accent-400 to-accent-600',
+        )}
         style={{ left: pill.left, width: pill.width }}
       />
       {options.map((option) => (

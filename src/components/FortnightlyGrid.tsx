@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import clsx from 'clsx'
+import type { ColorScheme } from '../types'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
@@ -27,6 +28,7 @@ export interface FortnightlyGridProps {
   }
   fundingLabel: string
   fmt: (n: number) => string
+  colorScheme?: ColorScheme
 }
 
 export function createDefaultDays(
@@ -61,7 +63,7 @@ function timeOptions(min: number, max: number) {
 const START_TIMES = timeOptions(5, 12)
 const END_TIMES = timeOptions(12, 21)
 
-export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt }: FortnightlyGridProps) {
+export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent' }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
 
   function updateDay(index: number, patch: Partial<DayConfig>) {
@@ -116,7 +118,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                           {dayName}
                         </span>
                         {day.booked && day.hasKindy && kindyToggle && (
-                          <span className="rounded bg-accent-100 px-1.5 py-0.5 text-[10px] font-bold text-accent-700">
+                          <span className={clsx('rounded px-1.5 py-0.5 text-[10px] font-bold', colorScheme === 'brand' ? 'bg-brand-100 text-brand-700' : 'bg-accent-100 text-accent-700')}>
                             {kindyToggle.label}
                           </span>
                         )}
@@ -136,7 +138,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                           <p className="text-xs tabular-nums text-slate-400">
                             CCS {fmt(result.ccsEntitlement)}
                             {result.kindyFunding > 0 && (
-                              <span className="text-accent-500 font-semibold"> + {fundingLabel} {fmt(result.kindyFunding)}</span>
+                              <span className={clsx('font-semibold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}> + {fundingLabel} {fmt(result.kindyFunding)}</span>
                             )}
                           </p>
                         )}
@@ -155,6 +157,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
           day={days[editingDay]}
           dayLabel={`Week ${editingDay < 5 ? 1 : 2} ${WEEKDAYS[editingDay % 5]}`}
           kindyToggle={kindyToggle}
+          colorScheme={colorScheme}
           onSave={(updated) => {
             updateDay(editingDay, updated)
             setEditingDay(null)
@@ -170,12 +173,14 @@ function DayEditModal({
   day,
   dayLabel,
   kindyToggle,
+  colorScheme = 'accent',
   onSave,
   onCancel,
 }: {
   day: DayConfig
   dayLabel: string
   kindyToggle?: FortnightlyGridProps['kindyToggle']
+  colorScheme?: ColorScheme
   onSave: (updated: DayConfig) => void
   onCancel: () => void
 }) {
@@ -204,7 +209,7 @@ function DayEditModal({
               type="checkbox"
               checked={draft.booked}
               onChange={(e) => update({ booked: e.target.checked })}
-              className="h-5 w-5 rounded border-slate-300 text-accent-500 focus:ring-accent-400"
+              className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-400')}
             />
             <span className="text-sm font-medium text-slate-900">Attending this day</span>
           </label>
@@ -258,7 +263,7 @@ function DayEditModal({
                     type="checkbox"
                     checked={draft.hasKindy}
                     onChange={(e) => update({ hasKindy: e.target.checked })}
-                    className="h-5 w-5 rounded border-slate-300 text-accent-500 focus:ring-accent-400"
+                    className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-400')}
                   />
                   <span className="text-sm font-medium text-slate-900">{kindyToggle.label} day</span>
                 </label>
@@ -270,7 +275,7 @@ function DayEditModal({
         <button
           type="button"
           onClick={() => onSave(draft)}
-          className="mt-6 w-full rounded-xl bg-gradient-to-b from-accent-400 to-accent-600 py-3 text-sm font-bold text-white shadow-md"
+          className={clsx('mt-6 w-full rounded-xl bg-gradient-to-b py-3 text-sm font-bold text-white shadow-md', colorScheme === 'brand' ? 'from-brand-500 to-brand-700' : 'from-accent-400 to-accent-600')}
         >
           Done
         </button>

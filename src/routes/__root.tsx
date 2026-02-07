@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const { pathname } = useLocation()
   const navRef = useRef<HTMLElement>(null)
-  const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 })
+  const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0, route: '' })
   const wasVisible = useRef(false)
   const pillRef = useRef<HTMLDivElement>(null)
 
@@ -25,18 +25,19 @@ function RootLayout() {
     }
     const left = active.offsetLeft
     const width = active.offsetWidth
+    const route = active.getAttribute('href') ?? pathname
     if (!wasVisible.current) {
       const el = pillRef.current
       if (el) {
         el.style.transition = 'none'
         void el.offsetLeft
       }
-      setPill({ left, width, opacity: 1 })
+      setPill({ left, width, opacity: 1, route })
       requestAnimationFrame(() => {
         if (el) el.style.transition = ''
       })
     } else {
-      setPill({ left, width, opacity: 1 })
+      setPill({ left, width, opacity: 1, route })
     }
     wasVisible.current = true
   }, [pathname])
@@ -52,7 +53,7 @@ function RootLayout() {
         el.style.transition = 'none'
         void el.offsetLeft
       }
-      setPill({ left: active.offsetLeft, width: active.offsetWidth, opacity: 1 })
+      setPill({ left: active.offsetLeft, width: active.offsetWidth, opacity: 1, route: active.getAttribute('href') ?? '' })
       requestAnimationFrame(() => {
         if (el) el.style.transition = ''
       })
@@ -73,14 +74,10 @@ function RootLayout() {
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div
               ref={pillRef}
-              className="absolute top-0 h-full rounded-lg bg-gradient-to-b from-accent-400 to-accent-600 transition-all duration-300 ease-out"
+              className={`absolute top-0 h-full rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${pill.route === '/ccs' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}
               style={{ left: pill.left, width: pill.width, opacity: pill.opacity }}
             />
-            {/* Federal CCS - visually distinct */}
-            <Link
-              to="/ccs"
-              className="relative z-10 rounded-lg bg-brand-600/40 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:text-white sm:px-4 sm:py-2 [&.active]:bg-transparent"
-            >
+            <Link to="/ccs" className={navLinkClass}>
               CCS
             </Link>
             <span className="mx-1 hidden text-white/20 sm:inline">|</span>
