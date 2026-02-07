@@ -108,12 +108,9 @@ function HomePage() {
                   {p.state}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-accent-500 transition-colors">
-                      {p.program}
-                    </h3>
-                    <span className="text-xs text-slate-400">{p.state}</span>
-                  </div>
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-accent-500 transition-colors">
+                    {p.program}
+                  </h3>
                   <p className="mt-0.5 text-sm text-slate-600">{p.description}</p>
                 </div>
                 <svg className="h-5 w-5 shrink-0 text-slate-300 transition-all group-hover:text-accent-500 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

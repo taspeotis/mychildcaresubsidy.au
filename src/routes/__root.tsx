@@ -79,7 +79,7 @@ function RootLayout() {
             {/* Federal CCS - visually distinct */}
             <Link
               to="/ccs"
-              className="relative z-10 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-bold text-white/90 transition-colors hover:text-white sm:px-4 sm:py-2 [&.active]:border-transparent [&.active]:text-white"
+              className="relative z-10 rounded-lg bg-brand-600/50 px-3 py-1.5 text-sm font-bold text-white/90 transition-colors hover:text-white sm:px-4 sm:py-2 [&.active]:bg-transparent [&.active]:text-white"
             >
               CCS
             </Link>
