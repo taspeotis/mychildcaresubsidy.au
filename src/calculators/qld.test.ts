@@ -30,7 +30,7 @@ describe('calculateQldDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 7.5,
-      sessionCoveredByCcs: true,
+
     })
 
     // CCS matches published $71.25/day
@@ -55,7 +55,7 @@ describe('calculateQldDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 7.5,
-      sessionCoveredByCcs: true,
+
     })
 
     expect(result.applicableCcsHourlyRate).toBe(11.25) // $12.50 × 90%
@@ -70,7 +70,7 @@ describe('calculateQldDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 7.5,
-      sessionCoveredByCcs: true,
+
     })
 
     // 7.5 hrs × $12.50 = $93.75 funded, 2.5 hrs unfunded = $31.25 gap

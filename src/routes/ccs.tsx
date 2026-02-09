@@ -33,7 +33,7 @@ const CHILD_AGE_OPTIONS = [
 
 function CcsCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
+  const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // CCS-specific inputs

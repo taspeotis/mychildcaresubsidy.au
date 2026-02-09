@@ -32,7 +32,7 @@ describe('calculateActDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 6,
-      sessionCoveredByCcs: true,
+
     })
 
     // CCS on full session: $14.63 cap × 85% = $12.44/hr × 10 hrs = $124.40
@@ -57,7 +57,7 @@ describe('calculateActDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 7.5,
-      sessionCoveredByCcs: true,
+
     })
 
     // 7.5 hrs × $2.56 = $19.20 funded
@@ -78,7 +78,7 @@ describe('calculateActDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       kindyProgramHours: 6,
-      sessionCoveredByCcs: true,
+
     })
 
     // 6 hrs × $15 = $90 funded

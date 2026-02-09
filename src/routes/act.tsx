@@ -34,7 +34,7 @@ const DEFAULT_PRESCHOOL = [
 
 function ActCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
+  const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // ACT-specific inputs

@@ -35,7 +35,7 @@ const DEFAULT_KINDY = [
 
 function QldCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
+  const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // QLD-specific inputs
