@@ -62,7 +62,7 @@ export function CcsDetailsCard({
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
                 label="CCS withholding"
                 value={withholding}
@@ -75,9 +75,9 @@ export function CcsDetailsCard({
                 colorScheme={colorScheme}
               />
               <div className="flex flex-col">
-                <label className="block text-sm font-bold text-slate-700">
+                <span className="block text-sm font-bold text-slate-700">
                   CCS hours/fortnight
-                </label>
+                </span>
                 <p className="text-xs text-slate-500 mt-0.5">Based on activity test</p>
                 <div className="mt-auto pt-1.5">
                   <ToggleGroup

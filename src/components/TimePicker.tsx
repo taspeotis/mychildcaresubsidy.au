@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import type { ColorScheme } from '../types'
+import { formatTime } from '../config'
 
 interface TimePickerProps {
   label: string
@@ -12,14 +13,6 @@ interface TimePickerProps {
   colorScheme?: ColorScheme
   className?: string
   id?: string
-}
-
-function formatTime(hour: number): string {
-  const h = Math.floor(hour)
-  const m = Math.round((hour - h) * 60)
-  const period = h >= 12 ? 'PM' : 'AM'
-  const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h
-  return `${displayHour}:${m.toString().padStart(2, '0')} ${period}`
 }
 
 function generateTimeOptions(min: number, max: number, step: number): { value: number; label: string }[] {

@@ -60,7 +60,7 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, co
       }
     }
     onBlur?.(e)
-  }, [fmt, onChange, onBlur])
+  }, [fmt, numMin, numMax, onChange, onBlur])
 
   return (
     <div className={clsx('flex flex-col', className)}>

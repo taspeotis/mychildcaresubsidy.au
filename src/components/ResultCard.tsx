@@ -81,7 +81,7 @@ export function ResultCard({ title, rows, note, colorScheme = 'accent', classNam
                 )}
               >
                 {row.value}
-                {row.type && <span className="ml-1 text-xs font-normal text-slate-400">{row.type === 'credit' ? 'cr.' : 'dr.'}</span>}
+                {row.type && <span className="sr-only">{row.type === 'credit' ? 'credit' : 'debit'}</span>}
               </dd>
             </div>
             {detailed && row.detail && (

@@ -22,3 +22,12 @@ export const DAYS_OPTIONS = [
 ]
 
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
+
+/** Format a decimal hour as 12-hour time (e.g. 8.5 → "8:30 AM") */
+export function formatTime(hour: number): string {
+  const h = Math.floor(hour)
+  const m = Math.round((hour - h) * 60)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${displayHour}:${m.toString().padStart(2, '0')} ${period}`
+}

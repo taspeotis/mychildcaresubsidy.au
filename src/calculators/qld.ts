@@ -20,13 +20,11 @@ export function calculateQldDaily(inputs: DailyInputs): DailyResult {
   })
 
   // Normalise withholding at 5% for kindy funding calculation
-  const withholdingRate = inputs.ccsWithholdingPercent / 100
-  const normalisedCcsWithholding = roundTo(
-    (ccs.ccsEntitlement + ccs.ccsEntitlement * ((withholdingRate * 100) / (100 - withholdingRate * 100))) *
-      (withholdingRate <= 0.05 ? withholdingRate : 0.05),
-    4,
-  )
-  const normalisedCcsEntitlement = ccs.ccsEntitlement + ccs.ccsEntitlement * ((withholdingRate * 100) / (100 - withholdingRate * 100)) - normalisedCcsWithholding
+  const withholdingRate = Math.min(inputs.ccsWithholdingPercent / 100, 0.99)
+  const ccsAmount = withholdingRate < 1 ? ccs.ccsEntitlement / (1 - withholdingRate) : 0
+  const cappedWithholdingRate = Math.min(withholdingRate, 0.05)
+  const normalisedCcsWithholding = roundTo(ccsAmount * cappedWithholdingRate, 4)
+  const normalisedCcsEntitlement = ccsAmount - normalisedCcsWithholding
   const normalisedCcsPerHour = ccs.applicableCcsHours > 0 ? normalisedCcsEntitlement / ccs.applicableCcsHours : 0
 
   const gapBeforeKindy = roundTo(inputs.sessionFee - ccs.ccsEntitlement, 4)
@@ -86,14 +84,12 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
 
     const gapBeforeKindy = roundTo(session.sessionFee - ccs.ccsEntitlement, 2)
 
-    // Normalised CCS per hour for kindy funding
-    const withholdingRate = inputs.ccsWithholdingPercent / 100
-    const normalisedCcsWithholding = roundTo(
-      (ccs.ccsEntitlement + ccs.ccsEntitlement * ((withholdingRate * 100) / (100 - withholdingRate * 100))) *
-        (withholdingRate <= 0.05 ? withholdingRate : 0.05),
-      4,
-    )
-    const normalisedCcsEntitlement = ccs.ccsEntitlement + ccs.ccsEntitlement * ((withholdingRate * 100) / (100 - withholdingRate * 100)) - normalisedCcsWithholding
+    // Normalised CCS per hour for kindy funding (cap withholding at 5%)
+    const withholdingRate = Math.min(inputs.ccsWithholdingPercent / 100, 0.99)
+    const ccsAmount = withholdingRate < 1 ? ccs.ccsEntitlement / (1 - withholdingRate) : 0
+    const cappedWithholdingRate = Math.min(withholdingRate, 0.05)
+    const normalisedCcsWithholding = roundTo(ccsAmount * cappedWithholdingRate, 4)
+    const normalisedCcsEntitlement = ccsAmount - normalisedCcsWithholding
     const normalisedCcsPerHour = ccs.applicableCcsHours > 0 ? normalisedCcsEntitlement / ccs.applicableCcsHours : 0
 
     // Kindy hours for this session
@@ -144,7 +140,7 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
 
   return {
     sessions: results,
-    totalSessionFees: roundTo(results.reduce((s, r) => s + inputs.sessions[results.indexOf(r)]!.sessionFee, 0), 2),
+    totalSessionFees: roundTo(results.reduce((s, _r, i) => s + inputs.sessions[i]!.sessionFee, 0), 2),
     totalCcsEntitlement: roundTo(results.reduce((s, r) => s + r.ccsEntitlement, 0), 2),
     totalKindyFunding: roundTo(results.reduce((s, r) => s + r.kindyFundingAmount, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.estimatedGapFee, 0), 2),

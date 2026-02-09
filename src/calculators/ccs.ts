@@ -17,40 +17,40 @@ export const ACTIVITY_TEST_HOURS = {
 
 /**
  * Calculate Standard CCS percentage based on family adjusted taxable income.
- * FY2026 rates.
+ * FY2025-26 rates per Services Australia (updated 7 July 2025).
  */
 export function calculateStandardCcsPercent(income: number): number {
-  if (income <= 83_280) return 90
-  if (income >= 533_280) return 0
+  if (income <= 85_279) return 90
+  if (income >= 535_279) return 0
 
   // Tapers at 1% per $5,000 from 90%
-  const reduction = Math.floor((income - 83_280) / 5_000) * 1
+  const reduction = Math.floor((income - 85_279) / 5_000) * 1
   return Math.max(0, 90 - reduction)
 }
 
 /**
  * Calculate Higher CCS percentage for 2nd+ under-6 child.
- * FY2026 rates.
+ * FY2025-26 rates per education.gov.au.
  */
 export function calculateHigherCcsPercent(income: number): number {
-  if (income <= 141_321) return 95
-  if (income >= 365_611) return 0
+  if (income <= 143_273) return 95
+  if (income >= 367_563) return 0
 
-  if (income < 186_321) {
+  if (income < 188_273) {
     // Tapers at 1% per $3,000 from 95%
-    const reduction = Math.floor((income - 141_321) / 3_000) * 1
+    const reduction = Math.floor((income - 143_273) / 3_000) * 1
     return Math.max(80, 95 - reduction)
   }
 
-  if (income < 265_611) return 80
+  if (income < 267_563) return 80
 
-  if (income < 355_611) {
+  if (income < 357_563) {
     // Tapers at 1% per $3,000 from 80%
-    const reduction = Math.floor((income - 265_611) / 3_000) * 1
+    const reduction = Math.floor((income - 267_563) / 3_000) * 1
     return Math.max(50, 80 - reduction)
   }
 
-  if (income < 365_611) return 50
+  if (income < 367_563) return 50
 
   return 0
 }
@@ -71,7 +71,7 @@ export interface CcsEstimateResult {
 
 /**
  * Estimate CCS % for a family.
- * useHigherCcs = true for 2nd+ under-6 child when income < $365,611
+ * useHigherCcs = true for 2nd+ under-6 child when income < $367,563
  */
 export function estimateCcs(inputs: CcsEstimateInputs): CcsEstimateResult {
   const standardPercent = calculateStandardCcsPercent(inputs.income)
@@ -80,7 +80,7 @@ export function estimateCcs(inputs: CcsEstimateInputs): CcsEstimateResult {
   const eligibleForHigher =
     inputs.useHigherCcs &&
     inputs.numberOfChildren > 1 &&
-    inputs.income < 365_611
+    inputs.income < 367_563
 
   return {
     standardPercent,

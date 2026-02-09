@@ -35,7 +35,7 @@ const DEFAULT_KINDY = [
 
 function QldCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState('daily')
+  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // QLD-specific inputs
@@ -67,14 +67,13 @@ function QldCalculator() {
       sessionStartHour: shared.sessionStart,
       sessionEndHour: shared.sessionEnd,
       kindyProgramHours: kh,
-      sessionCoveredByCcs: true,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, kindyHours])
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
     const wh = Number(shared.withholding) || 0
-    const ccsHours = Number(shared.ccsHours) || 100
+    const ccsHours = Number(shared.ccsHours) || 72
     const kh = Number(fnKindyHours) || 7.5
 
     const sessions: FortnightlySession[] = days.map((d, i) => {

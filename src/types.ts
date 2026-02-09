@@ -7,7 +7,6 @@ export interface DailyInputs {
   sessionStartHour: number
   sessionEndHour: number
   kindyProgramHours: number
-  sessionCoveredByCcs: boolean
 }
 
 export interface DailyResult {

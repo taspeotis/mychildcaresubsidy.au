@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import type { ColorScheme } from '../types'
+import { WEEKDAYS, formatTime } from '../config'
 import { InputField } from './InputField'
 import { TimePicker } from './TimePicker'
-
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
 export interface DayConfig {
   booked: boolean
@@ -45,15 +44,6 @@ export function createDefaultDays(
     hasKindy: kindyPattern?.[i] ?? false,
   }))
 }
-
-function fmtTime(h: number): string {
-  const hours = Math.floor(h)
-  const mins = Math.round((h - hours) * 60)
-  const period = hours >= 12 ? 'PM' : 'AM'
-  const display = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours
-  return `${display}:${mins.toString().padStart(2, '0')} ${period}`
-}
-
 
 export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent' }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
@@ -124,7 +114,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                     {day.booked && (
                       <div className="mt-1 flex items-center justify-between">
                         <p className="text-xs text-slate-500">
-                          ${day.sessionFee} &middot; {fmtTime(day.sessionStart)}&ndash;{fmtTime(day.sessionEnd)}
+                          ${day.sessionFee} &middot; {formatTime(day.sessionStart)}&ndash;{formatTime(day.sessionEnd)}
                         </p>
                         {result && (result.ccsEntitlement > 0 || result.kindyFunding > 0) && (
                           <p className="text-xs tabular-nums text-slate-400">
@@ -183,12 +173,12 @@ function DayEditModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onKeyDown={(e) => { if (e.key === 'Escape') onCancel() }}>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl bg-white p-6 shadow-xl">
+      <div role="dialog" aria-modal="true" aria-labelledby="day-edit-title" className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-slate-900">{dayLabel}</h3>
-          <button type="button" onClick={onCancel} className="text-slate-400 hover:text-slate-600">
+          <h3 id="day-edit-title" className="text-lg font-bold text-slate-900">{dayLabel}</h3>
+          <button type="button" onClick={onCancel} aria-label="Close" className="text-slate-400 hover:text-slate-600">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>

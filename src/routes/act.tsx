@@ -34,7 +34,7 @@ const DEFAULT_PRESCHOOL = [
 
 function ActCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState('daily')
+  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // ACT-specific inputs
@@ -66,7 +66,6 @@ function ActCalculator() {
       sessionStartHour: shared.sessionStart,
       sessionEndHour: shared.sessionEnd,
       kindyProgramHours: ph,
-      sessionCoveredByCcs: true,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, preschoolHours])
 

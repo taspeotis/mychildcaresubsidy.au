@@ -34,7 +34,7 @@ const COHORT_OPTIONS = [
 
 function VicCalculator() {
   const shared = useSharedCalculatorState()
-  const [mode, setMode] = useState('daily')
+  const [mode, setMode] = useState<'daily' | 'fortnightly'>('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
   // VIC-specific inputs
@@ -214,7 +214,7 @@ function VicCalculator() {
                   const cap = CCS_HOURLY_RATE_CAP
                   const ccsPct = Number(shared.ccsPercent) || 0
                   const whPct = Number(shared.withholding) || 0
-                  const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100
+                  const ccsRate = dailyResult.applicableCcsHourlyRate
                   const net = dailyResult.ccsEntitlement
                   const dpw = Number(shared.daysPerWeek) || 3
                   const khrs = kinderHoursNum

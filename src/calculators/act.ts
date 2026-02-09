@@ -133,7 +133,7 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
 
   return {
     sessions: results,
-    totalSessionFees: roundTo(results.reduce((s, r) => s + inputs.sessions[results.indexOf(r)]!.sessionFee, 0), 2),
+    totalSessionFees: roundTo(results.reduce((s, _r, i) => s + inputs.sessions[i]!.sessionFee, 0), 2),
     totalCcsEntitlement: roundTo(results.reduce((s, r) => s + r.ccsEntitlement, 0), 2),
     totalKindyFunding: roundTo(results.reduce((s, r) => s + r.kindyFundingAmount, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.estimatedGapFee, 0), 2),
