@@ -179,3 +179,69 @@ describe('VIC edge cases', () => {
     expect(result.estimatedGapFee).toBeLessThan(120)
   })
 })
+
+describe('VIC offset independence from CCS', () => {
+  const baseInputs = {
+    ccsPercent: 85,
+    ccsWithholdingPercent: 5,
+    sessionFee: 120,
+    sessionStartHour: 7,
+    sessionEndHour: 17,
+    cohort: 'standard' as const,
+    kinderHoursPerWeek: 15,
+    daysPerWeek: 3,
+  }
+
+  /**
+   * VIC Free Kinder offset is a flat annual amount pro-rated by kinder hours,
+   * divided by 40 weeks and days per week. It should not change with CCS.
+   */
+  it('annual offset and weekly offset are independent of CCS percentage', () => {
+    const result85 = calculateVicDaily({ ...baseInputs, ccsPercent: 85 })
+    const result50 = calculateVicDaily({ ...baseInputs, ccsPercent: 50 })
+    const result0 = calculateVicDaily({ ...baseInputs, ccsPercent: 0 })
+
+    expect(result85.annualOffset).toBe(result50.annualOffset)
+    expect(result50.annualOffset).toBe(result0.annualOffset)
+    expect(result85.weeklyOffset).toBe(result50.weeklyOffset)
+    expect(result50.weeklyOffset).toBe(result0.weeklyOffset)
+  })
+
+  /**
+   * The APPLIED daily offset might differ because it's capped at the gap.
+   * With high CCS, the gap is small so the offset is capped lower.
+   */
+  it('applied offset is capped at gap — lower CCS means more offset applied', () => {
+    const result90 = calculateVicDaily({ ...baseInputs, ccsPercent: 90 })
+    const result50 = calculateVicDaily({ ...baseInputs, ccsPercent: 50 })
+
+    // Calculated offset is the same
+    expect(result90.annualOffset).toBe(result50.annualOffset)
+
+    // With 50% CCS, gap is larger so more offset can be applied
+    expect(result50.dailyOffset).toBeGreaterThanOrEqual(result90.dailyOffset)
+  })
+
+  /**
+   * Offset should also be independent of withholding.
+   */
+  it('annual and weekly offset are independent of withholding', () => {
+    const result5 = calculateVicDaily({ ...baseInputs, ccsWithholdingPercent: 5 })
+    const result20 = calculateVicDaily({ ...baseInputs, ccsWithholdingPercent: 20 })
+
+    expect(result5.annualOffset).toBe(result20.annualOffset)
+    expect(result5.weeklyOffset).toBe(result20.weeklyOffset)
+  })
+
+  /**
+   * Priority cohort offset is also independent of CCS.
+   */
+  it('priority cohort offset is independent of CCS percentage', () => {
+    const priorityInputs = { ...baseInputs, cohort: 'priority' as const }
+    const result85 = calculateVicDaily({ ...priorityInputs, ccsPercent: 85 })
+    const result0 = calculateVicDaily({ ...priorityInputs, ccsPercent: 0 })
+
+    expect(result85.annualOffset).toBe(result0.annualOffset)
+    expect(result85.weeklyOffset).toBe(result0.weeklyOffset)
+  })
+})

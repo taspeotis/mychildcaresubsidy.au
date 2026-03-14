@@ -206,3 +206,141 @@ describe('ACT edge cases', () => {
     expect(result.kindyFundingAmount).toBeGreaterThan(0)
   })
 })
+
+describe('ACT withholding independence', () => {
+  const baseInputs = {
+    ccsPercent: 85,
+    ccsWithholdingPercent: 5,
+    sessionFee: 150,
+    sessionStartHour: 7,
+    sessionEndHour: 17,
+    kindyProgramHours: 6,
+  }
+
+  /**
+   * ACT uses ccsAmount (pre-withholding) for kindy funding, so
+   * changing withholding should not change kindy funding amount.
+   * The gap before kindy is also based on ccsAmount, not ccsEntitlement.
+   */
+  it('kindy funding is independent of withholding percentage', () => {
+    const result0 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 0 })
+    const result5 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 5 })
+    const result20 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 20 })
+    const result50 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 50 })
+
+    expect(result0.kindyFundingAmount).toBe(result5.kindyFundingAmount)
+    expect(result5.kindyFundingAmount).toBe(result20.kindyFundingAmount)
+    expect(result20.kindyFundingAmount).toBe(result50.kindyFundingAmount)
+  })
+
+  /**
+   * The gap before kindy should also be withholding-independent in ACT,
+   * since it's computed as sessionFee - ccsAmount (pre-withholding).
+   */
+  it('gap before kindy is independent of withholding percentage', () => {
+    const result0 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 0 })
+    const result5 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 5 })
+    const result20 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 20 })
+
+    expect(result0.gapBeforeKindy).toBe(result5.gapBeforeKindy)
+    expect(result5.gapBeforeKindy).toBe(result20.gapBeforeKindy)
+  })
+
+  /**
+   * The estimated gap fee (final out-of-pocket) should also be withholding-independent,
+   * since it's gapBeforeKindy - kindyFundingAmount, both of which are withholding-independent.
+   */
+  it('estimated gap fee is independent of withholding percentage', () => {
+    const result0 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 0 })
+    const result5 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 5 })
+    const result20 = calculateActDaily({ ...baseInputs, ccsWithholdingPercent: 20 })
+
+    expect(result0.estimatedGapFee).toBe(result5.estimatedGapFee)
+    expect(result5.estimatedGapFee).toBe(result20.estimatedGapFee)
+  })
+})
+
+describe('ACT kindy pool exhaustion', () => {
+  /**
+   * 50-week program → 300 / 50 = 6 hrs/week pool.
+   * 2 preschool days with 6hr kindy programs in week 1.
+   * Day 1 consumes 6 of 6 → day 2 gets 0.
+   */
+  it('exhausts weekly pool with a single day', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 2
+      const hasPreschool = week === 1 && booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 150 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasPreschool ? 9 : null,
+        kindyProgramEndHour: hasPreschool ? 15 : null, // 6hr program
+      }
+    })
+
+    const result = calculateActFortnightly(
+      { ccsPercent: 85, ccsWithholdingPercent: 5, fortnightlyCcsHours: 72, sessions },
+      50, // 50 weeks → 6 hrs/week pool
+    )
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+
+    // Mon: 6hr kindy consumes full 6hr pool
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[0].remainingKindyHours).toBe(0)
+
+    // Tue: pool exhausted → no funding
+    expect(week1[1].kindyFundingAmount).toBe(0)
+    expect(week1[1].remainingKindyHours).toBe(0)
+  })
+
+  /**
+   * 40-week program → 300 / 40 = 7.5 hrs/week pool.
+   * 2 days with 5hr kindy programs → 10 hrs total > 7.5 pool.
+   * Day 1 gets 5 hrs funded, day 2 gets only 2.5 hrs (partial).
+   */
+  it('partially funds a day when pool runs low', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 2
+      const hasPreschool = week === 1 && booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 150 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasPreschool ? 9 : null,
+        kindyProgramEndHour: hasPreschool ? 14 : null, // 5hr kindy
+      }
+    })
+
+    const result = calculateActFortnightly(
+      { ccsPercent: 85, ccsWithholdingPercent: 5, fortnightlyCcsHours: 72, sessions },
+      40, // 40 weeks → 7.5 hrs/week pool
+    )
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+
+    // Mon: 5hrs consumed from 7.5 → 2.5 remaining
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[0].remainingKindyHours).toBe(2.5)
+
+    // Tue: 5hrs requested but only 2.5 available → partial
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[1].remainingKindyHours).toBe(0)
+
+    // Tue's funding should be less than Mon's
+    expect(week1[1].kindyFundingAmount).toBeLessThan(week1[0].kindyFundingAmount)
+  })
+})

@@ -199,3 +199,60 @@ describe('NSW edge cases', () => {
     expect(result.estimatedGapFee).toBeLessThan(150)
   })
 })
+
+describe('NSW fee relief independence from CCS', () => {
+  const baseInputs = {
+    ccsPercent: 85,
+    ccsWithholdingPercent: 5,
+    sessionFee: 150,
+    sessionStartHour: 7,
+    sessionEndHour: 17,
+    ageGroup: '4+' as const,
+    feeReliefTier: 'standard' as const,
+    serviceWeeks: 50,
+    daysPerWeek: 3,
+  }
+
+  /**
+   * NSW fee relief is a flat annual amount divided by weeks and days.
+   * It should not change when CCS percentage changes.
+   */
+  it('annual and weekly fee relief are independent of CCS percentage', () => {
+    const result85 = calculateNswDaily({ ...baseInputs, ccsPercent: 85 })
+    const result50 = calculateNswDaily({ ...baseInputs, ccsPercent: 50 })
+    const result0 = calculateNswDaily({ ...baseInputs, ccsPercent: 0 })
+
+    expect(result85.annualFeeRelief).toBe(result50.annualFeeRelief)
+    expect(result50.annualFeeRelief).toBe(result0.annualFeeRelief)
+    expect(result85.weeklyFeeRelief).toBe(result50.weeklyFeeRelief)
+    expect(result50.weeklyFeeRelief).toBe(result0.weeklyFeeRelief)
+  })
+
+  /**
+   * The APPLIED daily fee relief might differ because it's capped at the gap
+   * (can't exceed gap after CCS). With high CCS the gap is small,
+   * so applied relief is capped lower.
+   */
+  it('applied relief is capped at gap — lower CCS means more relief applied', () => {
+    const result90 = calculateNswDaily({ ...baseInputs, ccsPercent: 90 })
+    const result50 = calculateNswDaily({ ...baseInputs, ccsPercent: 50 })
+
+    // Calculated relief is the same
+    expect(result90.annualFeeRelief).toBe(result50.annualFeeRelief)
+
+    // With 90% CCS the gap is smaller, so applied relief may be capped
+    // With 50% CCS the gap is larger, so applied relief is higher or equal
+    expect(result50.dailyFeeRelief).toBeGreaterThanOrEqual(result90.dailyFeeRelief)
+  })
+
+  /**
+   * Fee relief should also be independent of withholding.
+   */
+  it('annual and weekly fee relief are independent of withholding', () => {
+    const result5 = calculateNswDaily({ ...baseInputs, ccsWithholdingPercent: 5 })
+    const result20 = calculateNswDaily({ ...baseInputs, ccsWithholdingPercent: 20 })
+
+    expect(result5.annualFeeRelief).toBe(result20.annualFeeRelief)
+    expect(result5.weeklyFeeRelief).toBe(result20.weeklyFeeRelief)
+  })
+})

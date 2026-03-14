@@ -237,3 +237,125 @@ describe('CCS percentage boundaries', () => {
     expect(calculateStandardCcsPercent(90_279)).toBe(89)
   })
 })
+
+describe('fortnightly rounding consistency', () => {
+  /**
+   * Verify that the reported total gap fee equals the sum of per-session gap fees.
+   * Uses a fee ($143.33) that produces non-round CCS amounts to stress rounding.
+   */
+  it('total gap fee equals sum of per-session gap fees', () => {
+    const sessions = Array.from({ length: 10 }, (_, i) => ({
+      booked: i % 5 < 3, // 3 days per week
+      sessionFee: i % 5 < 3 ? 143.33 : 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+    }))
+
+    const result = calculateCcsFortnightly({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      careType: 'centre-based',
+      schoolAge: false,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const sumGapFees = result!.sessions.reduce((s, r) => s + r.gapFee, 0)
+    const roundedSum = Math.round(sumGapFees * 100) / 100
+    expect(result!.totalGapFee).toBe(roundedSum)
+  })
+
+  /**
+   * Verify that total CCS entitlement equals the sum of per-session entitlements.
+   */
+  it('total CCS entitlement equals sum of per-session entitlements', () => {
+    const sessions = Array.from({ length: 10 }, (_, i) => ({
+      booked: i % 5 < 3,
+      sessionFee: i % 5 < 3 ? 143.33 : 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+    }))
+
+    const result = calculateCcsFortnightly({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      careType: 'centre-based',
+      schoolAge: false,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const sumCcs = result!.sessions.reduce((s, r) => s + r.ccsEntitlement, 0)
+    const roundedSum = Math.round(sumCcs * 100) / 100
+    expect(result!.totalCcsEntitlement).toBe(roundedSum)
+  })
+
+  /**
+   * With varying fees across sessions, totals should still be consistent.
+   * Uses alternating fees to maximize rounding divergence.
+   */
+  it('totals match session sums with varying fees', () => {
+    const fees = [133.33, 166.67, 141.11]
+    const sessions = Array.from({ length: 10 }, (_, i) => ({
+      booked: i % 5 < 3,
+      sessionFee: i % 5 < 3 ? fees[i % 5] : 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+    }))
+
+    const result = calculateCcsFortnightly({
+      ccsPercent: 73,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      careType: 'centre-based',
+      schoolAge: false,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+
+    // Total session fees
+    const sumFees = sessions.filter((s) => s.booked).reduce((s, sess) => s + sess.sessionFee, 0)
+    expect(result!.totalSessionFees).toBe(Math.round(sumFees * 100) / 100)
+
+    // Total gap fee = sum of session gap fees (rounded)
+    const sumGapFees = result!.sessions.reduce((s, r) => s + r.gapFee, 0)
+    expect(result!.totalGapFee).toBe(Math.round(sumGapFees * 100) / 100)
+
+    // Total CCS entitlement = sum of session entitlements (rounded)
+    const sumCcs = result!.sessions.reduce((s, r) => s + r.ccsEntitlement, 0)
+    expect(result!.totalCcsEntitlement).toBe(Math.round(sumCcs * 100) / 100)
+  })
+
+  /**
+   * When CCS hours run out partway through the fortnight, the sessions that
+   * get partial or no CCS should still sum correctly.
+   */
+  it('totals consistent when CCS hours exhaust mid-fortnight', () => {
+    const sessions = Array.from({ length: 10 }, (_, i) => ({
+      booked: i % 5 < 4, // 4 days/week = 80 hrs > 72 pool
+      sessionFee: i % 5 < 4 ? 155.55 : 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+    }))
+
+    const result = calculateCcsFortnightly({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      careType: 'centre-based',
+      schoolAge: false,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+
+    const sumGapFees = result!.sessions.reduce((s, r) => s + r.gapFee, 0)
+    expect(result!.totalGapFee).toBe(Math.round(sumGapFees * 100) / 100)
+
+    const sumCcs = result!.sessions.reduce((s, r) => s + r.ccsEntitlement, 0)
+    expect(result!.totalCcsEntitlement).toBe(Math.round(sumCcs * 100) / 100)
+  })
+})
