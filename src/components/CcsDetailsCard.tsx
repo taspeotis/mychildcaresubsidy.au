@@ -129,8 +129,8 @@ export function CcsDetailsCard({
         )}
 
         {onDebtRecoveryChange && (
-          <details className="group">
-            <summary className={`cursor-pointer select-none text-xs font-bold ${colorScheme === 'brand' ? 'text-brand-600 hover:text-brand-500' : 'text-accent-500 hover:text-accent-400'}`}>
+          <details className="group" open={debtEnabled} onToggle={(e) => { if (debtEnabled) (e.target as HTMLDetailsElement).open = true }}>
+            <summary className={`cursor-pointer select-none text-xs font-bold ${debtEnabled ? 'pointer-events-none' : ''} ${colorScheme === 'brand' ? 'text-brand-600 hover:text-brand-500' : 'text-accent-500 hover:text-accent-400'}`}>
               Centrelink Debt Recovery
               <svg className="ml-1 inline h-3 w-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
