@@ -255,13 +255,13 @@ function ActCalculator() {
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
+                        { label: 'Gap Before Preschool', value: fmt(dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        { label: 'Preschool Funding', value: fmt(dailyResult.kindyFundingAmount), detail: preschoolDetail, type: 'credit' as const },
                         ...(debt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
                           ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Gap Before Preschool', value: fmt(debt.debtPerDay > 0 ? (fee - debt.ccsPaidToService) : dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(debt.debtPerDay > 0 ? debt.ccsPaidToService : net)}`, muted: true },
-                        { label: 'Preschool Funding', value: fmt(dailyResult.kindyFundingAmount), detail: preschoolDetail, type: 'credit' as const },
                         { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.kindyFundingAmount)}` : `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
                       ]}
                     />
@@ -314,12 +314,12 @@ function ActCalculator() {
                       rows={[
                         { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
                         { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                        { label: 'Total Preschool Funding', value: fmt(fortnightlyResult.totalKindyFunding), type: 'credit' as const },
                         ...(fnDebt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
                           ...(fnDebt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(fnDebt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Total Preschool Funding', value: fmt(fortnightlyResult.totalKindyFunding), type: 'credit' as const },
                         { label: 'Your Estimated Gap', value: fmt(fnDebt.debtPerDay > 0 ? fnAdjustedGap : fortnightlyResult.totalGapFee), highlight: true },
                       ]}
                     />

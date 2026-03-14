@@ -256,13 +256,13 @@ function NswCalculator() {
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
+                        { label: 'Gap Before Start Strong', value: fmt(dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        { label: 'Start Strong Fee Relief', value: fmt(dailyResult.dailyFeeRelief), detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
                         ...(debt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
                           ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Gap Before Fee Relief', value: fmt(debt.debtPerDay > 0 ? (fee - debt.ccsPaidToService) : dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(debt.debtPerDay > 0 ? debt.ccsPaidToService : net)}`, muted: true },
-                        { label: 'Start Strong Fee Relief', value: fmt(dailyResult.dailyFeeRelief), detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
                         { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.dailyFeeRelief)}` : `${fmt(dailyResult.gapBeforeFeeRelief)} – ${fmt(dailyResult.dailyFeeRelief)}` },
                       ]}
                     />
@@ -320,12 +320,12 @@ function NswCalculator() {
                       rows={[
                         { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
                         { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                        { label: 'Total Start Strong Fee Relief', value: fmt(fortnightlyResult.totalFeeRelief), type: 'credit' as const },
                         ...(fnDebt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
                           ...(fnDebt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(fnDebt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Total Start Strong Fee Relief', value: fmt(fortnightlyResult.totalFeeRelief), type: 'credit' as const },
                         { label: 'Your Estimated Gap', value: fmt(fnDebt.debtPerDay > 0 ? fnAdjustedGap : fortnightlyResult.totalGapFee), highlight: true },
                       ]}
                     />
