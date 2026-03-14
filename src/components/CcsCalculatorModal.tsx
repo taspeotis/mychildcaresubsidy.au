@@ -37,7 +37,7 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
 
         <div className="mt-5 space-y-4">
           <InputField
-            label="Family adjusted taxable income"
+            label="Family Adjusted Taxable Income"
             hint="Your household's combined annual income"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
@@ -49,7 +49,7 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
           />
 
           <InputField
-            label="Number of children in care"
+            label="Number of Children in Care"
             type="number"
             min="1"
             max="10"

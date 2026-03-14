@@ -120,7 +120,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                           <p className="text-xs tabular-nums text-slate-400">
                             CCS {fmt(result.ccsEntitlement)}
                             {result.kindyFunding > 0 && (
-                              <span className={clsx('font-semibold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}> + {fundingLabel} {fmt(result.kindyFunding)}</span>
+                              <span className={clsx('font-bold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}> + {fundingLabel} {fmt(result.kindyFunding)}</span>
                             )}
                           </p>
                         )}
@@ -191,15 +191,15 @@ function DayEditModal({
               type="checkbox"
               checked={draft.booked}
               onChange={(e) => update({ booked: e.target.checked })}
-              className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-400')}
+              className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500')}
             />
-            <span className="text-sm font-medium text-slate-900">Attending this day</span>
+            <span className="text-sm font-bold text-slate-900">Attending this day</span>
           </label>
 
           {draft.booked && (
             <>
               <InputField
-                label="Session fee"
+                label="Session Fee"
                 value={draft.sessionFee}
                 onChange={(e) => update({ sessionFee: e.target.value })}
                 prefix="$"
@@ -233,9 +233,9 @@ function DayEditModal({
                     type="checkbox"
                     checked={draft.hasKindy}
                     onChange={(e) => update({ hasKindy: e.target.checked })}
-                    className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-400')}
+                    className={clsx('h-5 w-5 rounded border-slate-300', colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500')}
                   />
-                  <span className="text-sm font-medium text-slate-900">{kindyToggle.label} day</span>
+                  <span className="text-sm font-bold text-slate-900">{kindyToggle.label} day</span>
                 </label>
               )}
             </>
