@@ -54,14 +54,10 @@ function HomePage() {
         <Container className="pt-20 pb-14 sm:pt-28 sm:pb-20">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              What will <span className="text-accent-400">child care</span> cost you?
+              What will <span className="text-accent-400">child care</span> actually cost you?
             </h1>
             <p className="mt-5 text-lg text-white/80">
-              A simple calculator to estimate your out-of-pocket child care costs,
-              factoring in the federal Child Care Subsidy and your state or territory's kindy funding.
-            </p>
-            <p className="mt-3 text-base text-white/70">
-              Start with the CCS calculator, or select your state or territory program below.
+              Work out your out-of-pocket child care costs after the federal Child Care Subsidy and your state or territory's kindy or preschool funding.
             </p>
           </div>
         </Container>
@@ -71,7 +67,7 @@ function HomePage() {
         {/* Federal CCS Calculator - prominent card */}
         <Link
           to="/ccs"
-          className="group block rounded-2xl card-glass p-6 sm:p-8 border-l-4 border-l-accent-500 transition-all hover:shadow-lg"
+          className="group block rounded-2xl card-glass p-6 sm:p-8 border-l-4 border-l-accent-500 card-lift"
         >
           <div className="flex items-center gap-4">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-lg">
@@ -82,7 +78,7 @@ function HomePage() {
                 Child Care Subsidy Calculator
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                Estimate your federal CCS entitlement for centre-based day care, family day care, or outside school hours care (OSHC). Supports all ages including school-age children.
+                Work out your CCS for centre-based day care, family day care, or outside school hours care (OSHC), including school-age children.
               </p>
             </div>
             <svg className="h-6 w-6 shrink-0 text-slate-300 transition-all group-hover:text-accent-500 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -95,14 +91,14 @@ function HomePage() {
         <div className="rounded-2xl card-glass p-6 sm:p-8">
           <h2 className="text-xl font-bold text-slate-900">State &amp; Territory Programs</h2>
           <p className="mt-1 text-sm text-slate-600">
-            These calculators combine your CCS with state or territory kindy and preschool programs.
+            Combine your CCS with your state or territory's kindy or preschool funding.
           </p>
           <div className="mt-4 divide-y divide-slate-100">
             {STATE_PROGRAMS.map((p) => (
               <Link
                 key={p.to}
                 to={p.to}
-                className="group flex items-center gap-4 py-4 first:pt-0 last:pb-0 transition-colors"
+                className="group -mx-3 flex items-center gap-4 rounded-xl px-3 py-4 transition-colors hover:bg-slate-50"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 text-xs font-bold text-white shadow-md">
                   {p.state}
@@ -130,7 +126,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Child Care Subsidy</h3>
               <p className="mt-1 text-sm text-slate-600">
-                The federal government subsidises your child care fees based on your family income, up to 90% (or 95% for second and subsequent children).
+                The federal government covers a percentage of your fees based on family income - up to 90%, or 95% for second and subsequent children.
               </p>
             </div>
             <div>
@@ -139,7 +135,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">State &amp; Territory Funding</h3>
               <p className="mt-1 text-sm text-slate-600">
-                Your state or territory may provide additional funding to cover the kindergarten program hours, further reducing your costs.
+                Some states and territories chip in extra funding for kindy or preschool programs, on top of your CCS.
               </p>
             </div>
             <div>
@@ -148,7 +144,7 @@ function HomePage() {
               </div>
               <h3 className="mt-3 text-base font-bold text-slate-900">Your Gap Fee</h3>
               <p className="mt-1 text-sm text-slate-600">
-                You only pay the remaining amount after CCS and any state or territory funding are applied. These calculators show you that gap.
+                You pay whatever's left after CCS and state funding are applied.
               </p>
             </div>
           </div>

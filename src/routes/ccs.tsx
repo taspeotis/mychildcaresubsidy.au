@@ -168,6 +168,8 @@ function CcsCalculator() {
               onOpenCcsModal={() => setCcsModalOpen(true)}
               colorScheme="brand"
               hideCcsHours={mode === 'daily'}
+              debtRecovery={shared.debtRecovery}
+              onDebtRecoveryChange={shared.setDebtRecovery}
             />
 
             {mode === 'daily' ? (
@@ -187,14 +189,14 @@ function CcsCalculator() {
                   <div className="mt-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
-                        label="Type of care"
+                        label="Type of Care"
                         options={CARE_TYPE_OPTIONS}
                         value={careType}
                         onChange={(e) => setCareType(e.target.value as CareType)}
                         colorScheme="brand"
                       />
                       <SelectField
-                        label="Child's age"
+                        label="Child's Age"
                         hint={careType === 'oshc' ? 'OSHC is for school-age children' : undefined}
                         options={CHILD_AGE_OPTIONS}
                         value={effectiveSchoolAge ? 'school' : 'below'}
@@ -246,14 +248,14 @@ function CcsCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Type of care"
+                      label="Type of Care"
                       options={CARE_TYPE_OPTIONS}
                       value={careType}
                       onChange={(e) => setCareType(e.target.value as CareType)}
                       colorScheme="brand"
                     />
                     <SelectField
-                      label="Child's age"
+                      label="Child's Age"
                       options={CHILD_AGE_OPTIONS}
                       value={effectiveSchoolAge ? 'school' : 'below'}
                       onChange={(e) => setSchoolAge(e.target.value === 'school')}

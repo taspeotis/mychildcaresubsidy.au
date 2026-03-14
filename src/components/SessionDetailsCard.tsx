@@ -26,7 +26,7 @@ export function SessionDetailsCard({
       <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
       <div className="mt-5 space-y-4">
         <InputField
-          label="Daily session fee"
+          label="Daily Session Fee"
           value={sessionFee}
           onChange={(e) => onSessionFeeChange(e.target.value)}
           prefix="$"
@@ -36,7 +36,7 @@ export function SessionDetailsCard({
         />
         <div className="grid grid-cols-2 gap-4">
           <TimePicker
-            label="Session start"
+            label="Session Start"
             value={sessionStart}
             onChange={onSessionStartChange}
             min={5}
@@ -44,7 +44,7 @@ export function SessionDetailsCard({
             colorScheme={colorScheme}
           />
           <TimePicker
-            label="Session end"
+            label="Session End"
             value={sessionEnd}
             onChange={onSessionEndChange}
             min={12}

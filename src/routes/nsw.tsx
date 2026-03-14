@@ -168,6 +168,8 @@ function NswCalculator() {
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
               hideCcsHours={mode === 'daily'}
+              debtRecovery={shared.debtRecovery}
+              onDebtRecoveryChange={shared.setDebtRecovery}
             />
 
             {mode === 'daily' ? (
@@ -186,13 +188,13 @@ function NswCalculator() {
                   <div className="mt-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
-                        label="Child's age group"
+                        label="Child's Age Group"
                         options={AGE_OPTIONS}
                         value={ageGroup}
                         onChange={(e) => setAgeGroup(e.target.value as NswAgeGroup)}
                       />
                       <SelectField
-                        label="Fee relief tier"
+                        label="Fee Relief Tier"
                         hint="See sidebar for eligibility"
                         options={TIER_OPTIONS}
                         value={feeReliefTier}
@@ -201,14 +203,14 @@ function NswCalculator() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
-                        label="Days per week"
+                        label="Days Per Week"
                         hint="For fee relief pro-rating"
                         options={DAYS_OPTIONS}
                         value={shared.daysPerWeek}
                         onChange={(e) => shared.setDaysPerWeek(e.target.value)}
                       />
                       <InputField
-                        label="Service operating weeks"
+                        label="Service Operating Weeks"
                         hint="Weeks per year your centre operates"
                         value={serviceWeeks}
                         onChange={(e) => setServiceWeeks(e.target.value)}
@@ -258,19 +260,19 @@ function NswCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <SelectField
-                      label="Child's age group"
+                      label="Child's Age Group"
                       options={AGE_OPTIONS}
                       value={ageGroup}
                       onChange={(e) => setAgeGroup(e.target.value as NswAgeGroup)}
                     />
                     <SelectField
-                      label="Fee relief tier"
+                      label="Fee Relief Tier"
                       options={TIER_OPTIONS}
                       value={feeReliefTier}
                       onChange={(e) => setFeeReliefTier(e.target.value as NswFeeReliefTier)}
                     />
                     <InputField
-                      label="Service weeks/year"
+                      label="Service Weeks / Year"
                       value={serviceWeeks}
                       onChange={(e) => setServiceWeeks(e.target.value)}
                       type="number"

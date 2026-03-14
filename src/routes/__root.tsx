@@ -98,14 +98,9 @@ function RootLayout() {
 
       <footer className="footer-glow bg-brand-900">
         <Container className="py-8 text-center text-xs text-white/50 space-y-2">
-          <p>
-            This calculator provides estimates only and should not be taken as financial advice.
-            Actual costs may vary.
-          </p>
-          <p>
-            Federal CCS rates based on FY2025-26 (July 2025 &ndash; June 2026).
-            State and territory program rates based on calendar year 2026.
-          </p>
+          <p>These calculators give estimates only, not financial advice. Your actual costs may differ.</p>
+          <p>Federal CCS rates based on FY2025&ndash;26 (July 2025 &ndash; June 2026).</p>
+          <p>State and territory program rates based on calendar year 2026.</p>
         </Container>
       </footer>
     </div>

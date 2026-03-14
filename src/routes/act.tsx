@@ -177,6 +177,8 @@ function ActCalculator() {
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
               hideCcsHours={mode === 'daily'}
+              debtRecovery={shared.debtRecovery}
+              onDebtRecoveryChange={shared.setDebtRecovery}
             />
 
             {mode === 'daily' ? (
@@ -194,14 +196,14 @@ function ActCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Preschool Details</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Preschool program hours"
+                      label="Preschool Program Hours"
                       hint="Hours per day"
                       options={PRESCHOOL_OPTIONS}
                       value={preschoolHours}
                       onChange={(e) => setPreschoolHours(e.target.value)}
                     />
                     <TimePicker
-                      label="Preschool start time"
+                      label="Preschool Start Time"
                       hint="When the program starts"
                       value={preschoolStart}
                       onChange={setPreschoolStart}
@@ -256,14 +258,14 @@ function ActCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <SelectField
-                      label="Preschool hours/day"
+                      label="Preschool Hours / Day"
                       hint={`${fnProgramWeeks} weeks/yr, ${kindyHoursPerWeek.toFixed(1)} hrs/wk`}
                       options={PRESCHOOL_OPTIONS}
                       value={fnPreschoolHours}
                       onChange={(e) => setFnPreschoolHours(e.target.value)}
                     />
                     <TimePicker
-                      label="Preschool start"
+                      label="Preschool Start"
                       value={fnPreschoolStart}
                       onChange={setFnPreschoolStart}
                       min={7}

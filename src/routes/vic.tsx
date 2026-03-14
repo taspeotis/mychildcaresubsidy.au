@@ -166,6 +166,8 @@ function VicCalculator() {
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
               hideCcsHours={mode === 'daily'}
+              debtRecovery={shared.debtRecovery}
+              onDebtRecoveryChange={shared.setDebtRecovery}
             />
 
             {mode === 'daily' ? (
@@ -184,7 +186,7 @@ function VicCalculator() {
                   <div className="mt-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
-                        label="Kinder program"
+                        label="Kinder Program"
                         options={AGE_OPTIONS}
                         value={kinderHours}
                         onChange={(e) => setKinderHours(e.target.value)}
@@ -198,7 +200,7 @@ function VicCalculator() {
                       />
                     </div>
                     <SelectField
-                      label="Days per week"
+                      label="Days Per Week"
                       hint="For offset pro-rating"
                       options={DAYS_OPTIONS}
                       value={shared.daysPerWeek}
@@ -245,7 +247,7 @@ function VicCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Kinder program"
+                      label="Kinder Program"
                       options={AGE_OPTIONS}
                       value={kinderHours}
                       onChange={(e) => setKinderHours(e.target.value)}

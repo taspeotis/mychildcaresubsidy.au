@@ -48,12 +48,12 @@ export function CalculatorSidebar({
         All Calculators
       </Link>
 
-      <h1 className="mt-4 text-2xl font-bold text-white">
-        <span className={`mr-2 inline-flex translate-y-[-1px] items-center rounded-lg px-2.5 py-1 align-middle text-xs font-bold text-white ${colorScheme === 'brand' ? 'bg-brand-600' : 'bg-accent-500'}`}>
+      <div className="mt-4 flex items-center gap-2.5">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-md bg-gradient-to-br ${colorScheme === 'brand' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}>
           {schemeTag}
         </span>
-        {schemeName}
-      </h1>
+        <h1 className="text-2xl font-bold text-white">{schemeName}</h1>
+      </div>
 
       <p className="mt-3 text-sm text-white/70 leading-relaxed">{description}</p>
 

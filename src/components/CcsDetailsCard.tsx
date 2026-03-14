@@ -10,6 +10,8 @@ interface CcsDetailsCardProps {
   ccsHours: string
   onCcsHoursChange: (value: string) => void
   onOpenCcsModal: () => void
+  debtRecovery?: string
+  onDebtRecoveryChange?: (value: string) => void
   colorScheme?: ColorScheme
   hideCcsHours?: boolean
 }
@@ -22,6 +24,8 @@ export function CcsDetailsCard({
   ccsHours,
   onCcsHoursChange,
   onOpenCcsModal,
+  debtRecovery,
+  onDebtRecoveryChange,
   colorScheme = 'accent',
   hideCcsHours,
 }: CcsDetailsCardProps) {
@@ -31,7 +35,7 @@ export function CcsDetailsCard({
       <div className="mt-5 space-y-4">
         <div>
           <InputField
-            label="CCS percentage"
+            label="CCS Percentage"
             value={ccsPercent}
             onChange={(e) => onCcsPercentChange(e.target.value)}
             suffix="%"
@@ -50,7 +54,7 @@ export function CcsDetailsCard({
         </div>
         {hideCcsHours ? (
           <InputField
-            label="CCS withholding"
+            label="CCS Withholding"
             value={withholding}
             onChange={(e) => onWithholdingChange(e.target.value)}
             hint="Usually 5%"
@@ -64,7 +68,7 @@ export function CcsDetailsCard({
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
-                label="CCS withholding"
+                label="CCS Withholding"
                 value={withholding}
                 onChange={(e) => onWithholdingChange(e.target.value)}
                 hint="Usually 5%"
@@ -76,7 +80,7 @@ export function CcsDetailsCard({
               />
               <div className="flex flex-col">
                 <span className="block text-sm font-bold text-slate-700">
-                  CCS hours/fortnight
+                  CCS Hours / Fortnight
                 </span>
                 <p className="text-xs text-slate-500 mt-0.5">Based on activity test</p>
                 <div className="mt-auto pt-1.5">
@@ -97,6 +101,34 @@ export function CcsDetailsCard({
               All families get 72 hrs/fortnight. 100 hrs if both parents do 48+ hrs of recognised activity per fortnight.
             </p>
           </>
+        )}
+
+        {onDebtRecoveryChange && (
+          <details className="group">
+            <summary className={`cursor-pointer select-none text-xs font-bold ${colorScheme === 'brand' ? 'text-brand-600 hover:text-brand-500' : 'text-accent-500 hover:text-accent-400'}`}>
+              Centrelink Debt Recovery
+              <svg className="ml-1 inline h-3 w-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </summary>
+            <div className="mt-3 space-y-3">
+              <p className="text-xs text-slate-500">
+                If Centrelink is recovering a debt from your CCS, they typically deduct 20% of your entitlement.
+                This reduces what's paid to your service but doesn't change your entitlement or state funding.
+              </p>
+              <InputField
+                label="Debt Recovery"
+                hint="Amount deducted per fortnight, or leave at $0"
+                value={debtRecovery ?? ''}
+                onChange={(e) => onDebtRecoveryChange(e.target.value)}
+                prefix="$"
+                suffix="/fn"
+                format="currency"
+                min={0}
+                colorScheme={colorScheme}
+              />
+            </div>
+          </details>
         )}
       </div>
     </div>

@@ -172,6 +172,8 @@ function QldCalculator() {
               onCcsHoursChange={shared.setCcsHours}
               onOpenCcsModal={() => setCcsModalOpen(true)}
               hideCcsHours={mode === 'daily'}
+              debtRecovery={shared.debtRecovery}
+              onDebtRecoveryChange={shared.setDebtRecovery}
             />
 
             {mode === 'daily' ? (
@@ -189,14 +191,14 @@ function QldCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Free Kindy Details</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Kindy program hours"
+                      label="Kindy Program Hours"
                       hint="Hours per day"
                       options={KINDY_PROGRAM_OPTIONS}
                       value={kindyHours}
                       onChange={(e) => setKindyHours(e.target.value)}
                     />
                     <TimePicker
-                      label="Kindy start time"
+                      label="Kindy Start Time"
                       hint="When the kindy program starts"
                       value={kindyStart}
                       onChange={setKindyStart}
@@ -251,13 +253,13 @@ function QldCalculator() {
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
-                      label="Kindy hours/day"
+                      label="Kindy Hours / Day"
                       options={KINDY_PROGRAM_OPTIONS}
                       value={fnKindyHours}
                       onChange={(e) => setFnKindyHours(e.target.value)}
                     />
                     <TimePicker
-                      label="Kindy start time"
+                      label="Kindy Start Time"
                       value={fnKindyStart}
                       onChange={setFnKindyStart}
                       min={7}
