@@ -13,7 +13,7 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { DEFAULTS, fmt, WEEKDAYS } from '../config'
+import { DEFAULTS, fmt, WEEKDAYS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import type { FortnightlySession } from '../types'
 
@@ -229,6 +229,15 @@ function QldCalculator() {
                     ? `${ccsCovHrs} CCS hrs × ${fmt(gapPerHr)}/hr + ${nonCcsCovHrs} non-CCS hrs × ${fmt(hrly)}/hr`
                     : `${ccsCovHrs} hrs × (${fmt(hrly)} – ${fmt(ccsPerHr)})/hr gap`
 
+                  const daysPerWeek = Number(shared.daysPerWeek) || 1
+                  const debt = computeDebtRecovery({
+                    ccsEntitlement: net,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: daysPerWeek * 2,
+                  })
+                  const adjustedGap = Math.max(0, Math.round((fee - debt.ccsPaidToService - dailyResult.kindyFundingAmount) * 100) / 100)
+
                   return (
                     <ResultCard
                       title="Daily Cost Estimate"
@@ -241,9 +250,14 @@ function QldCalculator() {
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
-                        { label: 'Gap Before Free Kindy', value: fmt(dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        ...(debt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
+                          ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
+                        ] : []),
+                        { label: 'Gap Before Free Kindy', value: fmt(debt.debtPerDay > 0 ? (fee - debt.ccsPaidToService) : dailyResult.gapBeforeKindy), detail: `${fmt(fee)} – ${fmt(debt.debtPerDay > 0 ? debt.ccsPaidToService : net)}`, muted: true },
                         { label: 'Free Kindy Funding', value: fmt(dailyResult.kindyFundingAmount), detail: kindyDetail, type: 'credit' as const },
-                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
+                        { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.kindyFundingAmount)}` : `${fmt(dailyResult.gapBeforeKindy)} – ${fmt(dailyResult.kindyFundingAmount)}` },
                       ]}
                     />
                   )
@@ -279,17 +293,32 @@ function QldCalculator() {
                   fmt={fmt}
                 />
 
-                {fortnightlyResult && (
-                  <ResultCard
-                    title="Fortnightly Total"
-                    rows={[
-                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
-                      { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
-                      { label: 'Total Free Kindy Funding', value: fmt(fortnightlyResult.totalKindyFunding), type: 'credit' as const },
-                      { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
-                    ]}
-                  />
-                )}
+                {fortnightlyResult && (() => {
+                  const fnDebt = computeDebtRecovery({
+                    ccsEntitlement: fortnightlyResult.totalCcsEntitlement,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: days.filter(d => d.booked).length,
+                  })
+                  const fnAdjustedGap = Math.max(0, Math.round((fortnightlyResult.totalSessionFees - fnDebt.ccsPaidToService - fortnightlyResult.totalKindyFunding) * 100) / 100)
+
+                  return (
+                    <ResultCard
+                      title="Fortnightly Total"
+                      rows={[
+                        { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
+                        { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                        ...(fnDebt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
+                          ...(fnDebt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(fnDebt.recoveredElsewhere), muted: true }] : []),
+                        ] : []),
+                        { label: 'Total Free Kindy Funding', value: fmt(fortnightlyResult.totalKindyFunding), type: 'credit' as const },
+                        { label: 'Your Estimated Gap', value: fmt(fnDebt.debtPerDay > 0 ? fnAdjustedGap : fortnightlyResult.totalGapFee), highlight: true },
+                      ]}
+                    />
+                  )
+                })()}
               </>
             )}
           </div>

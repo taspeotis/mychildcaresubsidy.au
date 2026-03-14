@@ -24,18 +24,36 @@ export const DAYS_OPTIONS = [
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
 /**
- * Compute debt recovery impact on a daily CCS entitlement.
- * debtRecoveryRaw: the raw string from shared state (could be % or $ amount)
- * The CcsDetailsCard stores: % mode → "20.00" means 20%, $ mode → "50.00" means $50/fn.
- * We detect mode by checking if the value looks like a small percentage (≤100) or a dollar amount.
- * For simplicity, the shared state stores the value and the component handles the mode internally.
- * Here we just take the per-day dollar amount to deduct.
+ * Compute per-day debt recovery amount and its impact on CCS paid to service.
+ * Used by all calculators (CCS, ACT, NSW, QLD, VIC) in both daily and fortnightly modes.
+ *
+ * - percent mode: deducts X% of the CCS entitlement for this session
+ * - amount mode: spreads the $/fortnight evenly across all booked days in the fortnight
+ *
+ * CCS entitlement and state funding are unchanged. Only the gap fee increases.
+ * CCS paid to service floors at $0; overflow is "recovered elsewhere".
  */
-export function computeDebtRecovery(ccsEntitlement: number, debtRecoveryPerDay: number) {
-  const ccsPaidToService = Math.max(0, ccsEntitlement - debtRecoveryPerDay)
-  const recoveredElsewhere = Math.max(0, debtRecoveryPerDay - ccsEntitlement)
-  const gapIncrease = ccsEntitlement - ccsPaidToService - recoveredElsewhere
-  return { ccsPaidToService, recoveredElsewhere, debtRecoveryPerDay, gapIncrease }
+export function computeDebtRecovery(params: {
+  ccsEntitlement: number
+  debtRecoveryRaw: string
+  debtRecoveryMode: 'percent' | 'amount'
+  bookedDaysPerFortnight: number
+}) {
+  const raw = Number(params.debtRecoveryRaw?.replace(/,/g, '') ?? '0') || 0
+  if (raw <= 0) return { debtPerDay: 0, ccsPaidToService: params.ccsEntitlement, recoveredElsewhere: 0 }
+
+  let debtPerDay: number
+  if (params.debtRecoveryMode === 'percent') {
+    debtPerDay = Math.round(params.ccsEntitlement * raw / 100 * 100) / 100
+  } else {
+    debtPerDay = params.bookedDaysPerFortnight > 0
+      ? Math.round(raw / params.bookedDaysPerFortnight * 100) / 100
+      : 0
+  }
+
+  const ccsPaidToService = Math.max(0, Math.round((params.ccsEntitlement - debtPerDay) * 100) / 100)
+  const recoveredElsewhere = Math.max(0, Math.round((debtPerDay - params.ccsEntitlement) * 100) / 100)
+  return { debtPerDay, ccsPaidToService, recoveredElsewhere }
 }
 
 /** Format a decimal hour as 12-hour time (e.g. 8.5 → "8:30 AM") */

@@ -13,7 +13,7 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateCcsDaily, calculateCcsFortnightly, getHourlyRateCap } from '../calculators/ccsCalculator'
 import type { CareType } from '../calculators/ccsCalculator'
 import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from '../calculators/ccs'
-import { DEFAULTS, fmt } from '../config'
+import { DEFAULTS, fmt, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
 export const Route = createFileRoute('/ccs')({
@@ -223,19 +223,14 @@ function CcsCalculator() {
                   const wh = dailyResult.ccsWithholding
                   const net = dailyResult.ccsEntitlement
                   const whPct = Number(shared.withholding) || 0
-                  const debtRaw = Number(shared.debtRecovery?.replace(/,/g, '') ?? '0') || 0
                   const daysPerWeek = Number(shared.daysPerWeek) || 1
-                  let debtPerDay = 0
-                  if (debtRaw > 0) {
-                    if (shared.debtRecoveryMode === 'percent') {
-                      debtPerDay = Math.round((net * debtRaw / 100) * 100) / 100
-                    } else {
-                      debtPerDay = Math.round((debtRaw / (daysPerWeek * 2)) * 100) / 100
-                    }
-                  }
-                  const ccsPaid = Math.max(0, Math.round((net - debtPerDay) * 100) / 100)
-                  const recoveredElsewhere = Math.max(0, Math.round((debtPerDay - net) * 100) / 100)
-                  const adjustedGap = Math.max(0, Math.round((fee - ccsPaid) * 100) / 100)
+                  const debt = computeDebtRecovery({
+                    ccsEntitlement: net,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: daysPerWeek * 2,
+                  })
+                  const adjustedGap = Math.max(0, Math.round((fee - debt.ccsPaidToService) * 100) / 100)
 
                   return (
                     <ResultCard
@@ -251,12 +246,12 @@ function CcsCalculator() {
                         { label: 'CCS Amount', value: fmt(gross), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs`, type: 'credit' as const },
                         { label: 'Withholding', value: fmt(wh), detail: `${fmt(gross)} × ${whPct}%`, type: 'debit' as const },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(gross)} – ${fmt(wh)}`, type: 'credit' as const },
-                        ...(debtPerDay > 0 ? [
-                          { label: 'Debt Recovery', value: fmt(debtPerDay), type: 'debit' as const, detail: shared.debtRecoveryMode === 'percent' ? `${shared.debtRecovery}% of ${fmt(net)}` : `${fmt(debtRaw)}/fn ÷ ${daysPerWeek * 2} days` },
-                          { label: 'CCS Paid to Service', value: fmt(ccsPaid), type: 'credit' as const },
-                          ...(recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(recoveredElsewhere), muted: true }] : []),
+                        ...(debt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
+                          ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Your Estimated Gap Fee', value: fmt(debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debtPerDay > 0 ? `${fmt(fee)} – ${fmt(ccsPaid)}` : `${fmt(fee)} – ${fmt(net)}` },
+                        { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)}` : `${fmt(fee)} – ${fmt(net)}` },
                       ]}
                     />
                   )
@@ -294,17 +289,32 @@ function CcsCalculator() {
                   colorScheme="brand"
                 />
 
-                {fortnightlyResult && (
-                  <ResultCard
-                    colorScheme="brand"
-                    title="Fortnightly Total"
-                    rows={[
-                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
-                      { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
-                      { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
-                    ]}
-                  />
-                )}
+                {fortnightlyResult && (() => {
+                  const fnDebt = computeDebtRecovery({
+                    ccsEntitlement: fortnightlyResult.totalCcsEntitlement,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: days.filter(d => d.booked).length,
+                  })
+                  const fnAdjustedGap = Math.max(0, Math.round((fortnightlyResult.totalSessionFees - fnDebt.ccsPaidToService) * 100) / 100)
+
+                  return (
+                    <ResultCard
+                      colorScheme="brand"
+                      title="Fortnightly Total"
+                      rows={[
+                        { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
+                        { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                        ...(fnDebt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
+                          ...(fnDebt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(fnDebt.recoveredElsewhere), muted: true }] : []),
+                        ] : []),
+                        { label: 'Your Estimated Gap', value: fmt(fnDebt.debtPerDay > 0 ? fnAdjustedGap : fortnightlyResult.totalGapFee), highlight: true },
+                      ]}
+                    />
+                  )
+                })()}
               </>
             )}
           </div>

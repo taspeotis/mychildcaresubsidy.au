@@ -13,7 +13,7 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import type { VicCohort } from '../calculators/vic'
-import { DEFAULTS, fmt, DAYS_OPTIONS } from '../config'
+import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
 export const Route = createFileRoute('/vic')({
@@ -224,6 +224,14 @@ function VicCalculator() {
                   const khrs = kinderHoursNum
                   const baseOffset = VIC_FREE_KINDER_OFFSET[cohort]
 
+                  const debt = computeDebtRecovery({
+                    ccsEntitlement: net,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: dpw * 2,
+                  })
+                  const adjustedGap = Math.max(0, Math.round((fee - debt.ccsPaidToService - dailyResult.dailyOffset) * 100) / 100)
+
                   return (
                     <ResultCard
                       title="Daily Cost Estimate"
@@ -235,9 +243,14 @@ function VicCalculator() {
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
-                        { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        ...(debt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
+                          ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
+                        ] : []),
+                        { label: 'Gap Before Free Kinder', value: fmt(debt.debtPerDay > 0 ? (fee - debt.ccsPaidToService) : dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(debt.debtPerDay > 0 ? debt.ccsPaidToService : net)}`, muted: true },
                         { label: 'Free Kinder Offset', value: fmt(dailyResult.dailyOffset), detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days`, type: 'credit' as const },
-                        { label: 'Your Estimated Gap Fee', value: fmt(dailyResult.estimatedGapFee), highlight: true, detail: `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
+                        { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.dailyOffset)}` : `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
                       ]}
                     />
                   )
@@ -271,17 +284,32 @@ function VicCalculator() {
                   fmt={fmt}
                 />
 
-                {fortnightlyResult && (
-                  <ResultCard
-                    title="Fortnightly Total"
-                    rows={[
-                      { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
-                      { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
-                      { label: 'Total Free Kinder Offset', value: fmt(fortnightlyResult.totalFreeKinder), type: 'credit' as const },
-                      { label: 'Your Estimated Gap', value: fmt(fortnightlyResult.totalGapFee), highlight: true },
-                    ]}
-                  />
-                )}
+                {fortnightlyResult && (() => {
+                  const fnDebt = computeDebtRecovery({
+                    ccsEntitlement: fortnightlyResult.totalCcsEntitlement,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: days.filter(d => d.booked).length,
+                  })
+                  const fnAdjustedGap = Math.max(0, Math.round((fortnightlyResult.totalSessionFees - fnDebt.ccsPaidToService - fortnightlyResult.totalFreeKinder) * 100) / 100)
+
+                  return (
+                    <ResultCard
+                      title="Fortnightly Total"
+                      rows={[
+                        { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
+                        { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
+                        ...(fnDebt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
+                          { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
+                          ...(fnDebt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(fnDebt.recoveredElsewhere), muted: true }] : []),
+                        ] : []),
+                        { label: 'Total Free Kinder Offset', value: fmt(fortnightlyResult.totalFreeKinder), type: 'credit' as const },
+                        { label: 'Your Estimated Gap', value: fmt(fnDebt.debtPerDay > 0 ? fnAdjustedGap : fortnightlyResult.totalGapFee), highlight: true },
+                      ]}
+                    />
+                  )
+                })()}
               </>
             )}
           </div>
