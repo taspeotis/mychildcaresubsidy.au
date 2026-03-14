@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ColorScheme } from '../types'
 import { InputField } from './InputField'
 import { ToggleGroup } from './ToggleGroup'
@@ -29,6 +30,26 @@ export function CcsDetailsCard({
   colorScheme = 'accent',
   hideCcsHours,
 }: CcsDetailsCardProps) {
+  const [debtEnabled, setDebtEnabled] = useState(() => Number(debtRecovery?.replace(/,/g, '') ?? '0') > 0)
+  const [debtMode, setDebtMode] = useState<'percent' | 'amount'>('percent')
+
+  function handleDebtToggle(checked: boolean) {
+    setDebtEnabled(checked)
+    if (checked && onDebtRecoveryChange) {
+      // Default to 20% — store as-is, caller interprets based on mode
+      onDebtRecoveryChange(debtMode === 'percent' ? '20.00' : '0.00')
+    } else if (!checked && onDebtRecoveryChange) {
+      onDebtRecoveryChange('0.00')
+    }
+  }
+
+  function handleModeSwitch(mode: string) {
+    setDebtMode(mode as 'percent' | 'amount')
+    if (onDebtRecoveryChange) {
+      onDebtRecoveryChange(mode === 'percent' ? '20.00' : '0.00')
+    }
+  }
+
   return (
     <div className="rounded-2xl card-glass p-8">
       <h2 className="text-lg font-bold text-slate-900">CCS Details</h2>
@@ -116,17 +137,40 @@ export function CcsDetailsCard({
                 If Centrelink is recovering a debt from your CCS, they typically deduct 20% of your entitlement.
                 This reduces what's paid to your service but doesn't change your entitlement or state funding.
               </p>
-              <InputField
-                label="Debt Recovery"
-                hint="Amount deducted per fortnight, or leave at $0"
-                value={debtRecovery ?? ''}
-                onChange={(e) => onDebtRecoveryChange(e.target.value)}
-                prefix="$"
-                suffix="/fn"
-                format="currency"
-                min={0}
-                colorScheme={colorScheme}
-              />
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={debtEnabled}
+                  onChange={(e) => handleDebtToggle(e.target.checked)}
+                  className={`rounded border-slate-300 ${colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500'}`}
+                />
+                Apply debt recovery
+              </label>
+              {debtEnabled && (
+                <div className="space-y-3">
+                  <ToggleGroup
+                    options={[
+                      { value: 'percent', label: '% of CCS' },
+                      { value: 'amount', label: '$ / Fortnight' },
+                    ]}
+                    value={debtMode}
+                    onChange={handleModeSwitch}
+                    variant="light"
+                    colorScheme={colorScheme}
+                    className="w-52"
+                  />
+                  <InputField
+                    label={debtMode === 'percent' ? 'Recovery Rate' : 'Recovery Amount'}
+                    value={debtRecovery ?? ''}
+                    onChange={(e) => onDebtRecoveryChange(e.target.value)}
+                    prefix={debtMode === 'amount' ? '$' : undefined}
+                    suffix={debtMode === 'percent' ? '%' : '/fn'}
+                    format={debtMode === 'percent' ? 'percent' : 'currency'}
+                    min={0}
+                    colorScheme={colorScheme}
+                  />
+                </div>
+              )}
             </div>
           </details>
         )}
