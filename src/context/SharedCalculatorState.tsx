@@ -18,6 +18,8 @@ interface SharedCalculatorState {
   setDaysPerWeek: (v: string) => void
   debtRecovery: string
   setDebtRecovery: (v: string) => void
+  debtRecoveryMode: 'percent' | 'amount'
+  setDebtRecoveryMode: (v: 'percent' | 'amount') => void
 }
 
 const SharedCalcContext = createContext<SharedCalculatorState | null>(null)
@@ -31,6 +33,7 @@ export function SharedCalculatorProvider({ children }: { children: ReactNode }) 
   const [sessionEnd, setSessionEnd] = useState(DEFAULTS.sessionEndHour)
   const [daysPerWeek, setDaysPerWeek] = useState('3')
   const [debtRecovery, setDebtRecovery] = useState('0.00')
+  const [debtRecoveryMode, setDebtRecoveryMode] = useState<'percent' | 'amount'>('percent')
 
   return (
     <SharedCalcContext.Provider value={{
@@ -42,6 +45,7 @@ export function SharedCalculatorProvider({ children }: { children: ReactNode }) 
       sessionEnd, setSessionEnd,
       daysPerWeek, setDaysPerWeek,
       debtRecovery, setDebtRecovery,
+      debtRecoveryMode, setDebtRecoveryMode,
     }}>
       {children}
     </SharedCalcContext.Provider>

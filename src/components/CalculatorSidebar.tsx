@@ -52,7 +52,7 @@ export function CalculatorSidebar({
         <span className={`flex shrink-0 items-center justify-center font-bold text-white bg-gradient-to-br ${colorScheme === 'brand' ? 'h-14 w-14 rounded-2xl text-sm shadow-lg from-brand-500 to-brand-700' : 'h-11 w-11 rounded-xl text-xs shadow-md from-accent-400 to-accent-600'}`}>
           {schemeTag}
         </span>
-        <h1 className="text-2xl font-bold text-white">{schemeName}</h1>
+        <h1 className="text-2xl font-bold leading-tight text-white">{schemeName}</h1>
       </div>
 
       <p className="mt-3 text-sm text-white/70 leading-relaxed">{description}</p>

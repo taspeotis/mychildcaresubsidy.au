@@ -23,6 +23,21 @@ export const DAYS_OPTIONS = [
 
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 
+/**
+ * Compute debt recovery impact on a daily CCS entitlement.
+ * debtRecoveryRaw: the raw string from shared state (could be % or $ amount)
+ * The CcsDetailsCard stores: % mode → "20.00" means 20%, $ mode → "50.00" means $50/fn.
+ * We detect mode by checking if the value looks like a small percentage (≤100) or a dollar amount.
+ * For simplicity, the shared state stores the value and the component handles the mode internally.
+ * Here we just take the per-day dollar amount to deduct.
+ */
+export function computeDebtRecovery(ccsEntitlement: number, debtRecoveryPerDay: number) {
+  const ccsPaidToService = Math.max(0, ccsEntitlement - debtRecoveryPerDay)
+  const recoveredElsewhere = Math.max(0, debtRecoveryPerDay - ccsEntitlement)
+  const gapIncrease = ccsEntitlement - ccsPaidToService - recoveredElsewhere
+  return { ccsPaidToService, recoveredElsewhere, debtRecoveryPerDay, gapIncrease }
+}
+
 /** Format a decimal hour as 12-hour time (e.g. 8.5 → "8:30 AM") */
 export function formatTime(hour: number): string {
   const h = Math.floor(hour)

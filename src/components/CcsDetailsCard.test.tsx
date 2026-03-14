@@ -55,14 +55,14 @@ describe('CcsDetailsCard', () => {
   it('shows checkbox when disclosure is opened', () => {
     render(<CcsDetailsCard {...defaultProps} debtRecovery="0.00" onDebtRecoveryChange={vi.fn()} />)
     fireEvent.click(screen.getByText('Centrelink Debt Recovery'))
-    expect(screen.getByLabelText('Apply debt recovery')).toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: 'Apply debt recovery' })).toBeInTheDocument()
   })
 
   it('defaults to 20% when checkbox is ticked', () => {
     const onDebtRecoveryChange = vi.fn()
     render(<CcsDetailsCard {...defaultProps} debtRecovery="0.00" onDebtRecoveryChange={onDebtRecoveryChange} />)
     fireEvent.click(screen.getByText('Centrelink Debt Recovery'))
-    fireEvent.click(screen.getByLabelText('Apply debt recovery'))
+    fireEvent.click(screen.getByRole('switch', { name: 'Apply debt recovery' }))
     expect(onDebtRecoveryChange).toHaveBeenCalledWith('20.00')
   })
 
@@ -71,7 +71,7 @@ describe('CcsDetailsCard', () => {
     render(<CcsDetailsCard {...defaultProps} debtRecovery="20.00" onDebtRecoveryChange={onDebtRecoveryChange} />)
     fireEvent.click(screen.getByText('Centrelink Debt Recovery'))
     // Checkbox is already checked (debtRecovery > 0), untick it
-    fireEvent.click(screen.getByLabelText('Apply debt recovery'))
+    fireEvent.click(screen.getByRole('switch', { name: 'Apply debt recovery' }))
     expect(onDebtRecoveryChange).toHaveBeenCalledWith('0.00')
   })
 })

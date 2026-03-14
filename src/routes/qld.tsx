@@ -174,6 +174,8 @@ function QldCalculator() {
               hideCcsHours={mode === 'daily'}
               debtRecovery={shared.debtRecovery}
               onDebtRecoveryChange={shared.setDebtRecovery}
+              debtRecoveryMode={shared.debtRecoveryMode}
+              onDebtRecoveryModeChange={shared.setDebtRecoveryMode}
             />
 
             {mode === 'daily' ? (

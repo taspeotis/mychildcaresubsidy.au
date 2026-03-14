@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import clsx from 'clsx'
 import type { ColorScheme } from '../types'
 import { InputField } from './InputField'
 import { ToggleGroup } from './ToggleGroup'
@@ -13,6 +14,8 @@ interface CcsDetailsCardProps {
   onOpenCcsModal: () => void
   debtRecovery?: string
   onDebtRecoveryChange?: (value: string) => void
+  debtRecoveryMode?: 'percent' | 'amount'
+  onDebtRecoveryModeChange?: (v: 'percent' | 'amount') => void
   colorScheme?: ColorScheme
   hideCcsHours?: boolean
 }
@@ -27,11 +30,12 @@ export function CcsDetailsCard({
   onOpenCcsModal,
   debtRecovery,
   onDebtRecoveryChange,
+  debtRecoveryMode: debtMode = 'percent',
+  onDebtRecoveryModeChange,
   colorScheme = 'accent',
   hideCcsHours,
 }: CcsDetailsCardProps) {
   const [debtEnabled, setDebtEnabled] = useState(() => Number(debtRecovery?.replace(/,/g, '') ?? '0') > 0)
-  const [debtMode, setDebtMode] = useState<'percent' | 'amount'>('percent')
 
   function handleDebtToggle(checked: boolean) {
     setDebtEnabled(checked)
@@ -44,7 +48,7 @@ export function CcsDetailsCard({
   }
 
   function handleModeSwitch(mode: string) {
-    setDebtMode(mode as 'percent' | 'amount')
+    onDebtRecoveryModeChange?.(mode as 'percent' | 'amount')
     if (onDebtRecoveryChange) {
       onDebtRecoveryChange(mode === 'percent' ? '20.00' : '0.00')
     }
@@ -133,32 +137,51 @@ export function CcsDetailsCard({
               </svg>
             </summary>
             <div className="mt-3 space-y-3">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400 leading-relaxed">
                 If Centrelink is recovering a debt from your CCS, they typically deduct 20% of your entitlement.
                 This reduces what's paid to your service but doesn't change your entitlement or state funding.
               </p>
-              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={debtEnabled}
-                  onChange={(e) => handleDebtToggle(e.target.checked)}
-                  className={`rounded border-slate-300 ${colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500'}`}
-                />
-                Apply debt recovery
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={debtEnabled}
+                  aria-label="Apply debt recovery"
+                  onClick={() => handleDebtToggle(!debtEnabled)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${debtEnabled ? (colorScheme === 'brand' ? 'bg-brand-600 focus:ring-brand-500' : 'bg-accent-500 focus:ring-accent-500') : 'bg-slate-200 focus:ring-slate-400'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${debtEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
+                <span className="text-sm font-bold text-slate-700">Apply Debt Recovery</span>
               </label>
               {debtEnabled && (
                 <div className="space-y-3">
-                  <ToggleGroup
-                    options={[
-                      { value: 'percent', label: '% of CCS' },
-                      { value: 'amount', label: '$ / Fortnight' },
-                    ]}
-                    value={debtMode}
-                    onChange={handleModeSwitch}
-                    variant="light"
-                    colorScheme={colorScheme}
-                    className="w-52"
-                  />
+                  <div className="flex rounded-lg bg-slate-100 p-1 w-fit">
+                    <button
+                      type="button"
+                      onClick={() => handleModeSwitch('percent')}
+                      className={clsx(
+                        'rounded-md px-3 py-1 text-xs font-bold transition-colors',
+                        debtMode === 'percent'
+                          ? clsx('text-white shadow-sm', colorScheme === 'brand' ? 'bg-brand-600' : 'bg-accent-500')
+                          : 'text-slate-500 hover:text-slate-700',
+                      )}
+                    >
+                      % of CCS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleModeSwitch('amount')}
+                      className={clsx(
+                        'rounded-md px-3 py-1 text-xs font-bold transition-colors',
+                        debtMode === 'amount'
+                          ? clsx('text-white shadow-sm', colorScheme === 'brand' ? 'bg-brand-600' : 'bg-accent-500')
+                          : 'text-slate-500 hover:text-slate-700',
+                      )}
+                    >
+                      $ / Fortnight
+                    </button>
+                  </div>
                   <InputField
                     label={debtMode === 'percent' ? 'Recovery Rate' : 'Recovery Amount'}
                     value={debtRecovery ?? ''}
@@ -168,6 +191,7 @@ export function CcsDetailsCard({
                     format={debtMode === 'percent' ? 'percent' : 'currency'}
                     min={0}
                     colorScheme={colorScheme}
+                    className="max-w-48"
                   />
                 </div>
               )}
