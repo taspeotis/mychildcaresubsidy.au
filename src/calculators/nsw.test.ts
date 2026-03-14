@@ -139,3 +139,63 @@ describe('calculateNswFortnightlySessions', () => {
     booked.forEach((s) => expect(s.feeRelief).toBe(11.89))
   })
 })
+
+describe('NSW edge cases', () => {
+  it('handles zero session fee gracefully', () => {
+    const result = calculateNswDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      ageGroup: '4+',
+      feeReliefTier: 'standard',
+      serviceWeeks: 50,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // Gap is zero, so fee relief is capped at zero
+    expect(result.estimatedGapFee).toBe(0)
+  })
+
+  it('0% CCS: fee relief still applies', () => {
+    const result = calculateNswDaily({
+      ccsPercent: 0,
+      ccsWithholdingPercent: 0,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      ageGroup: '4+',
+      feeReliefTier: 'standard',
+      serviceWeeks: 50,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // $1,783 / 50 = $35.66/wk
+    expect(result.weeklyFeeRelief).toBe(35.66)
+    // Fee relief still reduces the gap
+    expect(result.estimatedGapFee).toBeLessThan(150)
+  })
+
+  it('100% withholding: fee relief still applies', () => {
+    const result = calculateNswDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 100,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      ageGroup: '4+',
+      feeReliefTier: 'standard',
+      serviceWeeks: 50,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // Gap before fee relief is the full session fee
+    expect(result.gapBeforeFeeRelief).toBe(150)
+    // Fee relief still reduces the gap
+    expect(result.estimatedGapFee).toBeLessThan(150)
+  })
+})

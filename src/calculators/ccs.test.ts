@@ -14,6 +14,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { calculateCcsDaily, calculateCcsFortnightly } from './ccsCalculator'
+import { calculateStandardCcsPercent } from './ccs'
 
 describe('calculateCcsDaily', () => {
   /**
@@ -152,5 +153,87 @@ describe('calculateCcsFortnightly', () => {
     for (let i = 0; i < 6; i++) expect(booked[i].ccsEntitlement).toBe(96.9)
     // Last 2 sessions: no CCS hours left
     for (let i = 6; i < 8; i++) expect(booked[i].ccsEntitlement).toBe(0)
+  })
+})
+
+describe('edge cases', () => {
+  it('returns null for zero session fee', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'centre-based',
+      schoolAge: false,
+    })
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when session start >= end', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 150,
+      sessionStartHour: 18,
+      sessionEndHour: 8,
+      careType: 'centre-based',
+      schoolAge: false,
+    })
+
+    expect(result).toBeNull()
+  })
+
+  it('handles 0% CCS correctly', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 0,
+      ccsWithholdingPercent: 5,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'centre-based',
+      schoolAge: false,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.ccsHourlyRate).toBe(0)
+    expect(result!.ccsAmount).toBe(0)
+    expect(result!.ccsWithholding).toBe(0)
+    expect(result!.ccsEntitlement).toBe(0)
+    expect(result!.estimatedGapFee).toBe(150)
+  })
+
+  it('handles 100% withholding without errors', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 100,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'centre-based',
+      schoolAge: false,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.ccsEntitlement).toBe(0)
+    expect(result!.estimatedGapFee).toBe(150)
+  })
+})
+
+describe('CCS percentage boundaries', () => {
+  it('returns 90% at income <= 85,279', () => {
+    expect(calculateStandardCcsPercent(85_279)).toBe(90)
+    expect(calculateStandardCcsPercent(80_000)).toBe(90)
+  })
+
+  it('returns 0% at income >= 535,279', () => {
+    expect(calculateStandardCcsPercent(535_279)).toBe(0)
+    expect(calculateStandardCcsPercent(600_000)).toBe(0)
+  })
+
+  it('tapers correctly just above threshold', () => {
+    // $90,279 is in the range ($85,279, $90,279], reduction = floor((90279 - 85279) / 5000) * 1 = 1
+    expect(calculateStandardCcsPercent(90_279)).toBe(89)
   })
 })

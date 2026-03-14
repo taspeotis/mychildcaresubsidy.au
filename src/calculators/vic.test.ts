@@ -122,3 +122,60 @@ describe('calculateVicFortnightlySessions', () => {
     booked.forEach((s) => expect(s.freeKinder).toBe(17.51))
   })
 })
+
+describe('VIC edge cases', () => {
+  it('handles zero session fee gracefully', () => {
+    const result = calculateVicDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      cohort: 'standard',
+      kinderHoursPerWeek: 15,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // Gap is zero, offset is capped at zero
+    expect(result.estimatedGapFee).toBe(0)
+  })
+
+  it('0% CCS: Free Kinder offset still applies', () => {
+    const result = calculateVicDaily({
+      ccsPercent: 0,
+      ccsWithholdingPercent: 0,
+      sessionFee: 120,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      cohort: 'standard',
+      kinderHoursPerWeek: 15,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // $2,101 / 40 = $52.53/wk
+    expect(result.weeklyOffset).toBe(52.53)
+    // Offset still reduces the gap
+    expect(result.estimatedGapFee).toBeLessThan(120)
+  })
+
+  it('100% withholding: Free Kinder offset still applies', () => {
+    const result = calculateVicDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 100,
+      sessionFee: 120,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      cohort: 'standard',
+      kinderHoursPerWeek: 15,
+      daysPerWeek: 3,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // Gap before kinder is the full session fee
+    expect(result.gapBeforeFreeKinder).toBe(120)
+    // Offset still reduces the gap
+    expect(result.estimatedGapFee).toBeLessThan(120)
+  })
+})

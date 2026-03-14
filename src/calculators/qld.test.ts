@@ -152,3 +152,54 @@ describe('calculateQldFortnightly', () => {
     expect(week1[2].kindyFundingAmount).toBe(0) // Wed: pool exhausted
   })
 })
+
+describe('QLD edge cases', () => {
+  it('handles zero session fee gracefully', () => {
+    const result = calculateQldDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 7.5,
+    })
+
+    expect(result.ccsAmount).toBe(0)
+    expect(result.kindyFundingAmount).toBe(0)
+    expect(result.estimatedGapFee).toBe(0)
+  })
+
+  it('0% CCS: kindy funding still applies', () => {
+    const result = calculateQldDaily({
+      ccsPercent: 0,
+      ccsWithholdingPercent: 0,
+      sessionFee: 125,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 7.5,
+    })
+
+    expect(result.ccsAmount).toBe(0)
+    expect(result.ccsEntitlement).toBe(0)
+    // Kindy covers full fee for kindy hours: 7.5 × $12.50 = $93.75
+    expect(result.kindyFundingAmount).toBe(93.75)
+    expect(result.estimatedGapFee).toBe(31.25)
+  })
+
+  it('100% withholding: CCS entitlement is 0 but kindy funding still applies', () => {
+    const result = calculateQldDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 100,
+      sessionFee: 125,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 7.5,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // With 100% withholding, gap before kindy is the full fee
+    expect(result.gapBeforeKindy).toBe(125)
+    // Kindy funding should still apply
+    expect(result.kindyFundingAmount).toBeGreaterThan(0)
+  })
+})

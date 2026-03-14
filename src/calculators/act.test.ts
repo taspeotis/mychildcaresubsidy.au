@@ -153,3 +153,56 @@ describe('calculateActFortnightly', () => {
     expect(week1[2].kindyFundingAmount).toBe(0) // Wed: pool exhausted
   })
 })
+
+describe('ACT edge cases', () => {
+  it('handles zero session fee gracefully', () => {
+    const result = calculateActDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 0,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 6,
+    })
+
+    // Zero fee means zero everything
+    expect(result.ccsAmount).toBe(0)
+    expect(result.kindyFundingAmount).toBe(0)
+    expect(result.estimatedGapFee).toBe(0)
+  })
+
+  it('0% CCS: state funding still applies', () => {
+    const result = calculateActDaily({
+      ccsPercent: 0,
+      ccsWithholdingPercent: 0,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 6,
+    })
+
+    expect(result.ccsAmount).toBe(0)
+    expect(result.ccsEntitlement).toBe(0)
+    // ACT funding should still cover preschool hours: 6 × $15 = $90
+    expect(result.kindyFundingAmount).toBe(90)
+    expect(result.estimatedGapFee).toBe(60)
+  })
+
+  it('100% withholding: CCS entitlement is 0 but funding still applies', () => {
+    const result = calculateActDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 100,
+      sessionFee: 150,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      kindyProgramHours: 6,
+    })
+
+    expect(result.ccsEntitlement).toBe(0)
+    // ACT gap uses ccsAmount (pre-withholding), not ccsEntitlement
+    // ccsAmount = $14.63 cap * 85% = $12.44/hr * 10 hrs = $124.40
+    expect(result.gapBeforeKindy).toBe(25.6)
+    // Kindy funding should still apply
+    expect(result.kindyFundingAmount).toBeGreaterThan(0)
+  })
+})

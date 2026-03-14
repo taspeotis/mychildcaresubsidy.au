@@ -37,8 +37,9 @@ describe('InputField', () => {
     const onChange = vi.fn()
     render(<InputField label="Pct" value="-5" onChange={onChange} format="percent" min={0} />)
     fireEvent.blur(screen.getByLabelText('Pct'))
-    // Should have called onChange with clamped value
     expect(onChange).toHaveBeenCalled()
+    const event = onChange.mock.calls[0][0]
+    expect(event.target.value).toBe('0.00')
   })
 
   it('clamps value to max on blur', () => {
@@ -46,6 +47,8 @@ describe('InputField', () => {
     render(<InputField label="Pct" value="100" onChange={onChange} format="percent" max={95} />)
     fireEvent.blur(screen.getByLabelText('Pct'))
     expect(onChange).toHaveBeenCalled()
+    const event = onChange.mock.calls[0][0]
+    expect(event.target.value).toBe('95.00')
   })
 
   it('renders error message', () => {
