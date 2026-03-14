@@ -49,7 +49,7 @@ export function CalculatorSidebar({
       </Link>
 
       <div className="mt-4 flex items-center gap-2.5">
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-md bg-gradient-to-br ${colorScheme === 'brand' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}>
+        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-md bg-gradient-to-br ${colorScheme === 'brand' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}>
           {schemeTag}
         </span>
         <h1 className="text-2xl font-bold text-white">{schemeName}</h1>
