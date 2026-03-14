@@ -51,12 +51,10 @@ export function Button({ className, ...props }: ButtonProps) {
   )
 
   if (typeof props.href === 'string') {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { variant: _, color: __, ...linkProps } = props as { variant?: string; color?: string; href: string } & Record<string, unknown>
     return <Link className={classes} to={linkProps.href} {...linkProps} />
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { variant: _, color: __, ...buttonProps } = props as { variant?: string; color?: string } & React.ComponentPropsWithoutRef<'button'>
   return <button className={classes} {...buttonProps} />
 }
