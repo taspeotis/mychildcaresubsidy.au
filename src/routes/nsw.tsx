@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { CalculatorSidebar } from '../components/CalculatorSidebar'
+import { StickyPanel } from '../components/StickyPanel'
 import { CcsDetailsCard } from '../components/CcsDetailsCard'
 import { SessionDetailsCard } from '../components/SessionDetailsCard'
 import { InputField } from '../components/InputField'
@@ -116,7 +117,7 @@ function NswCalculator() {
         <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
           {/* Sidebar panel */}
           <aside className="relative mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-20 lg:self-start rounded-2xl sidebar-gradient p-6 lg:p-8">
+            <StickyPanel className="rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="NSW"
                 schemeName="Start Strong"
@@ -154,7 +155,7 @@ function NswCalculator() {
                   onChange={setMode}
                 />
               </CalculatorSidebar>
-            </div>
+            </StickyPanel>
           </aside>
 
           {/* Main content */}

@@ -68,8 +68,18 @@ function RootLayout() {
     <div className="flex min-h-screen flex-col bg-page">
       <header className="header-glow sticky top-0 z-40 bg-brand-900">
         <Container className="flex h-auto min-h-[4rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
-          <Link to="/" className="shrink-0 inline-flex items-center gap-2 text-base font-bold text-white tracking-tight sm:text-lg">
-            <img src="/logo.svg" alt="" className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+          <Link to="/" className="shrink-0 inline-flex items-center gap-1.5 text-base font-bold text-white tracking-tight sm:text-lg">
+            <svg className="h-6 w-6 shrink-0 sm:h-7 sm:w-7" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#a856d5"/>
+                  <stop offset="1" stopColor="#f87050"/>
+                </linearGradient>
+              </defs>
+              <rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="url(#logo-grad)" strokeWidth="2.5"/>
+              <path d="M16 7v18" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M21 10H14a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H11" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
             <span>my<span className="text-accent-400">childcare</span>subsidy.au</span>
           </Link>
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
