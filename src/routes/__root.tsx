@@ -80,7 +80,7 @@ function RootLayout() {
               <path d="M16 7v18" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round"/>
               <path d="M21 10H14a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H11" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span>my<span className="text-accent-400">childcare</span>subsidy.au</span>
+            <span className="leading-none">my<span className="text-accent-400">childcare</span>subsidy.au</span>
           </Link>
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div

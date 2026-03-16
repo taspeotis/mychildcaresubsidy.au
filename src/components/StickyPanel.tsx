@@ -8,16 +8,24 @@ interface StickyPanelProps {
 
 export function StickyPanel({ children, className }: StickyPanelProps) {
   const [isLg, setIsLg] = useState(false)
+  const [prefersReduced, setPrefersReduced] = useState(false)
   const { scrollY } = useScroll()
   const smoothScrollY = useSpring(scrollY, { damping: 20, stiffness: 100 })
-  const lagY = useTransform(() => isLg ? smoothScrollY.get() - scrollY.get() : 0)
+  const lagY = useTransform(() => (isLg && !prefersReduced) ? smoothScrollY.get() - scrollY.get() : 0)
 
   useEffect(() => {
-    const mql = window.matchMedia('(min-width: 1024px)')
-    setIsLg(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setIsLg(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
+    const lgMql = window.matchMedia('(min-width: 1024px)')
+    const motionMql = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setIsLg(lgMql.matches)
+    setPrefersReduced(motionMql.matches)
+    const lgHandler = (e: MediaQueryListEvent) => setIsLg(e.matches)
+    const motionHandler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches)
+    lgMql.addEventListener('change', lgHandler)
+    motionMql.addEventListener('change', motionHandler)
+    return () => {
+      lgMql.removeEventListener('change', lgHandler)
+      motionMql.removeEventListener('change', motionHandler)
+    }
   }, [])
 
   return (
