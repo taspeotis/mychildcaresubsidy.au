@@ -68,9 +68,9 @@ function RootLayout() {
     <div className="flex min-h-screen flex-col bg-page">
       <header className="header-glow sticky top-0 z-40 bg-brand-900">
         <Container className="flex h-auto min-h-[4rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
-          <Link to="/" className="shrink-0 flex items-center gap-2 text-base font-bold text-white tracking-tight sm:text-lg">
-            <img src="/logo.svg" alt="" className="h-7 w-7 sm:h-8 sm:w-8" />
-            my<span className="text-accent-400">childcare</span>subsidy.au
+          <Link to="/" className="shrink-0 inline-flex items-center gap-2 text-base font-bold text-white tracking-tight sm:text-lg">
+            <img src="/logo.svg" alt="" className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+            <span>my<span className="text-accent-400">childcare</span>subsidy.au</span>
           </Link>
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div
