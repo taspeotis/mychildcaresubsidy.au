@@ -108,10 +108,25 @@ function RootLayout() {
       </main>
 
       <footer className="footer-glow bg-brand-900">
-        <Container className="py-8 text-center text-xs text-white/50 space-y-2">
+        <Container className="py-8 text-center text-xs text-white/50 space-y-3">
           <p>These calculators give estimates only, not financial advice. Your actual costs may differ.</p>
-          <p>Federal CCS rates based on FY2025&ndash;26 (July 2025 &ndash; June 2026).</p>
-          <p>State and territory program rates based on calendar year 2026.</p>
+          <p>CCS rates applicable to fiscal year 2025&ndash;26. State and territory rates applicable to 2026 calendar year.</p>
+          <p>
+            This site is{' '}
+            <a href="https://github.com/taspeotis/mychildcaresubsidy.au" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
+              open source
+            </a>
+            .{' '}
+            Found a bug or have a suggestion?{' '}
+            <a href="https://github.com/taspeotis/mychildcaresubsidy.au/issues" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
+              Open an issue
+            </a>
+            .{' '}
+            <Link to="/release-notes" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
+              Release notes
+            </Link>
+            .
+          </p>
         </Container>
       </footer>
     </div>

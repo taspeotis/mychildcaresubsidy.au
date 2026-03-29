@@ -42,7 +42,16 @@ function VicCalculator() {
   const [kinderHours, setKinderHours] = useState('15')
   const [cohort, setCohort] = useState<VicCohort>('standard')
 
-  // Fortnightly inputs
+  // Weekly inputs (1 week)
+  const [weeklyDays, setWeeklyDays] = useState<DayConfig[]>(() =>
+    createDefaultDays(
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
+      undefined,
+      1,
+    ),
+  )
+
+  // Fortnightly inputs (2 weeks)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
@@ -70,6 +79,40 @@ function VicCalculator() {
       daysPerWeek: dpw,
     })
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek])
+
+  // Weekly: duplicate week 1 into a fortnight and calculate
+  const weeklyResult = useMemo(() => {
+    const ccs = Number(shared.ccsPercent) || 0
+    const wh = Number(shared.withholding) || 0
+    const ccsHours = Number(shared.ccsHours) || 72
+
+    const fortnightDays = [...weeklyDays, ...weeklyDays]
+    const sessions = fortnightDays.map((d) => ({
+      booked: d.booked,
+      sessionFee: d.booked ? (Number(d.sessionFee) || 0) : 0,
+      sessionStartHour: d.booked ? d.sessionStart : 0,
+      sessionEndHour: d.booked ? d.sessionEnd : 0,
+    }))
+
+    if (!weeklyDays.some((d) => d.booked && (Number(d.sessionFee) || 0) > 0)) return null
+
+    return calculateVicFortnightlySessions({
+      ccsPercent: ccs,
+      ccsWithholdingPercent: wh,
+      fortnightlyCcsHours: ccsHours,
+      cohort,
+      kinderHoursPerWeek: kinderHoursNum,
+      sessions,
+    })
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, weeklyDays])
+
+  const weeklyDayResults: DayResult[] | null = weeklyResult
+    ? weeklyResult.sessions.slice(0, 5).map((s) => ({
+        ccsEntitlement: s.ccsEntitlement,
+        kindyFunding: s.freeKinder,
+        gapFee: s.gapFee,
+      }))
+    : null
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -147,6 +190,7 @@ function VicCalculator() {
                 <ToggleGroup
                   options={[
                     { value: 'daily', label: 'Daily' },
+                    { value: 'weekly', label: 'Weekly' },
                     { value: 'fortnightly', label: 'Fortnightly' },
                   ]}
                   value={mode}
@@ -173,7 +217,7 @@ function VicCalculator() {
               onDebtRecoveryModeChange={shared.setDebtRecoveryMode}
             />
 
-            {mode === 'daily' ? (
+            {mode === 'daily' && (
               <>
                 <SessionDetailsCard
                   sessionFee={shared.sessionFee}
@@ -257,8 +301,128 @@ function VicCalculator() {
                   )
                 })()}
               </>
-            ) : (
+            )}
+
+            {mode === 'weekly' && (
               <>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Free Kinder Settings</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <SelectField
+                      label="Kinder Program"
+                      options={AGE_OPTIONS}
+                      value={kinderHours}
+                      onChange={(e) => setKinderHours(e.target.value)}
+                    />
+                    <SelectField
+                      label="Cohort"
+                      options={COHORT_OPTIONS}
+                      value={cohort}
+                      onChange={(e) => setCohort(e.target.value as VicCohort)}
+                    />
+                  </div>
+                </div>
+
+                <FortnightlyGrid
+                  days={weeklyDays}
+                  onChange={setWeeklyDays}
+                  results={weeklyDayResults}
+                  fundingLabel="Free Kinder"
+                  fmt={fmt}
+                  defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                />
+
+                {weeklyResult && (() => {
+                  const w1 = weeklyResult.sessions.slice(0, 5)
+                  const w2 = weeklyResult.sessions.slice(5, 10)
+                  const w1Gap = w1.reduce((s, d) => s + d.gapFee, 0)
+                  const w2Gap = w2.reduce((s, d) => s + d.gapFee, 0)
+                  const w1Fees = weeklyDays.filter(d => d.booked).reduce((s, d) => s + (Number(d.sessionFee) || 0), 0)
+                  const w1Ccs = w1.reduce((s, d) => s + d.ccsEntitlement, 0)
+                  const w1Kinder = w1.reduce((s, d) => s + d.freeKinder, 0)
+                  const weeksMatch = Math.abs(w1Gap - w2Gap) < 0.01
+
+                  const bookedCount = weeklyDays.filter(d => d.booked).length
+                  const wkDebt = computeDebtRecovery({
+                    ccsEntitlement: weeklyResult.totalCcsEntitlement,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: bookedCount * 2,
+                  })
+
+                  if (weeksMatch) {
+                    const wkDebtPerWeek = Math.round(wkDebt.debtPerDay / 2 * 100) / 100
+                    const wkCcsPaidPerWeek = Math.round((w1Ccs - wkDebtPerWeek) * 100) / 100
+                    const adjustedGap = wkDebt.debtPerDay > 0
+                      ? Math.max(0, Math.round((w1Fees - wkCcsPaidPerWeek - w1Kinder) * 100) / 100)
+                      : w1Gap
+
+                    return (
+                      <ResultCard
+                        title="Weekly Cost Estimate"
+                        rows={[
+                          { label: 'Session Fees', value: fmt(w1Fees), type: 'debit' as const },
+                          { label: 'CCS Entitlement', value: fmt(w1Ccs), type: 'credit' as const },
+                          { label: 'Free Kinder Offset', value: fmt(w1Kinder), type: 'credit' as const },
+                          ...(wkDebtPerWeek > 0 ? [
+                            { label: 'Debt Recovery', value: fmt(wkDebtPerWeek), type: 'debit' as const },
+                          ] : []),
+                          { label: 'Your Estimated Gap', value: `${fmt(adjustedGap)} per week`, highlight: true },
+                        ]}
+                        note="Both weeks of the fortnight are the same — your weekly cost is predictable."
+                      />
+                    )
+                  }
+
+                  const w2Ccs = w2.reduce((s, d) => s + d.ccsEntitlement, 0)
+                  const w2Kinder = w2.reduce((s, d) => s + d.freeKinder, 0)
+                  const fnAdjustedGap = wkDebt.debtPerDay > 0
+                    ? Math.max(0, Math.round((weeklyResult.totalSessionFees - wkDebt.ccsPaidToService - weeklyResult.totalFreeKinder) * 100) / 100)
+                    : weeklyResult.totalGapFee
+
+                  return (
+                    <ResultCard
+                      title="Weekly Cost Estimate"
+                      rows={[
+                        { label: 'Weekly Session Fees', value: fmt(w1Fees), type: 'debit' as const },
+                        { label: 'Week 1 CCS', value: fmt(w1Ccs), type: 'credit' as const },
+                        { label: 'Week 1 Free Kinder', value: fmt(w1Kinder), type: 'credit' as const },
+                        { label: 'Week 1 Gap', value: fmt(w1Gap) },
+                        { label: 'Week 2 CCS', value: fmt(w2Ccs), type: 'credit' as const },
+                        { label: 'Week 2 Free Kinder', value: fmt(w2Kinder), type: 'credit' as const },
+                        { label: 'Week 2 Gap', value: fmt(w2Gap) },
+                        ...(wkDebt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(wkDebt.debtPerDay), type: 'debit' as const },
+                        ] : []),
+                        { label: 'Your Fortnightly Gap', value: fmt(fnAdjustedGap), highlight: true },
+                      ]}
+                      note={`Your ${shared.ccsHours} CCS hours per fortnight don't fully cover week 2, so costs differ between weeks.`}
+                    />
+                  )
+                })()}
+              </>
+            )}
+
+            {mode === 'fortnightly' && (
+              <>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
+
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
@@ -283,6 +447,7 @@ function VicCalculator() {
                   results={dayResults}
                   fundingLabel="Free Kinder"
                   fmt={fmt}
+                  defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
                 />
 
                 {fortnightlyResult && (() => {

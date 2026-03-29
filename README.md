@@ -1,27 +1,34 @@
 # mychildcaresubsidy.au
 
-A free calculator that estimates out-of-pocket child care costs for Australian families. It factors in the federal **Child Care Subsidy (CCS)** and state/territory funding programs so you can see what you'll actually pay.
+Free, open-source calculator for estimating out-of-pocket child care costs in Australia. Covers the federal Child Care Subsidy (CCS) and state/territory funding programs.
 
-## What's included
+## Calculators
 
-- **Federal CCS Calculator** — Estimate your Child Care Subsidy for centre-based day care, family day care, and outside school hours care (OSHC), including school-age children
-- **ACT** — Free 3-Year-Old Preschool
-- **NSW** — Start Strong fee relief
-- **QLD** — Free Kindy
-- **VIC** — Free Kinder
+- **Federal CCS** for centre-based day care, family day care, and outside school hours care (OSHC), including school-age children
+- **ACT** 3-Year-Old Preschool
+- **NSW** Start Strong fee relief
+- **QLD** Free Kindy
+- **VIC** Free Kinder
 
 ## How it works
 
-1. **Child Care Subsidy** — The federal government subsidises your child care fees based on family income (up to 90%, or 95% for second and subsequent children)
-2. **State/territory funding** — Your state or territory may provide additional funding for kindergarten or preschool programs
-3. **Your gap fee** — You pay the remaining amount after both subsidies are applied
+The federal government subsidises child care fees based on family income (up to 90%, or 95% for second and subsequent children). Some states and territories provide additional funding for kindergarten or preschool programs delivered through long day care. You pay the gap after both subsidies are applied.
 
 ## Rates
 
-Federal CCS rates are based on **FY2025-26** (July 2025 - June 2026). State and territory program rates are based on **calendar year 2026**.
+Federal CCS rates are for FY2025-26 (July 2025 to June 2026). State and territory rates are for calendar year 2026.
 
-This calculator provides estimates only and should not be taken as financial advice. Actual costs may vary.
+Estimates only, not financial advice.
 
-## Feedback
+## Development
 
-Found a bug or have a suggestion? Please [open an issue](https://github.com/taspeotis/mychildcaresubsidy.au/issues).
+```sh
+npm install
+npm run dev
+```
+
+`npm run build` runs TypeScript checking then Vite. The build uses `vite-plugin-singlefile` to produce a single `index.html` with all assets inlined.
+
+## Issues
+
+Found a bug or have a suggestion? [Open an issue](https://github.com/taspeotis/mychildcaresubsidy.au/issues).

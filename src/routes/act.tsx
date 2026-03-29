@@ -42,9 +42,20 @@ function ActCalculator() {
   const [preschoolHours, setPreschoolHours] = useState('6')
   const [preschoolStart, setPreschoolStart] = useState(8.5)
 
-  // Fortnightly inputs
+  // Weekly/fortnightly shared inputs
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')
   const [fnPreschoolStart, setFnPreschoolStart] = useState(8.5)
+
+  // Weekly inputs (1 week)
+  const [weeklyDays, setWeeklyDays] = useState<DayConfig[]>(() =>
+    createDefaultDays(
+      { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
+      DEFAULT_PRESCHOOL.slice(0, 5),
+      1,
+    ),
+  )
+
+  // Fortnightly inputs (2 weeks)
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
@@ -71,6 +82,42 @@ function ActCalculator() {
   }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, preschoolHours])
 
   const fnProgramWeeks = Math.round(300 / (Number(fnPreschoolHours) || 6))
+
+  // Weekly: duplicate week 1 into a fortnight and calculate
+  const weeklyResult = useMemo(() => {
+    const ccs = Number(shared.ccsPercent) || 0
+    const wh = Number(shared.withholding) || 0
+    const ccsHours = Number(shared.ccsHours) || 72
+    const ph = Number(fnPreschoolHours) || 6
+
+    const fortnightDays = [...weeklyDays, ...weeklyDays]
+    const sessions: FortnightlySession[] = fortnightDays.map((d, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const day = WEEKDAYS[i % 5]
+      const fee = d.booked ? (Number(d.sessionFee) || 0) : 0
+      const start = d.booked ? d.sessionStart : 0
+      const end = d.booked ? d.sessionEnd : 0
+      const hasPreschool = d.booked && d.hasKindy
+      const ps = hasPreschool ? fnPreschoolStart : null
+      const pe = hasPreschool ? fnPreschoolStart + ph : null
+      return { week, day, sessionFee: fee, sessionStartHour: start, sessionEndHour: end, kindyProgramStartHour: ps, kindyProgramEndHour: pe }
+    })
+
+    if (!weeklyDays.some((d) => d.booked && (Number(d.sessionFee) || 0) > 0)) return null
+
+    return calculateActFortnightly(
+      { ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions },
+      fnProgramWeeks,
+    )
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnPreschoolHours, fnPreschoolStart, fnProgramWeeks, weeklyDays])
+
+  const weeklyDayResults: DayResult[] | null = weeklyResult
+    ? weeklyResult.sessions.slice(0, 5).map((s) => ({
+        ccsEntitlement: s.ccsEntitlement,
+        kindyFunding: s.kindyFundingAmount,
+        gapFee: s.estimatedGapFee,
+      }))
+    : null
 
   const fortnightlyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -158,6 +205,7 @@ function ActCalculator() {
                 <ToggleGroup
                   options={[
                     { value: 'daily', label: 'Daily' },
+                    { value: 'weekly', label: 'Weekly' },
                     { value: 'fortnightly', label: 'Fortnightly' },
                   ]}
                   value={mode}
@@ -184,7 +232,7 @@ function ActCalculator() {
               onDebtRecoveryModeChange={shared.setDebtRecoveryMode}
             />
 
-            {mode === 'daily' ? (
+            {mode === 'daily' && (
               <>
                 <SessionDetailsCard
                   sessionFee={shared.sessionFee}
@@ -269,8 +317,131 @@ function ActCalculator() {
                   )
                 })()}
               </>
-            ) : (
+            )}
+
+            {mode === 'weekly' && (
               <>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
+
+                <div className="rounded-2xl card-glass p-8">
+                  <h2 className="text-lg font-bold text-slate-900">Preschool Settings</h2>
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <SelectField
+                      label="Preschool Hours / Day"
+                      hint={`${fnProgramWeeks} weeks/yr, ${kindyHoursPerWeek.toFixed(1)} hrs/wk`}
+                      options={PRESCHOOL_OPTIONS}
+                      value={fnPreschoolHours}
+                      onChange={(e) => setFnPreschoolHours(e.target.value)}
+                    />
+                    <TimePicker
+                      label="Preschool Start Time"
+                      value={fnPreschoolStart}
+                      onChange={setFnPreschoolStart}
+                      min={7}
+                      max={12}
+                    />
+                  </div>
+                </div>
+
+                <FortnightlyGrid
+                  days={weeklyDays}
+                  onChange={setWeeklyDays}
+                  results={weeklyDayResults}
+                  kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
+                  fundingLabel="Preschool"
+                  fmt={fmt}
+                  defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                />
+
+                {weeklyResult && (() => {
+                  const w1 = weeklyResult.sessions.slice(0, 5)
+                  const w2 = weeklyResult.sessions.slice(5, 10)
+                  const w1Gap = w1.reduce((s, d) => s + d.estimatedGapFee, 0)
+                  const w2Gap = w2.reduce((s, d) => s + d.estimatedGapFee, 0)
+                  const w1Fees = weeklyDays.filter(d => d.booked).reduce((s, d) => s + (Number(d.sessionFee) || 0), 0)
+                  const w1Ccs = w1.reduce((s, d) => s + d.ccsEntitlement, 0)
+                  const w1Kindy = w1.reduce((s, d) => s + d.kindyFundingAmount, 0)
+                  const weeksMatch = Math.abs(w1Gap - w2Gap) < 0.01
+
+                  const bookedCount = weeklyDays.filter(d => d.booked).length
+                  const wkDebt = computeDebtRecovery({
+                    ccsEntitlement: weeklyResult.totalCcsEntitlement,
+                    debtRecoveryRaw: shared.debtRecovery,
+                    debtRecoveryMode: shared.debtRecoveryMode,
+                    bookedDaysPerFortnight: bookedCount * 2,
+                  })
+
+                  if (weeksMatch) {
+                    const wkDebtPerWeek = Math.round(wkDebt.debtPerDay / 2 * 100) / 100
+                    const wkCcsPaidPerWeek = Math.round((w1Ccs - wkDebtPerWeek) * 100) / 100
+                    const adjustedGap = wkDebt.debtPerDay > 0
+                      ? Math.max(0, Math.round((w1Fees - wkCcsPaidPerWeek - w1Kindy) * 100) / 100)
+                      : w1Gap
+
+                    return (
+                      <ResultCard
+                        title="Weekly Cost Estimate"
+                        rows={[
+                          { label: 'Session Fees', value: fmt(w1Fees), type: 'debit' as const },
+                          { label: 'CCS Entitlement', value: fmt(w1Ccs), type: 'credit' as const },
+                          { label: 'Preschool Funding', value: fmt(w1Kindy), type: 'credit' as const },
+                          ...(wkDebtPerWeek > 0 ? [
+                            { label: 'Debt Recovery', value: fmt(wkDebtPerWeek), type: 'debit' as const },
+                          ] : []),
+                          { label: 'Your Estimated Gap', value: `${fmt(adjustedGap)} per week`, highlight: true },
+                        ]}
+                        note="Both weeks of the fortnight are the same — your weekly cost is predictable."
+                      />
+                    )
+                  }
+
+                  const w2Ccs = w2.reduce((s, d) => s + d.ccsEntitlement, 0)
+                  const w2Kindy = w2.reduce((s, d) => s + d.kindyFundingAmount, 0)
+                  const fnAdjustedGap = wkDebt.debtPerDay > 0
+                    ? Math.max(0, Math.round((weeklyResult.totalSessionFees - wkDebt.ccsPaidToService - weeklyResult.totalKindyFunding) * 100) / 100)
+                    : weeklyResult.totalGapFee
+
+                  return (
+                    <ResultCard
+                      title="Weekly Cost Estimate"
+                      rows={[
+                        { label: 'Weekly Session Fees', value: fmt(w1Fees), type: 'debit' as const },
+                        { label: 'Week 1 CCS', value: fmt(w1Ccs), type: 'credit' as const },
+                        { label: 'Week 1 Preschool Funding', value: fmt(w1Kindy), type: 'credit' as const },
+                        { label: 'Week 1 Gap', value: fmt(w1Gap) },
+                        { label: 'Week 2 CCS', value: fmt(w2Ccs), type: 'credit' as const },
+                        { label: 'Week 2 Preschool Funding', value: fmt(w2Kindy), type: 'credit' as const },
+                        { label: 'Week 2 Gap', value: fmt(w2Gap) },
+                        ...(wkDebt.debtPerDay > 0 ? [
+                          { label: 'Debt Recovery', value: fmt(wkDebt.debtPerDay), type: 'debit' as const },
+                        ] : []),
+                        { label: 'Your Fortnightly Gap', value: fmt(fnAdjustedGap), highlight: true },
+                      ]}
+                      note={`Your ${shared.ccsHours} CCS hours per fortnight don't fully cover week 2, so costs differ between weeks.`}
+                    />
+                  )
+                })()}
+              </>
+            )}
+
+            {mode === 'fortnightly' && (
+              <>
+                <SessionDetailsCard
+                  sessionFee={shared.sessionFee}
+                  onSessionFeeChange={shared.setSessionFee}
+                  sessionStart={shared.sessionStart}
+                  onSessionStartChange={shared.setSessionStart}
+                  sessionEnd={shared.sessionEnd}
+                  onSessionEndChange={shared.setSessionEnd}
+                />
+
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
@@ -298,6 +469,7 @@ function ActCalculator() {
                   kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
                   fundingLabel="Preschool"
                   fmt={fmt}
+                  defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
                 />
 
                 {fortnightlyResult && (() => {

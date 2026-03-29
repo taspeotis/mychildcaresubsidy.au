@@ -30,13 +30,17 @@ export interface FortnightlyGridProps {
   fundingLabel: string
   fmt: (n: number) => string
   colorScheme?: ColorScheme
+  defaults?: { sessionFee: string; sessionStart: number; sessionEnd: number }
 }
+
+const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F'] as const
 
 export function createDefaultDays(
   defaults: { sessionFee: string; sessionStart: number; sessionEnd: number },
   kindyPattern?: boolean[],
+  weeks: number = 2,
 ): DayConfig[] {
-  return Array.from({ length: 10 }, (_, i) => ({
+  return Array.from({ length: weeks * 5 }, (_, i) => ({
     booked: false,
     sessionFee: defaults.sessionFee,
     sessionStart: defaults.sessionStart,
@@ -45,8 +49,9 @@ export function createDefaultDays(
   }))
 }
 
-export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent' }: FortnightlyGridProps) {
+export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent', defaults }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
+  const weekCount = Math.ceil(days.length / 5)
 
   function updateDay(index: number, patch: Partial<DayConfig>) {
     const next = [...days]
@@ -70,12 +75,71 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
     onChange(next)
   }
 
+  function toggleDay(index: number) {
+    if (days[index].booked) {
+      updateDay(index, { booked: false })
+    } else {
+      const template = days.find((d) => d.booked)
+      const fallback = template
+        ? { sessionFee: template.sessionFee, sessionStart: template.sessionStart, sessionEnd: template.sessionEnd }
+        : defaults ?? {}
+      updateDay(index, { booked: true, ...fallback })
+    }
+  }
+
+  function applyToBooked(editingIdx: number, source: DayConfig) {
+    const next = [...days]
+    next[editingIdx] = { ...next[editingIdx], ...source }
+    for (let i = 0; i < days.length; i++) {
+      if (i !== editingIdx && next[i].booked) {
+        next[i] = { ...next[i], sessionFee: source.sessionFee, sessionStart: source.sessionStart, sessionEnd: source.sessionEnd }
+      }
+    }
+    onChange(next)
+  }
+
+  const hasOtherBooked = editingDay !== null && days.some((d, i) => i !== editingDay && d.booked)
+
   return (
     <>
       <div className="space-y-4">
-        {[1, 2].map((week) => (
+        <div className="rounded-2xl card-glass p-4 sm:p-5">
+          <p className="text-xs font-bold text-slate-400 mb-3">Days Attending</p>
+          <div className="space-y-2">
+            {Array.from({ length: weekCount }, (_, week) => (
+              <div key={week} className="flex items-center gap-3">
+                {weekCount > 1 && <span className="text-[11px] font-medium text-slate-400 w-8 shrink-0">Wk {week + 1}</span>}
+                <div className="flex gap-2">
+                  {DAY_INITIALS.map((initial, dayIdx) => {
+                    const i = week * 5 + dayIdx
+                    const booked = days[i].booked
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => toggleDay(i)}
+                        className={clsx(
+                          'h-9 w-9 rounded-full text-xs font-bold transition-colors',
+                          booked
+                            ? colorScheme === 'brand'
+                              ? 'bg-brand-600 text-white shadow-sm'
+                              : 'bg-accent-500 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-400 hover:bg-slate-200',
+                        )}
+                      >
+                        {initial}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {Array.from({ length: weekCount }, (_, i) => i + 1).map((week) => (
           <div key={week} className="rounded-2xl card-glass p-4 sm:p-5">
-            <p className="text-xs font-bold text-slate-400 mb-3">Week {week}</p>
+            {weekCount > 1 && <p className="text-xs font-bold text-slate-400 mb-3">Week {week}</p>}
             <div className="space-y-1.5">
               {WEEKDAYS.map((dayName, dayIdx) => {
                 const i = (week - 1) * 5 + dayIdx
@@ -137,13 +201,17 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
       {editingDay !== null && (
         <DayEditModal
           day={days[editingDay]}
-          dayLabel={`Week ${editingDay < 5 ? 1 : 2} ${WEEKDAYS[editingDay % 5]}`}
+          dayLabel={`${weekCount > 1 ? `Week ${Math.floor(editingDay / 5) + 1} ` : ''}${WEEKDAYS[editingDay % 5]}`}
           kindyToggle={kindyToggle}
           colorScheme={colorScheme}
           onSave={(updated) => {
             updateDay(editingDay, updated)
             setEditingDay(null)
           }}
+          onApplyToBooked={hasOtherBooked ? (updated) => {
+            applyToBooked(editingDay, updated)
+            setEditingDay(null)
+          } : undefined}
           onCancel={() => setEditingDay(null)}
         />
       )}
@@ -157,6 +225,7 @@ function DayEditModal({
   kindyToggle,
   colorScheme = 'accent',
   onSave,
+  onApplyToBooked,
   onCancel,
 }: {
   day: DayConfig
@@ -164,6 +233,7 @@ function DayEditModal({
   kindyToggle?: FortnightlyGridProps['kindyToggle']
   colorScheme?: ColorScheme
   onSave: (updated: DayConfig) => void
+  onApplyToBooked?: (updated: DayConfig) => void
   onCancel: () => void
 }) {
   const [draft, setDraft] = useState<DayConfig>(day)
@@ -210,7 +280,7 @@ function DayEditModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <TimePicker
-                  label="Start"
+                  label="Session Start"
                   value={draft.sessionStart}
                   onChange={(v) => update({ sessionStart: v })}
                   min={5}
@@ -218,7 +288,7 @@ function DayEditModal({
                   colorScheme={colorScheme}
                 />
                 <TimePicker
-                  label="End"
+                  label="Session End"
                   value={draft.sessionEnd}
                   onChange={(v) => update({ sessionEnd: v })}
                   min={12}
@@ -249,6 +319,15 @@ function DayEditModal({
         >
           Done
         </button>
+        {onApplyToBooked && draft.booked && (
+          <button
+            type="button"
+            onClick={() => onApplyToBooked(draft)}
+            className="mt-2 w-full py-2 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            Apply fee &amp; times to all booked days
+          </button>
+        )}
       </div>
     </div>
   )

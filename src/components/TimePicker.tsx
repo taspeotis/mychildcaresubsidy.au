@@ -23,7 +23,7 @@ function generateTimeOptions(min: number, max: number, step: number): { value: n
   return options
 }
 
-export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, step = 0.5, colorScheme = 'accent', className, id }: TimePickerProps) {
+export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, step = 0.25, colorScheme = 'accent', className, id }: TimePickerProps) {
   const pickerId = id ?? label.toLowerCase().replace(/\s+/g, '-')
   const options = generateTimeOptions(min, max, step)
 

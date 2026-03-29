@@ -168,3 +168,4 @@ The build uses `vite-plugin-singlefile` to inline all JS and CSS into a single `
 - Keep `AGENTS.md` up to date when adding new components, calculators, design patterns, or architectural decisions. It serves as the primary knowledge base for the codebase.
 - Use "child care" (two words) not "childcare", following the federal government's convention for the Child Care Subsidy.
 - Keep `public/sitemap.xml` up to date when adding or removing routes.
+- When adding user-facing features, add them to the release notes in `src/routes/release-notes.tsx`. Add entries to the top of the `RELEASES` array with the current date. Bug fixes should also be noted once the site is live and in use. Write release notes in a natural, human tone. No version numbers, just dates. Describe what changed and why it matters to the user, not implementation details.

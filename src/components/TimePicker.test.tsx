@@ -9,9 +9,11 @@ describe('TimePicker', () => {
   })
 
   it('generates correct time options', () => {
-    render(<TimePicker label="Time" value={8} onChange={vi.fn()} min={8} max={9} step={0.5} />)
+    render(<TimePicker label="Time" value={8} onChange={vi.fn()} min={8} max={9} step={0.25} />)
     expect(screen.getByText('8:00 AM')).toBeInTheDocument()
+    expect(screen.getByText('8:15 AM')).toBeInTheDocument()
     expect(screen.getByText('8:30 AM')).toBeInTheDocument()
+    expect(screen.getByText('8:45 AM')).toBeInTheDocument()
     expect(screen.getByText('9:00 AM')).toBeInTheDocument()
   })
 

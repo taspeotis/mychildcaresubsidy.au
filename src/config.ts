@@ -4,7 +4,7 @@ export const DEFAULTS = {
   ccsWithholding: '5',
   ccsHoursPerFortnight: '72',
   sessionFee: '150.00',
-  sessionStartHour: 8,
+  sessionStartHour: 6,
   sessionEndHour: 18,
 }
 

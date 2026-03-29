@@ -82,7 +82,7 @@ export function ToggleGroup({ options, value, onChange, variant = 'dark', colorS
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
           className={clsx(
-            'relative z-10 flex-1 rounded-lg px-5 py-2 text-center text-sm font-bold transition-colors duration-200',
+            'relative z-10 basis-0 grow rounded-lg px-3 py-2 text-center text-sm font-bold transition-colors duration-200',
             value === option.value
               ? 'text-white'
               : variant === 'dark'

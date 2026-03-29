@@ -117,15 +117,16 @@ describe('calculateQldFortnightly', () => {
   })
 
   /**
-   * 15 hrs/week pool: 2 × 7.5hr days exhausts it.
-   * A 3rd kindy day in the same week gets no funding.
+   * 30 hrs/fortnight pool: 4 × 7.5hr kindy days = 30hrs, exhausts the pool.
+   * A 5th kindy day should get no funding.
    */
-  it('respects 15 hrs/week kindy pool', () => {
+  it('respects 30 hrs/fortnight kindy pool', () => {
     const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
       const week = (i < 5 ? 1 : 2) as 1 | 2
       const dayIdx = i % 5
       const booked = dayIdx < 3
-      const hasKindy = week === 1 && dayIdx < 3 // 3 kindy days week 1
+      // 5 kindy days total: Mon-Wed week 1, Mon-Tue week 2
+      const hasKindy = (week === 1 && dayIdx < 3) || (week === 2 && dayIdx < 2)
 
       return {
         week,
@@ -147,9 +148,14 @@ describe('calculateQldFortnightly', () => {
 
     expect(result).not.toBeNull()
     const week1 = result!.sessions.filter((s) => s.week === 1)
-    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0) // Mon: funded
-    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0) // Tue: funded
-    expect(week1[2].kindyFundingAmount).toBe(0) // Wed: pool exhausted
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+    // Week 1: 3 × 7.5 = 22.5 hrs, all funded (pool has 30)
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0)
+    // Week 2: Mon = 7.5 (total 30, exhausted), Tue gets nothing
+    expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week2[1].kindyFundingAmount).toBe(0) // pool exhausted
   })
 })
 
@@ -317,17 +323,17 @@ describe('QLD kindy pool exhaustion', () => {
     expect(result).not.toBeNull()
     const week1 = result!.sessions.filter((s) => s.week === 1)
 
-    // Mon: 7.5 hrs consumed from 15 → 7.5 remaining
+    // Mon: 7.5 hrs consumed from 30 → 22.5 remaining
     expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[0].remainingKindyHours).toBe(7.5)
+    expect(week1[0].remainingKindyHours).toBe(22.5)
 
-    // Tue: 7.5 hrs consumed from 7.5 → 0 remaining
+    // Tue: 7.5 hrs consumed from 22.5 → 15 remaining
     expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[1].remainingKindyHours).toBe(0)
+    expect(week1[1].remainingKindyHours).toBe(15)
 
-    // Wed: 0 remaining → no kindy funding
-    expect(week1[2].kindyFundingAmount).toBe(0)
-    expect(week1[2].remainingKindyHours).toBe(0)
+    // Wed: 7.5 hrs consumed from 15 → 7.5 remaining (pool is fortnightly, not weekly)
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[2].remainingKindyHours).toBe(7.5)
   })
 
   /**
@@ -364,28 +370,28 @@ describe('QLD kindy pool exhaustion', () => {
     expect(result).not.toBeNull()
     const week1 = result!.sessions.filter((s) => s.week === 1)
 
-    // Mon: 10 hrs requested, but pool is 15 → consumes 10, 5 remaining
+    // Mon: 10 hrs requested, pool is 30 → consumes 10, 20 remaining
     expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[0].remainingKindyHours).toBe(5)
+    expect(week1[0].remainingKindyHours).toBe(20)
 
-    // Tue: 10 hrs requested but only 5 remaining → partial funding
+    // Tue: 10 hrs requested, 20 remaining → consumes 10, 10 remaining
     expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[1].remainingKindyHours).toBe(0)
+    expect(week1[1].remainingKindyHours).toBe(10)
 
-    // Tue's funding should be less than Mon's (5 funded hrs vs 10)
-    expect(week1[1].kindyFundingAmount).toBeLessThan(week1[0].kindyFundingAmount)
+    // Both days get full kindy funding (pool has enough)
+    expect(week1[1].kindyFundingAmount).toBe(week1[0].kindyFundingAmount)
   })
 
   /**
-   * Week 1 and week 2 have independent kindy pools (15 hrs each).
-   * Exhausting week 1's pool should not affect week 2.
+   * Single 30hr fortnightly pool shared across both weeks.
+   * 6 kindy days × 7.5hrs = 45hrs exceeds 30, so last 2 days get nothing.
    */
-  it('week pools are independent', () => {
+  it('shares kindy pool across both weeks', () => {
     const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
       const week = (i < 5 ? 1 : 2) as 1 | 2
       const dayIdx = i % 5
       const booked = dayIdx < 3
-      // 3 kindy days in both weeks
+      // 3 kindy days in both weeks = 6 total
       const hasKindy = booked
 
       return {
@@ -410,14 +416,14 @@ describe('QLD kindy pool exhaustion', () => {
     const week1 = result!.sessions.filter((s) => s.week === 1)
     const week2 = result!.sessions.filter((s) => s.week === 2)
 
-    // Week 1: Mon + Tue exhaust pool, Wed gets nothing
+    // Week 1: 3 × 7.5 = 22.5 hrs, all funded (pool starts at 30)
     expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
     expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[2].kindyFundingAmount).toBe(0)
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0)
 
-    // Week 2: Fresh pool, so Mon + Tue get funding, Wed exhausted
+    // Week 2: 7.5 remaining in pool → Mon gets funding, Tue+Wed don't
     expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week2[1].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week2[1].kindyFundingAmount).toBe(0)
     expect(week2[2].kindyFundingAmount).toBe(0)
   })
 })

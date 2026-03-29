@@ -67,8 +67,7 @@ export function calculateQldDaily(inputs: DailyInputs): DailyResult {
 export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyResult {
   const results: FortnightlySessionResult[] = []
   let remainingCcsHours = inputs.fortnightlyCcsHours
-  let remainingKindyHoursWeek1 = QLD_KINDY_HOURS_PER_WEEK
-  let remainingKindyHoursWeek2 = QLD_KINDY_HOURS_PER_WEEK
+  let remainingKindyHours = QLD_KINDY_HOURS_PER_FORTNIGHT
 
   for (const session of inputs.sessions) {
     const ccs = computeSessionCcs({
@@ -92,9 +91,8 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
     const normalisedCcsEntitlement = ccsAmount - normalisedCcsWithholding
     const normalisedCcsPerHour = ccs.applicableCcsHours > 0 ? normalisedCcsEntitlement / ccs.applicableCcsHours : 0
 
-    // Kindy hours for this session
+    // Kindy hours for this session (draws from single 30hr fortnightly pool)
     let kindyFundingAmount = 0
-    const remainingKindyHours = session.week === 1 ? remainingKindyHoursWeek1 : remainingKindyHoursWeek2
 
     if (session.kindyProgramStartHour !== null && session.kindyProgramEndHour !== null) {
       const kindyHoursDecimal = session.kindyProgramEndHour - session.kindyProgramStartHour
@@ -111,11 +109,7 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
         2,
       )
 
-      if (session.week === 1) {
-        remainingKindyHoursWeek1 = Math.max(0, remainingKindyHoursWeek1 - applicableKindyHours)
-      } else {
-        remainingKindyHoursWeek2 = Math.max(0, remainingKindyHoursWeek2 - applicableKindyHours)
-      }
+      remainingKindyHours = Math.max(0, remainingKindyHours - applicableKindyHours)
     }
 
     const estimatedGapFee = roundTo(Math.max(0, gapBeforeKindy - kindyFundingAmount), 2)
@@ -134,7 +128,7 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
       kindyFundingAmount,
       estimatedGapFee,
       remainingCcsHours: Math.max(0, remainingCcsHours),
-      remainingKindyHours: session.week === 1 ? remainingKindyHoursWeek1 : remainingKindyHoursWeek2,
+      remainingKindyHours,
     })
   }
 
