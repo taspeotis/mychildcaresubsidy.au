@@ -19,10 +19,10 @@ const RELEASES: Release[] = [
     date: '29 March 2026',
     id: '2026-03-29',
     changes: [
-      'Weekly calculation mode on all calculators. Set up one week, see your weekly cost.',
-      'Quick day picker for faster fortnightly and weekly setup. Tap day circles to toggle, new days copy your existing fee and times.',
-      'Session details now shown in weekly and fortnightly modes as defaults for new days.',
-      'QLD Free Kindy supports 12/18 and 18/12 kindy hour splits across the fortnight.',
+      'Weekly calculation mode on all calculators. Pick your days for one week and see your weekly cost. If CCS hours run short in the second week, both weeks are shown separately.',
+      'Quick day picker for faster fortnightly and weekly setup. Tap day circles to toggle attendance instead of opening each day. New days copy your existing fee and times.',
+      'Session details now shown in weekly and fortnightly modes so you can set fee and times once as defaults.',
+      'QLD Free Kindy now supports 12/18 and 18/12 kindy hour splits across the fortnight.',
       'Time pickers now work in 15-minute increments.',
     ],
   },
@@ -30,16 +30,16 @@ const RELEASES: Release[] = [
     date: '14 March 2026',
     id: '2026-03-14',
     changes: [
-      'CCS debt recovery support across all calculators.',
+      'If Centrelink is recovering a debt from your CCS payments, you can now factor that into your estimates. Available in the CCS details section on all calculators.',
     ],
   },
   {
     date: '9 February 2026',
     id: '2026-02-09',
     changes: [
-      'FY2025-26 CCS hourly rate caps and income thresholds.',
-      'Simple and detailed result views on all daily calculators.',
-      'Calculator inputs shared across pages.',
+      'Updated all calculators to FY2025-26 CCS hourly rate caps and income thresholds.',
+      'Simple and detailed result views. The detailed view shows how each number is calculated.',
+      'Calculator inputs are now shared across pages. Set your CCS percentage once and it carries over.',
       'Activity test updated to the 2026 "3 Day Guarantee" (72 or 100 hours per fortnight).',
     ],
   },
@@ -47,30 +47,30 @@ const RELEASES: Release[] = [
     date: '7 February 2026',
     id: '2026-02-07',
     changes: [
-      'Federal CCS calculator for centre-based day care, family day care, and OSHC.',
+      'Federal CCS calculator for centre-based day care, family day care, and outside school hours care.',
     ],
   },
   {
     date: '6 February 2026',
     id: '2026-02-06',
     changes: [
-      'NSW Start Strong calculator.',
-      'VIC Free Kinder calculator.',
-      'Fortnightly mode on all calculators.',
+      'NSW Start Strong calculator with annual fee relief tiers.',
+      'VIC Free Kinder calculator with annual offset for standard and priority cohorts.',
+      'Fortnightly mode on all calculators with per-day fee, time, and kindy settings.',
     ],
   },
   {
     date: '3 February 2026',
     id: '2026-02-03',
     changes: [
-      'ACT Free 3-Year-Old Preschool calculator.',
+      'ACT Free 3-Year-Old Preschool calculator with 300 funded hours per year.',
     ],
   },
   {
     date: '2 February 2026',
     id: '2026-02-02',
     changes: [
-      'Launched with the QLD Free Kindy calculator.',
+      'Launched with the QLD Free Kindy calculator, covering CCS and Queensland\'s 30 funded hours per fortnight.',
     ],
   },
 ]
