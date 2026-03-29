@@ -243,9 +243,9 @@ function DayEditModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onKeyDown={(e) => { if (e.key === 'Escape') onCancel() }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') onCancel() }}>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div role="dialog" aria-modal="true" aria-labelledby="day-edit-title" className="relative w-full max-w-sm rounded-t-2xl sm:rounded-2xl bg-white p-6 shadow-xl">
+      <div role="dialog" aria-modal="true" aria-labelledby="day-edit-title" className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 id="day-edit-title" className="text-lg font-bold text-slate-900">{dayLabel}</h3>
           <button type="button" onClick={onCancel} aria-label="Close" className="text-slate-400 hover:text-slate-600">

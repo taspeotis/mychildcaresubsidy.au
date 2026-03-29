@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   const { pathname } = useLocation()
   const navRef = useRef<HTMLElement>(null)
-  const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0, route: '' })
+  const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
   const wasVisible = useRef(false)
   const pillRef = useRef<HTMLDivElement>(null)
 
@@ -24,7 +24,9 @@ function RootLayout() {
       return
     }
     const left = active.offsetLeft
+    const top = active.offsetTop
     const width = active.offsetWidth
+    const height = active.offsetHeight
     const route = active.getAttribute('href') ?? pathname
     if (!wasVisible.current) {
       const el = pillRef.current
@@ -32,12 +34,12 @@ function RootLayout() {
         el.style.transition = 'none'
         void el.offsetLeft
       }
-      setPill({ left, width, opacity: 1, route })
+      setPill({ left, top, width, height, opacity: 1, route })
       requestAnimationFrame(() => {
         if (el) el.style.transition = ''
       })
     } else {
-      setPill({ left, width, opacity: 1, route })
+      setPill({ left, top, width, height, opacity: 1, route })
     }
     wasVisible.current = true
   }, [pathname])
@@ -53,7 +55,7 @@ function RootLayout() {
         el.style.transition = 'none'
         void el.offsetLeft
       }
-      setPill({ left: active.offsetLeft, width: active.offsetWidth, opacity: 1, route: active.getAttribute('href') ?? '' })
+      setPill({ left: active.offsetLeft, top: active.offsetTop, width: active.offsetWidth, height: active.offsetHeight, opacity: 1, route: active.getAttribute('href') ?? '' })
       requestAnimationFrame(() => {
         if (el) el.style.transition = ''
       })
@@ -85,8 +87,8 @@ function RootLayout() {
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div
               ref={pillRef}
-              className={`absolute top-0 h-full rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${pill.route === '/ccs' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}
-              style={{ left: pill.left, width: pill.width, opacity: pill.opacity }}
+              className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${pill.route === '/ccs' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}
+              style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}
             />
             <Link to="/ccs" className={navLinkClass}>
               CCS

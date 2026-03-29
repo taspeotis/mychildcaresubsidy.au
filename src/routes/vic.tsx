@@ -378,7 +378,7 @@ function VicCalculator() {
                           ] : []),
                           { label: 'Your Estimated Gap', value: `${fmt(adjustedGap)} per week`, highlight: true },
                         ]}
-                        note="Both weeks of the fortnight are the same — your weekly cost is predictable."
+                        note="Both weeks of the fortnight are the same, so your weekly cost is predictable."
                       />
                     )
                   }
