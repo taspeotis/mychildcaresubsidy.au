@@ -295,7 +295,7 @@ function VicCalculator() {
                           { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
                           ...(debt.recoveredElsewhere > 0 ? [{ label: 'Recovered Elsewhere', value: fmt(debt.recoveredElsewhere), muted: true }] : []),
                         ] : []),
-                        { label: 'Your Estimated Gap Fee', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.dailyOffset)}` : `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
+                        { label: 'Your Estimated Gap', value: fmt(debt.debtPerDay > 0 ? adjustedGap : dailyResult.estimatedGapFee), highlight: true, detail: debt.debtPerDay > 0 ? `${fmt(fee)} – ${fmt(debt.ccsPaidToService)} – ${fmt(dailyResult.dailyOffset)}` : `${fmt(dailyResult.gapBeforeFreeKinder)} – ${fmt(dailyResult.dailyOffset)}` },
                       ]}
                     />
                   )
@@ -376,7 +376,7 @@ function VicCalculator() {
                           ...(wkDebtPerWeek > 0 ? [
                             { label: 'Debt Recovery', value: fmt(wkDebtPerWeek), type: 'debit' as const },
                           ] : []),
-                          { label: 'Your Estimated Gap', value: `${fmt(adjustedGap)} per week`, highlight: true },
+                          { label: 'Your Estimated Gap', value: fmt(adjustedGap), highlight: true },
                         ]}
                         note="Both weeks of the fortnight are the same, so your weekly cost is predictable."
                       />
