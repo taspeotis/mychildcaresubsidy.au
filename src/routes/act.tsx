@@ -352,7 +352,6 @@ function ActCalculator() {
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
-                  weeklyKindyHoursAllocated={weeklyResult?.weeklyKindyHoursAllocated}
                 />
 
                 {weeklyResult && (() => {
@@ -465,7 +464,6 @@ function ActCalculator() {
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
-                  weeklyKindyHoursAllocated={fortnightlyResult?.weeklyKindyHoursAllocated}
                 />
 
                 {fortnightlyResult && (() => {

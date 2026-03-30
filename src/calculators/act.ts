@@ -138,6 +138,6 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
     totalCcsEntitlement: roundTo(results.reduce((s, r) => s + r.ccsEntitlement, 0), 2),
     totalKindyFunding: roundTo(results.reduce((s, r) => s + r.kindyFundingAmount, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.estimatedGapFee, 0), 2),
-    weeklyKindyHoursAllocated: [kindyHoursPerWeek, kindyHoursPerWeek],
+    // ACT funds one day per week — don't show hours in the "already funded" label
   }
 }
