@@ -37,7 +37,7 @@ const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F'] as const
 
 export function createDefaultDays(
   defaults: { sessionFee: string; sessionStart: number; sessionEnd: number },
-  kindyPattern?: boolean[],
+  kindyPattern?: boolean | boolean[],
   weeks: number = 2,
 ): DayConfig[] {
   return Array.from({ length: weeks * 5 }, (_, i) => ({
@@ -45,7 +45,7 @@ export function createDefaultDays(
     sessionFee: defaults.sessionFee,
     sessionStart: defaults.sessionStart,
     sessionEnd: defaults.sessionEnd,
-    hasKindy: kindyPattern?.[i] ?? false,
+    hasKindy: typeof kindyPattern === 'boolean' ? kindyPattern : (kindyPattern?.[i] ?? false),
   }))
 }
 

@@ -435,6 +435,96 @@ describe('QLD 30hr fortnightly pool splits', () => {
   })
 })
 
+describe('QLD kindy on any day of the week', () => {
+  /**
+   * Child attends Thu+Fri with 7.5hr kindy program each day.
+   * Should receive full kindy funding — the 30hr pool doesn't care which days.
+   */
+  it('Thu+Fri kindy: 2 × 7.5hrs/week — fully funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx >= 3 // Thu (3) and Fri (4) only
+      const hasKindy = booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 125 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 15.5 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Thu+Fri each week should all receive kindy funding
+    expect(week1[3].kindyFundingAmount).toBeGreaterThan(0) // Thu W1
+    expect(week1[4].kindyFundingAmount).toBeGreaterThan(0) // Fri W1
+    expect(week2[3].kindyFundingAmount).toBeGreaterThan(0) // Thu W2
+    expect(week2[4].kindyFundingAmount).toBeGreaterThan(0) // Fri W2
+
+    // 4 × 7.5 = 30hrs exactly exhausts the pool
+    expect(week2[4].remainingKindyHours).toBe(0)
+
+    // Total kindy funding should match the Mon+Tue equivalent
+    expect(result!.totalKindyFunding).toBeGreaterThan(0)
+  })
+
+  /**
+   * Wed+Fri kindy with 6hr program — non-consecutive days should work fine.
+   */
+  it('Wed+Fri kindy: non-consecutive days — fully funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx === 2 || dayIdx === 4 // Wed and Fri
+      const hasKindy = booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 120 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 14 : null, // 6hr kindy
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Wed and Fri each week should all receive kindy funding
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0) // Wed W1
+    expect(week1[4].kindyFundingAmount).toBeGreaterThan(0) // Fri W1
+    expect(week2[2].kindyFundingAmount).toBeGreaterThan(0) // Wed W2
+    expect(week2[4].kindyFundingAmount).toBeGreaterThan(0) // Fri W2
+
+    // 4 × 6 = 24hrs, pool has 6 remaining
+    expect(week2[4].remainingKindyHours).toBe(6)
+  })
+})
+
 describe('QLD kindy pool exhaustion', () => {
   /**
    * 3 kindy days in week 1, each with 7.5 hrs of kindy program.

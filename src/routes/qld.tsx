@@ -28,12 +28,6 @@ const KINDY_PROGRAM_OPTIONS = [
   { value: '5', label: '5 hours' },
 ]
 
-// Default kindy pattern: W1 Mon+Tue, W2 Mon+Tue
-const DEFAULT_KINDY = [
-  true, true, false, false, false,
-  true, true, false, false, false,
-]
-
 function QldCalculator() {
   const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
@@ -47,11 +41,11 @@ function QldCalculator() {
   const [fnKindyHours, setFnKindyHours] = useState('7.5')
   const [fnKindyStart, setFnKindyStart] = useState(8)
 
-  // Weekly inputs (1 week)
+  // Weekly inputs (1 week) — all days default to kindy; the 30hr pool handles allocation
   const [weeklyDays, setWeeklyDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_KINDY.slice(0, 5),
+      true,
       1,
     ),
   )
@@ -60,7 +54,7 @@ function QldCalculator() {
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_KINDY,
+      true,
     ),
   )
 
