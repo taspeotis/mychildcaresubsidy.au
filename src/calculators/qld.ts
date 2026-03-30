@@ -85,9 +85,10 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
     }
   }
 
-  // Weeks below the minimum (12hrs, i.e. 2 × 6hr days) don't qualify for funding
-  const week1Qualifies = week1Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK
-  const week2Qualifies = week2Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK
+  // Total kindy demand must reach 30hrs/fortnight, and each week needs at least 12hrs
+  const totalDemand = week1Demand + week2Demand
+  const week1Qualifies = week1Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK && totalDemand >= QLD_KINDY_HOURS_PER_FORTNIGHT
+  const week2Qualifies = week2Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK && totalDemand >= QLD_KINDY_HOURS_PER_FORTNIGHT
   const qualifiedDemand1 = week1Qualifies ? week1Demand : 0
   const qualifiedDemand2 = week2Qualifies ? week2Demand : 0
 
