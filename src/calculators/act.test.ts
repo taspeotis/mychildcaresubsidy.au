@@ -303,10 +303,10 @@ describe('ACT kindy pool exhaustion', () => {
 
   /**
    * 40-week program → 300 / 40 = 7.5 hrs/week pool.
-   * 2 days with 5hr kindy programs → 10 hrs total > 7.5 pool.
-   * Day 1 gets 5 hrs funded, day 2 gets only 2.5 hrs (partial).
+   * 2 days with 5hr kindy programs — only the first day gets funded.
+   * ACT funds one preschool day per week, not a pool across days.
    */
-  it('partially funds a day when pool runs low', () => {
+  it('funds only the first preschool day per week', () => {
     const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
       const week = (i < 5 ? 1 : 2) as 1 | 2
       const dayIdx = i % 5
@@ -332,15 +332,124 @@ describe('ACT kindy pool exhaustion', () => {
     expect(result).not.toBeNull()
     const week1 = result!.sessions.filter((s) => s.week === 1)
 
-    // Mon: 5hrs consumed from 7.5 → 2.5 remaining
+    // Mon: first preschool day, gets funded, pool zeroed after
     expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week1[0].remainingKindyHours).toBe(2.5)
+    expect(week1[0].remainingKindyHours).toBe(0)
 
-    // Tue: 5hrs requested but only 2.5 available → partial
-    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
+    // Tue: second preschool day, no funding
+    expect(week1[1].kindyFundingAmount).toBe(0)
     expect(week1[1].remainingKindyHours).toBe(0)
+  })
+})
 
-    // Tue's funding should be less than Mon's
-    expect(week1[1].kindyFundingAmount).toBeLessThan(week1[0].kindyFundingAmount)
+describe('ACT preschool on any day of the week', () => {
+  /**
+   * Preschool on Thu+Fri — only Thu (first in the week) gets funded.
+   * Verifies funding works on any day, not just Mon/Tue/Wed.
+   */
+  it('Thu+Fri preschool: only Thu gets funded per week', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx >= 3 // Thu and Fri
+      const hasPreschool = booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 150 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasPreschool ? 8.5 : null,
+        kindyProgramEndHour: hasPreschool ? 14.5 : null,
+      }
+    })
+
+    const result = calculateActFortnightly(
+      { ccsPercent: 85, ccsWithholdingPercent: 5, fortnightlyCcsHours: 72, sessions },
+      50,
+    )
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Thu gets funded each week (first preschool day)
+    expect(week1[3].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week2[3].kindyFundingAmount).toBeGreaterThan(0)
+
+    // Fri gets nothing (second preschool day)
+    expect(week1[4].kindyFundingAmount).toBe(0)
+    expect(week2[4].kindyFundingAmount).toBe(0)
+  })
+
+  /**
+   * All 5 days marked as preschool — only the first day (Mon) gets funded.
+   */
+  it('all 5 days preschool: only Mon gets funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: 150,
+        sessionStartHour: 7,
+        sessionEndHour: 17,
+        kindyProgramStartHour: 8.5,
+        kindyProgramEndHour: 14.5,
+      }
+    })
+
+    const result = calculateActFortnightly(
+      { ccsPercent: 85, ccsWithholdingPercent: 5, fortnightlyCcsHours: 100, sessions },
+      50,
+    )
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0) // Mon funded
+    expect(week1[1].kindyFundingAmount).toBe(0) // Tue not funded
+    expect(week1[2].kindyFundingAmount).toBe(0) // Wed not funded
+    expect(week1[3].kindyFundingAmount).toBe(0) // Thu not funded
+    expect(week1[4].kindyFundingAmount).toBe(0) // Fri not funded
+  })
+
+  /**
+   * Different preschool days in different weeks — both get funded.
+   * Week 1: only Fri has preschool. Week 2: only Wed has preschool.
+   */
+  it('different preschool days across weeks — both funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 5
+      const hasPreschool = (week === 1 && dayIdx === 4) || (week === 2 && dayIdx === 2)
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 150 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasPreschool ? 8.5 : null,
+        kindyProgramEndHour: hasPreschool ? 14.5 : null,
+      }
+    })
+
+    const result = calculateActFortnightly(
+      { ccsPercent: 85, ccsWithholdingPercent: 5, fortnightlyCcsHours: 100, sessions },
+      50,
+    )
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Week 1: Fri funded
+    expect(week1[4].kindyFundingAmount).toBeGreaterThan(0)
+    // Week 2: Wed funded
+    expect(week2[2].kindyFundingAmount).toBeGreaterThan(0)
   })
 })

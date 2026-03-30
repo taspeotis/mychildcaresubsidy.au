@@ -348,7 +348,7 @@ function ActCalculator() {
                   days={weeklyDays}
                   onChange={setWeeklyDays}
                   results={weeklyDayResults}
-                  kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
+                  kindyToggle={{ label: 'Preschool' }}
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
@@ -460,7 +460,7 @@ function ActCalculator() {
                   days={days}
                   onChange={setDays}
                   results={dayResults}
-                  kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
+                  kindyToggle={{ label: 'Preschool' }}
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}

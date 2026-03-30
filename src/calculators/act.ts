@@ -104,10 +104,11 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
         2,
       )
 
+      // ACT funds one preschool day per week — zero out the pool after the first funded day
       if (session.week === 1) {
-        remainingKindyHoursWeek1 = Math.max(0, remainingKindyHoursWeek1 - applicableKindyHours)
+        remainingKindyHoursWeek1 = 0
       } else {
-        remainingKindyHoursWeek2 = Math.max(0, remainingKindyHoursWeek2 - applicableKindyHours)
+        remainingKindyHoursWeek2 = 0
       }
     }
 
