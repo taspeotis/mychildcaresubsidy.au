@@ -5,6 +5,8 @@ import { computeSessionCcs, roundTo } from './shared'
 // QLD Free Kindy: 15 hours/week, 30 hours/fortnight, 40 weeks/year
 export const QLD_KINDY_HOURS_PER_WEEK = 15
 export const QLD_KINDY_HOURS_PER_FORTNIGHT = 30
+// Max hours per week: 18 (3 × 6hr days in a 2/3-day split)
+export const QLD_KINDY_MAX_HOURS_PER_WEEK = 18
 
 /**
  * Calculate daily out-of-pocket cost for a QLD Free Kindy session.
@@ -63,11 +65,35 @@ export function calculateQldDaily(inputs: DailyInputs): DailyResult {
 
 /**
  * Calculate fortnightly out-of-pocket costs for QLD Free Kindy.
+ *
+ * The 30hr fortnightly pool is split into per-week allocations. Each week
+ * gets a base of min(demand, 15hrs), then surplus pool is distributed to
+ * weeks that need more. This ensures identical weeks get 15hrs each while
+ * still supporting 12/18 and 18/12 splits.
  */
 export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyResult {
+  // First pass: calculate kindy demand per week
+  let week1Demand = 0
+  let week2Demand = 0
+  for (const session of inputs.sessions) {
+    if (session.kindyProgramStartHour !== null && session.kindyProgramEndHour !== null) {
+      const hours = session.kindyProgramEndHour - session.kindyProgramStartHour
+      if (session.week === 1) week1Demand += hours
+      else week2Demand += hours
+    }
+  }
+
+  // Allocate fortnightly pool to weeks.
+  // Each week gets min(demand, 15) as a base, then surplus up to the 18hr/week cap.
+  // Week 1 reserves at least min(demand2, 15) for week 2 before taking surplus.
+  const week1Allocation = Math.min(week1Demand, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - Math.min(week2Demand, QLD_KINDY_HOURS_PER_WEEK))
+  const week2Allocation = Math.min(week2Demand, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - week1Allocation)
+
+  let remainingKindyHoursWeek1 = week1Allocation
+  let remainingKindyHoursWeek2 = week2Allocation
+
   const results: FortnightlySessionResult[] = []
   let remainingCcsHours = inputs.fortnightlyCcsHours
-  let remainingKindyHours = QLD_KINDY_HOURS_PER_FORTNIGHT
 
   for (const session of inputs.sessions) {
     const ccs = computeSessionCcs({
@@ -91,8 +117,9 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
     const normalisedCcsEntitlement = ccsAmount - normalisedCcsWithholding
     const normalisedCcsPerHour = ccs.applicableCcsHours > 0 ? normalisedCcsEntitlement / ccs.applicableCcsHours : 0
 
-    // Kindy hours for this session (draws from single 30hr fortnightly pool)
+    // Kindy hours for this session (draws from per-week allocation)
     let kindyFundingAmount = 0
+    const remainingKindyHours = session.week === 1 ? remainingKindyHoursWeek1 : remainingKindyHoursWeek2
 
     if (session.kindyProgramStartHour !== null && session.kindyProgramEndHour !== null) {
       const kindyHoursDecimal = session.kindyProgramEndHour - session.kindyProgramStartHour
@@ -109,7 +136,11 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
         2,
       )
 
-      remainingKindyHours = Math.max(0, remainingKindyHours - applicableKindyHours)
+      if (session.week === 1) {
+        remainingKindyHoursWeek1 = Math.max(0, remainingKindyHoursWeek1 - applicableKindyHours)
+      } else {
+        remainingKindyHoursWeek2 = Math.max(0, remainingKindyHoursWeek2 - applicableKindyHours)
+      }
     }
 
     const estimatedGapFee = roundTo(Math.max(0, gapBeforeKindy - kindyFundingAmount), 2)
@@ -128,7 +159,7 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
       kindyFundingAmount,
       estimatedGapFee,
       remainingCcsHours: Math.max(0, remainingCcsHours),
-      remainingKindyHours,
+      remainingKindyHours: session.week === 1 ? remainingKindyHoursWeek1 : remainingKindyHoursWeek2,
     })
   }
 
