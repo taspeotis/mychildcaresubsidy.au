@@ -7,6 +7,8 @@ export const QLD_KINDY_HOURS_PER_WEEK = 15
 export const QLD_KINDY_HOURS_PER_FORTNIGHT = 30
 // Max hours per week: 18 (3 × 6hr days in a 2/3-day split)
 export const QLD_KINDY_MAX_HOURS_PER_WEEK = 18
+// Minimum kindy hours per week to qualify for funding (2 × 6hr days)
+export const QLD_KINDY_MIN_HOURS_PER_WEEK = 12
 
 /**
  * Calculate daily out-of-pocket cost for a QLD Free Kindy session.
@@ -83,11 +85,17 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
     }
   }
 
-  // Allocate fortnightly pool to weeks.
+  // Weeks below the minimum (12hrs, i.e. 2 × 6hr days) don't qualify for funding
+  const week1Qualifies = week1Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK
+  const week2Qualifies = week2Demand >= QLD_KINDY_MIN_HOURS_PER_WEEK
+  const qualifiedDemand1 = week1Qualifies ? week1Demand : 0
+  const qualifiedDemand2 = week2Qualifies ? week2Demand : 0
+
+  // Allocate fortnightly pool to qualifying weeks.
   // Each week gets min(demand, 15) as a base, then surplus up to the 18hr/week cap.
   // Week 1 reserves at least min(demand2, 15) for week 2 before taking surplus.
-  const week1Allocation = Math.min(week1Demand, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - Math.min(week2Demand, QLD_KINDY_HOURS_PER_WEEK))
-  const week2Allocation = Math.min(week2Demand, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - week1Allocation)
+  const week1Allocation = Math.min(qualifiedDemand1, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - Math.min(qualifiedDemand2, QLD_KINDY_HOURS_PER_WEEK))
+  const week2Allocation = Math.min(qualifiedDemand2, QLD_KINDY_MAX_HOURS_PER_WEEK, QLD_KINDY_HOURS_PER_FORTNIGHT - week1Allocation)
 
   let remainingKindyHoursWeek1 = week1Allocation
   let remainingKindyHoursWeek2 = week2Allocation

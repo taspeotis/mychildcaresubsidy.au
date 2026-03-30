@@ -689,16 +689,15 @@ describe('QLD per-week allocation', () => {
   })
 
   /**
-   * 1d/4d split forbidden: week 1 has 1 × 7.5hr, week 2 has 4 × 7.5hr.
-   * Week 1: 7.5hrs. Week 2: capped at 18hrs (not 22.5).
-   * Total funded: 25.5 (not the full 30hr pool).
+   * 1d/4d split forbidden: week 1 has 1 × 7.5hr (under 12hr min), gets $0.
+   * Week 2 has 4 × 7.5hr, capped at 18hrs.
    */
-  it('1d/4d split: week 2 capped at 18hrs', () => {
+  it('1d/4d split: week 1 under minimum, week 2 capped at 18hrs', () => {
     const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
       const week = (i < 5 ? 1 : 2) as 1 | 2
       const dayIdx = i % 5
-      const bookedWeek1 = dayIdx === 0 // Mon only
-      const bookedWeek2 = dayIdx < 4 // Mon-Thu
+      const bookedWeek1 = dayIdx === 0
+      const bookedWeek2 = dayIdx < 4
       const booked = week === 1 ? bookedWeek1 : bookedWeek2
       const hasKindy = booked
 
@@ -724,8 +723,8 @@ describe('QLD per-week allocation', () => {
     const week1 = result!.sessions.filter((s) => s.week === 1)
     const week2 = result!.sessions.filter((s) => s.week === 2)
 
-    // Week 1: 7.5hrs funded (1 day)
-    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    // Week 1: 7.5hrs < 12hr minimum → no funding
+    expect(week1[0].kindyFundingAmount).toBe(0)
 
     // Week 2: 18hr cap. Mon 7.5 + Tue 7.5 + Wed 3 partial = 18hrs. Thu unfunded.
     expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
@@ -735,10 +734,9 @@ describe('QLD per-week allocation', () => {
   })
 
   /**
-   * 6hr/24hr split (1d/4d with 6hr sessions): also capped.
-   * Week 2 capped at 18hrs, not 24.
+   * 6hr/24hr split: week 1 under minimum (6 < 12), week 2 capped at 18.
    */
-  it('6/24 split: week 2 capped at 18hrs', () => {
+  it('6/24 split: week 1 under minimum, week 2 capped at 18hrs', () => {
     const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
       const week = (i < 5 ? 1 : 2) as 1 | 2
       const dayIdx = i % 5
@@ -754,7 +752,7 @@ describe('QLD per-week allocation', () => {
         sessionStartHour: booked ? 7 : 0,
         sessionEndHour: booked ? 17 : 0,
         kindyProgramStartHour: hasKindy ? 8 : null,
-        kindyProgramEndHour: hasKindy ? 14 : null, // 6hr kindy
+        kindyProgramEndHour: hasKindy ? 14 : null,
       }
     })
 
@@ -766,12 +764,189 @@ describe('QLD per-week allocation', () => {
     })
 
     expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
     const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Week 1: 6hrs < 12hr minimum → no funding
+    expect(week1[0].kindyFundingAmount).toBe(0)
 
     // Week 2: 18hr cap. 3 × 6 = 18hrs funded, 4th day gets 0
     expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[1].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[2].kindyFundingAmount).toBeGreaterThan(0)
-    expect(week2[3].kindyFundingAmount).toBe(0) // cap exhausted
+    expect(week2[3].kindyFundingAmount).toBe(0)
+  })
+})
+
+describe('QLD minimum hours per week', () => {
+  /**
+   * Single kindy day per week (7.5hrs) — under the 12hr minimum.
+   * No kindy funding should be allocated.
+   */
+  it('single 7.5hr kindy day per week: no funding', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx === 4 // Friday only
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 150 : 0,
+        sessionStartHour: booked ? 6.5 : 0,
+        sessionEndHour: booked ? 18.5 : 0,
+        kindyProgramStartHour: booked ? 8 : null,
+        kindyProgramEndHour: booked ? 15.5 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    // No kindy funding at all — under 12hr/week minimum
+    expect(result!.totalKindyFunding).toBe(0)
+    result!.sessions.forEach((s) => {
+      expect(s.kindyFundingAmount).toBe(0)
+    })
+  })
+
+  /**
+   * Single 6hr kindy day per week — also under the 12hr minimum.
+   */
+  it('single 6hr kindy day per week: no funding', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx === 0 // Monday only
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 120 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: booked ? 8 : null,
+        kindyProgramEndHour: booked ? 14 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.totalKindyFunding).toBe(0)
+  })
+
+  /**
+   * Exactly 12hrs/week (2 × 6hr days) — meets the minimum. Funded.
+   */
+  it('2 × 6hr kindy days per week: meets minimum, funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 2 // Mon+Tue
+      const hasKindy = booked
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 120 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 14 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.totalKindyFunding).toBeGreaterThan(0)
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
+  })
+
+  /**
+   * Mixed fortnight: week 1 has 1 kindy day (under min), week 2 has 2 days (meets min).
+   * Only week 2 gets funding.
+   */
+  it('1d week 1 / 2d week 2: only week 2 funded', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const bookedWeek1 = dayIdx === 0
+      const bookedWeek2 = dayIdx < 2
+      const booked = week === 1 ? bookedWeek1 : bookedWeek2
+      const hasKindy = booked
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 125 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 15.5 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Week 1: 7.5hrs < 12hr minimum → no funding
+    expect(week1[0].kindyFundingAmount).toBe(0)
+
+    // Week 2: 15hrs, meets minimum → funded
+    expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week2[1].kindyFundingAmount).toBeGreaterThan(0)
+  })
+
+  /**
+   * No kindy days at all — zero funding, no errors.
+   */
+  it('no kindy days: zero funding', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 3
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 125 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: null,
+        kindyProgramEndHour: null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 72,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.totalKindyFunding).toBe(0)
   })
 })
