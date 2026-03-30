@@ -121,6 +121,9 @@ describe('calculateActFortnightly', () => {
     preschoolDays.forEach((ps) => {
       regularDays.forEach((rd) => expect(ps.estimatedGapFee).toBeLessThan(rd.estimatedGapFee))
     })
+
+    // ACT doesn't expose weeklyKindyHoursAllocated (funds exactly one day, not a pool)
+    expect(result!.weeklyKindyHoursAllocated).toBeUndefined()
   })
 
   /**

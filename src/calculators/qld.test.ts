@@ -335,6 +335,9 @@ describe('QLD 30hr fortnightly pool splits', () => {
     expect(week2[1].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[2].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[2].remainingKindyHours).toBe(0)
+
+    // Per-week allocation reported for UI labels
+    expect(result!.weeklyKindyHoursAllocated).toEqual([12, 18])
   })
 
   /**
@@ -382,6 +385,8 @@ describe('QLD 30hr fortnightly pool splits', () => {
     expect(week2[0].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[1].kindyFundingAmount).toBeGreaterThan(0)
     expect(week2[1].remainingKindyHours).toBe(0)
+
+    expect(result!.weeklyKindyHoursAllocated).toEqual([18, 12])
   })
 
   /**
@@ -566,6 +571,9 @@ describe('QLD 6hr kindy partial funding', () => {
     // Same pattern in week 2
     expect(week2[0].kindyFundingAmount).toBe(week1[0].kindyFundingAmount)
     expect(week2[2].kindyFundingAmount).toBe(week1[2].kindyFundingAmount)
+
+    // Each week allocated 15hrs (18hr demand capped by symmetric split)
+    expect(result!.weeklyKindyHoursAllocated).toEqual([15, 15])
   })
 
   /**
@@ -814,7 +822,7 @@ describe('QLD per-week allocation', () => {
     expect(week1Funded).toHaveLength(2)
     expect(week2Funded).toHaveLength(2)
 
-    // Total kindy funding uses 30hrs
+    expect(result!.weeklyKindyHoursAllocated).toEqual([15, 15])
     expect(result!.totalKindyFunding).toBeGreaterThan(0)
   })
 
