@@ -30,7 +30,7 @@ Funded hours model. 30 hours per fortnight of funded kindergarten in long day ca
 
 ### ACT — 3-Year-Old Preschool
 
-Funded hours model. 6 to 7.5 hours of funded preschool on one day per week at participating long day care services. Similar gap-hours approach to QLD.
+Funded hours model. 300 hours per year (6–7.5 hrs/week depending on program weeks) of funded preschool spread across whichever days the child attends the preschool program at participating long day care services. Similar gap-hours approach to QLD, with a per-week pool instead of a fortnightly pool.
 
 ### NSW — Start Strong
 

@@ -27,12 +27,6 @@ const PRESCHOOL_OPTIONS = [
   { value: '6', label: '6 hours' },
 ]
 
-// Default preschool pattern: Wed each week
-const DEFAULT_PRESCHOOL = [
-  false, false, true, false, false,
-  false, false, true, false, false,
-]
-
 function ActCalculator() {
   const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
@@ -46,11 +40,11 @@ function ActCalculator() {
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')
   const [fnPreschoolStart, setFnPreschoolStart] = useState(8.5)
 
-  // Weekly inputs (1 week)
+  // Weekly inputs (1 week) — all days default to preschool; the weekly pool handles allocation
   const [weeklyDays, setWeeklyDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_PRESCHOOL.slice(0, 5),
+      true,
       1,
     ),
   )
@@ -59,7 +53,7 @@ function ActCalculator() {
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_PRESCHOOL,
+      true,
     ),
   )
 
@@ -177,11 +171,11 @@ function ActCalculator() {
               <CalculatorSidebar
                 schemeTag="ACT"
                 schemeName="Free 3-Year-Old Preschool"
-                description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
+                description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. The funded hours are spread across whichever days the child attends the preschool program."
                 keyFacts={[
                   { label: 'Annual Hours Funded', value: '300 hours' },
-                  { label: 'Days per Week', value: '1 day' },
-                  { label: 'Program Length', value: '6\u20137.5 hrs/day' },
+                  { label: 'Weekly Pool', value: '6\u20137.5 hrs/wk' },
+                  { label: 'Program Weeks', value: '40\u201350/year' },
                 ]}
                 guidance={[
                   {
@@ -197,8 +191,8 @@ function ActCalculator() {
                     description: 'From January 2026, all families get at least 72 subsidised hours per fortnight (3 days/week). 100 hours if both parents do 48+ hours of activity.',
                   },
                   {
-                    title: 'Preschool Day Selection',
-                    description: 'Pick which day each week your child attends the preschool program. Only one day per week is funded.',
+                    title: 'Preschool Days',
+                    description: 'Mark each day your child attends the preschool program. The weekly funded hours are spread across all preschool days.',
                   },
                 ]}
               >
@@ -354,7 +348,7 @@ function ActCalculator() {
                   days={weeklyDays}
                   onChange={setWeeklyDays}
                   results={weeklyDayResults}
-                  kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
+                  kindyToggle={{ label: 'Preschool' }}
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
@@ -466,7 +460,7 @@ function ActCalculator() {
                   days={days}
                   onChange={setDays}
                   results={dayResults}
-                  kindyToggle={{ label: 'Preschool', maxPerWeek: 1 }}
+                  kindyToggle={{ label: 'Preschool' }}
                   fundingLabel="Preschool"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
