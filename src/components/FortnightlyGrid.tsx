@@ -83,7 +83,21 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
       const fallback = template
         ? { sessionFee: template.sessionFee, sessionStart: template.sessionStart, sessionEnd: template.sessionEnd }
         : defaults ?? {}
-      updateDay(index, { booked: true, ...fallback })
+
+      // If maxPerWeek is set and already reached, disable kindy on the newly booked day
+      let kindyOverride: Partial<DayConfig> = {}
+      if (kindyToggle?.maxPerWeek && days[index].hasKindy) {
+        const weekStart = index < 5 ? 0 : 5
+        let kindyCount = 0
+        for (let i = weekStart; i < weekStart + 5; i++) {
+          if (days[i].hasKindy && days[i].booked) kindyCount++
+        }
+        if (kindyCount >= kindyToggle.maxPerWeek) {
+          kindyOverride = { hasKindy: false }
+        }
+      }
+
+      updateDay(index, { booked: true, ...fallback, ...kindyOverride })
     }
   }
 

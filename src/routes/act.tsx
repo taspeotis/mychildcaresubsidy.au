@@ -27,12 +27,6 @@ const PRESCHOOL_OPTIONS = [
   { value: '6', label: '6 hours' },
 ]
 
-// Default preschool pattern: Wed each week
-const DEFAULT_PRESCHOOL = [
-  false, false, true, false, false,
-  false, false, true, false, false,
-]
-
 function ActCalculator() {
   const shared = useSharedCalculatorState()
   const [mode, setMode] = useState('daily')
@@ -46,11 +40,11 @@ function ActCalculator() {
   const [fnPreschoolHours, setFnPreschoolHours] = useState('6')
   const [fnPreschoolStart, setFnPreschoolStart] = useState(8.5)
 
-  // Weekly inputs (1 week)
+  // Weekly inputs (1 week) — all days default to preschool; maxPerWeek: 1 gives it to the first booked day
   const [weeklyDays, setWeeklyDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_PRESCHOOL.slice(0, 5),
+      true,
       1,
     ),
   )
@@ -59,7 +53,7 @@ function ActCalculator() {
   const [days, setDays] = useState<DayConfig[]>(() =>
     createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
-      DEFAULT_PRESCHOOL,
+      true,
     ),
   )
 
