@@ -518,6 +518,133 @@ describe('QLD kindy on any day of the week', () => {
   })
 })
 
+describe('QLD 6hr kindy partial funding', () => {
+  /**
+   * 3 × 6hr kindy both weeks = 18/18 demand. Each week gets 15hrs.
+   * Day 1: 6hrs funded, Day 2: 6hrs funded, Day 3: 3hrs funded (partial).
+   */
+  it('3 × 6hr kindy: funded 6, 6, 3 per week', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 3
+      const hasKindy = booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 120 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 14 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 100,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+    const week2 = result!.sessions.filter((s) => s.week === 2)
+
+    // Each week: 15hr allocation. Mon 6 (15→9), Tue 6 (9→3), Wed 3 of 6 (3→0)
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0)
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0) // partial
+    expect(week1[2].remainingKindyHours).toBe(0)
+
+    // Wed gets less funding than Mon/Tue (3hrs vs 6hrs)
+    expect(week1[2].kindyFundingAmount).toBeLessThan(week1[0].kindyFundingAmount)
+    // Mon and Tue get equal funding
+    expect(week1[0].kindyFundingAmount).toBe(week1[1].kindyFundingAmount)
+
+    // Same pattern in week 2
+    expect(week2[0].kindyFundingAmount).toBe(week1[0].kindyFundingAmount)
+    expect(week2[2].kindyFundingAmount).toBe(week1[2].kindyFundingAmount)
+  })
+
+  /**
+   * 4 × 6hr kindy both weeks. Each week gets 15hrs.
+   * Days 1-2: 6hrs each, Day 3: 3hrs partial, Day 4: 0.
+   */
+  it('4 × 6hr kindy: funded 6, 6, 3, 0 per week', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+      const booked = dayIdx < 4
+      const hasKindy = booked
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: booked ? 120 : 0,
+        sessionStartHour: booked ? 7 : 0,
+        sessionEndHour: booked ? 17 : 0,
+        kindyProgramStartHour: hasKindy ? 8 : null,
+        kindyProgramEndHour: hasKindy ? 14 : null,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 100,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0) // Mon: 6hrs
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0) // Tue: 6hrs
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0) // Wed: 3hrs partial
+    expect(week1[3].kindyFundingAmount).toBe(0) // Thu: pool exhausted
+    expect(week1[2].kindyFundingAmount).toBeLessThan(week1[0].kindyFundingAmount)
+  })
+
+  /**
+   * 5 × 6hr kindy both weeks. Each week gets 15hrs.
+   * Days 1-2: 6hrs each, Day 3: 3hrs partial, Days 4-5: 0.
+   */
+  it('5 × 6hr kindy: funded 6, 6, 3, 0, 0 per week', () => {
+    const sessions: FortnightlySession[] = Array.from({ length: 10 }, (_, i) => {
+      const week = (i < 5 ? 1 : 2) as 1 | 2
+      const dayIdx = i % 5
+
+      return {
+        week,
+        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][dayIdx],
+        sessionFee: 120,
+        sessionStartHour: 7,
+        sessionEndHour: 17,
+        kindyProgramStartHour: 8,
+        kindyProgramEndHour: 14,
+      }
+    })
+
+    const result = calculateQldFortnightly({
+      ccsPercent: 60,
+      ccsWithholdingPercent: 5,
+      fortnightlyCcsHours: 100,
+      sessions,
+    })
+
+    expect(result).not.toBeNull()
+    const week1 = result!.sessions.filter((s) => s.week === 1)
+
+    expect(week1[0].kindyFundingAmount).toBeGreaterThan(0) // Mon: 6hrs
+    expect(week1[1].kindyFundingAmount).toBeGreaterThan(0) // Tue: 6hrs
+    expect(week1[2].kindyFundingAmount).toBeGreaterThan(0) // Wed: 3hrs partial
+    expect(week1[3].kindyFundingAmount).toBe(0) // Thu: 0
+    expect(week1[4].kindyFundingAmount).toBe(0) // Fri: 0
+  })
+})
+
 describe('QLD per-week allocation', () => {
   /**
    * 18/12 split with 7.5hr kindy sessions.

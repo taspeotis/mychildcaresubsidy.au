@@ -155,10 +155,17 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
           <div key={week} className="rounded-2xl card-glass p-4 sm:p-5">
             {weekCount > 1 && <p className="text-xs font-bold text-slate-400 mb-3">Week {week}</p>}
             <div className="space-y-1.5">
-              {WEEKDAYS.map((dayName, dayIdx) => {
-                const i = (week - 1) * 5 + dayIdx
+              {(() => {
+                const weekStart = (week - 1) * 5
+                const weekKindyFunded = results
+                  ? Array.from({ length: 5 }, (_, d) => results[weekStart + d]).some((r) => r && r.kindyFunding > 0)
+                  : false
+
+                return WEEKDAYS.map((dayName, dayIdx) => {
+                const i = weekStart + dayIdx
                 const day = days[i]
                 const result = results?.[i]
+                const kindyExhausted = day.hasKindy && kindyToggle && result && result.kindyFunding === 0 && weekKindyFunded
 
                 return (
                   <button
@@ -190,15 +197,18 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                       ) : null}
                     </div>
                     {day.booked && (
-                      <div className="mt-1 flex items-center justify-between">
+                      <div className="mt-1 grid grid-cols-2 gap-x-2 sm:flex sm:items-center sm:justify-between">
                         <p className="text-xs text-slate-500">
-                          ${day.sessionFee} &middot; {formatTime(day.sessionStart)}&ndash;{formatTime(day.sessionEnd)}
+                          ${day.sessionFee}<br className="sm:hidden" /><span className="hidden sm:inline"> &middot; </span>{formatTime(day.sessionStart)}&ndash;{formatTime(day.sessionEnd)}
                         </p>
-                        {result && (result.ccsEntitlement > 0 || result.kindyFunding > 0) && (
-                          <p className="text-xs tabular-nums text-slate-400">
+                        {result && (result.ccsEntitlement > 0 || result.kindyFunding > 0 || kindyExhausted) && (
+                          <p className="text-xs tabular-nums text-slate-400 text-right sm:text-left">
                             CCS {fmt(result.ccsEntitlement)}
                             {result.kindyFunding > 0 && (
-                              <span className={clsx('font-bold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}> + {fundingLabel} {fmt(result.kindyFunding)}</span>
+                              <><br className="sm:hidden" /><span className="hidden sm:inline"> </span><span className={clsx('font-bold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}>+ {fundingLabel} {fmt(result.kindyFunding)}</span></>
+                            )}
+                            {kindyExhausted && (
+                              <><br className="sm:hidden" /><span className="hidden sm:inline"> &middot; </span><span className="text-slate-400 italic">{kindyToggle!.label} Funded</span></>
                             )}
                           </p>
                         )}
@@ -206,7 +216,8 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                     )}
                   </button>
                 )
-              })}
+              })
+              })()}
             </div>
           </div>
         ))}
