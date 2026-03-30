@@ -178,5 +178,6 @@ export function calculateQldFortnightly(inputs: FortnightlyInputs): FortnightlyR
     totalCcsEntitlement: roundTo(results.reduce((s, r) => s + r.ccsEntitlement, 0), 2),
     totalKindyFunding: roundTo(results.reduce((s, r) => s + r.kindyFundingAmount, 0), 2),
     totalGapFee: roundTo(results.reduce((s, r) => s + r.estimatedGapFee, 0), 2),
+    weeklyKindyHoursAllocated: [week1Allocation, week2Allocation],
   }
 }

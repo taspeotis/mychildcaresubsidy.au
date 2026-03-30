@@ -343,6 +343,7 @@ function QldCalculator() {
                   fundingLabel="Free Kindy"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  weeklyKindyHoursAllocated={weeklyResult?.weeklyKindyHoursAllocated}
                 />
 
                 {weeklyResult && (() => {
@@ -454,6 +455,7 @@ function QldCalculator() {
                   fundingLabel="Free Kindy"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  weeklyKindyHoursAllocated={fortnightlyResult?.weeklyKindyHoursAllocated}
                 />
 
                 {fortnightlyResult && (() => {

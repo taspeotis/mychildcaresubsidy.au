@@ -55,4 +55,5 @@ export interface FortnightlyResult {
   totalCcsEntitlement: number
   totalKindyFunding: number
   totalGapFee: number
+  weeklyKindyHoursAllocated?: [number, number]
 }

@@ -31,6 +31,7 @@ export interface FortnightlyGridProps {
   fmt: (n: number) => string
   colorScheme?: ColorScheme
   defaults?: { sessionFee: string; sessionStart: number; sessionEnd: number }
+  weeklyKindyHoursAllocated?: [number, number]
 }
 
 const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F'] as const
@@ -49,7 +50,7 @@ export function createDefaultDays(
   }))
 }
 
-export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent', defaults }: FortnightlyGridProps) {
+export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent', defaults, weeklyKindyHoursAllocated }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
   const weekCount = Math.ceil(days.length / 5)
 
@@ -208,7 +209,7 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                               <><br className="sm:hidden" /><span className="hidden sm:inline"> </span><span className={clsx('font-bold', colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500')}>+ {fundingLabel} {fmt(result.kindyFunding)}</span></>
                             )}
                             {kindyExhausted && (
-                              <><br className="sm:hidden" /><span className="hidden sm:inline"> &middot; </span><span className="text-slate-400 italic">{kindyToggle!.label} Funded</span></>
+                              <><br className="sm:hidden" /><span className="hidden sm:inline"> &middot; </span><span className="text-slate-400 italic">{weeklyKindyHoursAllocated ? `${weeklyKindyHoursAllocated[week - 1]} Hrs.` : kindyToggle!.label} Already Funded</span></>
                             )}
                           </p>
                         )}
