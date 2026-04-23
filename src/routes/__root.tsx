@@ -150,17 +150,17 @@ function RootLayoutInner() {
             </nav>
             <div
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-y-0 left-0 flex w-16 items-center justify-start bg-gradient-to-r from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-500 ease-out sm:hidden ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`}
+              className={`pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1 transition-opacity duration-300 sm:hidden ${canScrollLeft ? 'opacity-70' : 'opacity-20'}`}
             >
-              <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <svg className="h-4 w-4 text-white drop-shadow-[0_0_4px_rgba(42,11,64,0.9)]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
             </div>
             <div
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-end bg-gradient-to-l from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-500 ease-out sm:hidden ${canScrollRight ? 'opacity-100' : 'opacity-0'}`}
+              className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1 transition-opacity duration-300 sm:hidden ${canScrollRight ? 'opacity-70' : 'opacity-20'}`}
             >
-              <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <svg className="h-4 w-4 text-white drop-shadow-[0_0_4px_rgba(42,11,64,0.9)]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
