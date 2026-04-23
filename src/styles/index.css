@@ -135,6 +135,14 @@
   }
 }
 
+/* Hide the horizontal scrollbar on the mobile nav strip */
+.nav-scroll {
+  scrollbar-width: none;
+}
+.nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {

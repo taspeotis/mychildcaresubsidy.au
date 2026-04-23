@@ -56,6 +56,8 @@ function RootLayoutInner() {
       setPill({ left, top, width, height, opacity: 1, route })
     }
     wasVisible.current = true
+    // On mobile the nav is horizontally scrollable — keep the active pill in view.
+    active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' })
   }, [pathname])
 
   useEffect(() => {
@@ -99,7 +101,7 @@ function RootLayoutInner() {
             </svg>
             <span className="text-base font-bold leading-none tracking-tight text-white sm:text-lg sm:leading-none">my<span className="text-accent-400">childcare</span>subsidy.au</span>
           </Link>
-          <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
+          <nav ref={navRef} className="nav-scroll relative flex w-full flex-nowrap items-center gap-x-0.5 overflow-x-auto sm:w-auto sm:gap-x-1 sm:overflow-visible">
             <div
               ref={pillRef}
               className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${
@@ -121,9 +123,8 @@ function RootLayoutInner() {
             <Link to="/qld" className={navLinkClass}>QLD</Link>
             <Link to="/vic" className={navLinkClass}>VIC</Link>
             <span className="mx-1 hidden text-white/20 sm:inline">|</span>
-            <Link to="/estimates" className={navLinkClass} aria-label="Estimates">
-              <span className="sm:hidden">Est</span>
-              <span className="hidden sm:inline">Estimates</span>
+            <Link to="/estimates" className={navLinkClass}>
+              Estimates
               <NavCountBadge count={estimateCount} />
             </Link>
           </nav>
