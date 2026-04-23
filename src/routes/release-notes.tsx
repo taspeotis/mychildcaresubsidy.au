@@ -24,7 +24,7 @@ const RELEASES: Release[] = [
     date: '23 April 2026',
     id: '2026-04-23',
     changes: [
-      'Save estimates for each of your children and see a fortnightly household total in one place. Use the new Estimates page to edit or remove any estimate later.',
+      'Save estimates for each of your children and see a combined household total in one place. Daily and fortnightly estimates are grouped separately so totals stay apples-to-apples. Use the new Estimates page to edit or remove any estimate later.',
       'Optional child name and service name fields on every calculator, used to label saved estimates.',
       'Your estimates are saved in your browser, so they\'re still there when you come back.',
     ],
