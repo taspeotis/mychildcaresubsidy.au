@@ -1,10 +1,11 @@
+import clsx from 'clsx'
 import { fmt } from '../config'
-import type { PlanEntry, PlanEntryResult } from '../plan/types'
-import { SCHEME_META } from '../plan/types'
+import type { Estimate, EstimateResult } from '../estimates/types'
+import { SCHEME_META } from '../estimates/types'
 
-interface PlanEntryRowProps {
-  entry: PlanEntry
-  result: PlanEntryResult | null
+interface EstimateRowProps {
+  estimate: Estimate
+  result: EstimateResult | null
   label: string
   onEdit: () => void
   onDelete: () => void
@@ -16,16 +17,22 @@ const MODE_NOUN: Record<string, string> = {
   fortnightly: 'Fortnight',
 }
 
-export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEntryRowProps) {
-  const meta = SCHEME_META[entry.scheme]
-  const period = MODE_NOUN[entry.mode]
+export function EstimateRow({ estimate, result, label, onEdit, onDelete }: EstimateRowProps) {
+  const meta = SCHEME_META[estimate.scheme]
+  const period = MODE_NOUN[estimate.mode]
+  const isCcs = estimate.scheme === 'ccs'
 
   return (
     <div className="rounded-2xl card-glass p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <span
+              className={clsx(
+                'rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+                isCcs ? 'bg-brand-100 text-brand-700' : 'bg-accent-100 text-accent-700',
+              )}
+            >
               {meta.label}
             </span>
             <span className="text-xs text-slate-500">Per {period}</span>
@@ -36,7 +43,12 @@ export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEnt
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+            className={clsx(
+              'rounded-lg border-2 bg-white px-3 py-1.5 text-xs font-bold transition-colors',
+              isCcs
+                ? 'border-brand-300 text-brand-700 hover:border-brand-500 hover:bg-brand-50'
+                : 'border-accent-300 text-accent-600 hover:border-accent-500 hover:bg-accent-50',
+            )}
           >
             Edit
           </button>
@@ -44,7 +56,7 @@ export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEnt
             type="button"
             onClick={onDelete}
             aria-label={`Remove ${label}`}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+            className="rounded-lg border-2 border-red-300 bg-white px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:border-red-500 hover:bg-red-50"
           >
             Remove
           </button>
@@ -76,7 +88,7 @@ export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEnt
         </dl>
       ) : (
         <p className="mt-4 text-sm text-slate-500">
-          This entry is missing inputs. Click Edit to review and save it.
+          This estimate is missing inputs. Click Edit to review and save it.
         </p>
       )}
     </div>

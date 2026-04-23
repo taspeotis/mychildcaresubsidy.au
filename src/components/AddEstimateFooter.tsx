@@ -4,7 +4,7 @@ import { InputField } from './InputField'
 import { Button } from './Button'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 
-interface AddToPlanFooterProps {
+interface AddEstimateFooterProps {
   colorScheme?: ColorScheme
   onSubmit: () => void
   onCancel?: () => void
@@ -14,7 +14,7 @@ interface AddToPlanFooterProps {
   hasEntries: boolean
 }
 
-export function AddToPlanFooter({
+export function AddEstimateFooter({
   colorScheme = 'accent',
   onSubmit,
   onCancel,
@@ -22,7 +22,7 @@ export function AddToPlanFooter({
   editingLabel,
   disabled = false,
   hasEntries,
-}: AddToPlanFooterProps) {
+}: AddEstimateFooterProps) {
   const { childName, setChildName, serviceName, setServiceName } = useSharedCalculatorState()
   const isBrand = colorScheme === 'brand'
 

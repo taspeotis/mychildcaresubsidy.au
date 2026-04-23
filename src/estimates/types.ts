@@ -3,8 +3,8 @@ import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
 import type { VicCohort } from '../calculators/vic'
 import type { DayConfig } from '../components/FortnightlyGrid'
 
-export type PlanMode = 'daily' | 'weekly' | 'fortnightly'
-export type PlanScheme = 'ccs' | 'act' | 'nsw' | 'qld' | 'vic'
+export type EstimateMode = 'daily' | 'weekly' | 'fortnightly'
+export type EstimateScheme = 'ccs' | 'act' | 'nsw' | 'qld' | 'vic'
 
 export interface SharedSnapshot {
   ccsPercent: string
@@ -58,25 +58,25 @@ export interface VicLocalSnapshot {
   days: DayConfig[]
 }
 
-interface PlanEntryBase {
+interface EstimateBase {
   id: string
   createdAt: number
   childName: string
   serviceName: string
-  mode: PlanMode
+  mode: EstimateMode
   shared: SharedSnapshot
 }
 
-export type PlanEntry =
-  | (PlanEntryBase & { scheme: 'ccs'; local: CcsLocalSnapshot })
-  | (PlanEntryBase & { scheme: 'act'; local: ActLocalSnapshot })
-  | (PlanEntryBase & { scheme: 'nsw'; local: NswLocalSnapshot })
-  | (PlanEntryBase & { scheme: 'qld'; local: QldLocalSnapshot })
-  | (PlanEntryBase & { scheme: 'vic'; local: VicLocalSnapshot })
+export type Estimate =
+  | (EstimateBase & { scheme: 'ccs'; local: CcsLocalSnapshot })
+  | (EstimateBase & { scheme: 'act'; local: ActLocalSnapshot })
+  | (EstimateBase & { scheme: 'nsw'; local: NswLocalSnapshot })
+  | (EstimateBase & { scheme: 'qld'; local: QldLocalSnapshot })
+  | (EstimateBase & { scheme: 'vic'; local: VicLocalSnapshot })
 
-export type PlanEntryInput = Omit<PlanEntry, 'id' | 'createdAt'>
+export type EstimateInput = Omit<Estimate, 'id' | 'createdAt'>
 
-export interface PlanEntryResult {
+export interface EstimateResult {
   sessionFees: number
   ccsEntitlement: number
   stateFunding: number
@@ -84,7 +84,7 @@ export interface PlanEntryResult {
   gap: number
 }
 
-export const SCHEME_META: Record<PlanScheme, { label: string; fundingLabel: string }> = {
+export const SCHEME_META: Record<EstimateScheme, { label: string; fundingLabel: string }> = {
   ccs: { label: 'CCS', fundingLabel: '' },
   act: { label: 'ACT', fundingLabel: 'Preschool' },
   nsw: { label: 'NSW', fundingLabel: 'Start Strong' },

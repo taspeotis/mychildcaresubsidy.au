@@ -2,51 +2,51 @@ import { useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { StickyPanel } from '../components/StickyPanel'
-import { PlanEntryRow } from '../components/PlanEntryRow'
+import { EstimateRow } from '../components/EstimateRow'
 import { Button } from '../components/Button'
-import { usePlan } from '../plan/PlanState'
-import { calculateEntry } from '../plan/snapshot'
-import { formatEntryLabel } from '../plan/labels'
-import type { PlanEntry, PlanEntryResult } from '../plan/types'
+import { useEstimates } from '../estimates/EstimatesState'
+import { calculateEstimate } from '../estimates/snapshot'
+import { formatEstimateLabel } from '../estimates/labels'
+import type { Estimate, EstimateResult } from '../estimates/types'
 import { fmt } from '../config'
 
 export const Route = createFileRoute('/estimates')({
   component: EstimatesPage,
 })
 
-interface CalculatedEntry {
-  entry: PlanEntry
-  result: PlanEntryResult | null
+interface CalculatedEstimate {
+  estimate: Estimate
+  result: EstimateResult | null
   label: string
 }
 
 function EstimatesPage() {
-  const { entries, deleteEntry, clearAll, startEditing } = usePlan()
+  const { estimates, deleteEstimate, clearAll, startEditing } = useEstimates()
   const navigate = useNavigate()
 
-  const calculated = useMemo<CalculatedEntry[]>(
-    () => entries.map((entry, i) => ({
-      entry,
-      result: calculateEntry(entry),
-      label: formatEntryLabel(entry, i + 1),
+  const calculated = useMemo<CalculatedEstimate[]>(
+    () => estimates.map((estimate, i) => ({
+      estimate,
+      result: calculateEstimate(estimate),
+      label: formatEstimateLabel(estimate, i + 1),
     })),
-    [entries],
+    [estimates],
   )
 
-  const fortnightly = calculated.filter((c) => c.entry.mode !== 'daily')
-  const daily = calculated.filter((c) => c.entry.mode === 'daily')
+  const fortnightly = calculated.filter((c) => c.estimate.mode !== 'daily')
+  const daily = calculated.filter((c) => c.estimate.mode === 'daily')
   const hasBoth = fortnightly.length > 0 && daily.length > 0
 
   const fortnightlyTotals = totals(fortnightly)
   const dailyTotals = totals(daily)
 
   const showSiblingNudge =
-    entries.length >= 2 &&
-    new Set(entries.map((e) => e.shared.ccsPercent)).size === 1
+    estimates.length >= 2 &&
+    new Set(estimates.map((e) => e.shared.ccsPercent)).size === 1
 
-  function handleEdit(entry: PlanEntry) {
-    startEditing(entry.id)
-    navigate({ to: `/${entry.scheme}` })
+  function handleEdit(estimate: Estimate) {
+    startEditing(estimate.id)
+    navigate({ to: `/${estimate.scheme}` })
   }
 
   function handleClearAll() {
@@ -74,11 +74,11 @@ function EstimatesPage() {
             <p className="text-sm leading-relaxed text-white/70">
               Saved from the calculators. Edit any estimate to revisit the full calculator for that child.
             </p>
-            {entries.length > 0 && (
+            {estimates.length > 0 && (
               <div className="mt-6 border-t border-white/10 pt-5">
                 <p className="text-xs font-bold uppercase tracking-wider text-white/50">Saved</p>
                 <p className="mt-2 text-sm text-white/80">
-                  {entries.length} {entries.length === 1 ? 'estimate' : 'estimates'}
+                  {estimates.length} {estimates.length === 1 ? 'estimate' : 'estimates'}
                 </p>
                 <button
                   type="button"
@@ -94,7 +94,7 @@ function EstimatesPage() {
 
         {/* Main content */}
         <div className="min-w-0 space-y-6">
-          {entries.length === 0 ? (
+          {estimates.length === 0 ? (
             <EmptyState />
           ) : (
             <>
@@ -115,7 +115,7 @@ function EstimatesPage() {
                   calculated={fortnightly}
                   totals={fortnightlyTotals}
                   onEdit={handleEdit}
-                  onDelete={deleteEntry}
+                  onDelete={deleteEstimate}
                 />
               )}
 
@@ -125,7 +125,7 @@ function EstimatesPage() {
                   <p className="mt-1">
                     Daily estimates don't capture attendance across a full fortnight (including kindy/preschool days),
                     so we haven't combined them with your fortnightly totals.
-                    Edit each daily entry and switch to Weekly or Fortnightly mode for a more accurate household picture.
+                    Edit each daily estimate and switch to Weekly or Fortnightly mode for a more accurate household picture.
                   </p>
                 </div>
               )}
@@ -137,7 +137,7 @@ function EstimatesPage() {
                   calculated={daily}
                   totals={dailyTotals}
                   onEdit={handleEdit}
-                  onDelete={deleteEntry}
+                  onDelete={deleteEstimate}
                 />
               )}
             </>
@@ -152,7 +152,7 @@ function EmptyState() {
   return (
     <div className="rounded-2xl card-glass p-8 text-center">
       <h2 className="text-lg font-bold text-slate-900">No estimates yet</h2>
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="mt-2 text-sm text-slate-600 text-balance mx-auto max-w-md">
         Open a calculator, fill in your details, and click{' '}
         <span className="font-bold text-accent-600">Add Estimate</span> at the bottom to save one here.
       </p>
@@ -170,9 +170,9 @@ function EmptyState() {
 interface GroupCardProps {
   title: string
   periodLabel: string
-  calculated: CalculatedEntry[]
+  calculated: CalculatedEstimate[]
   totals: ReturnType<typeof totals>
-  onEdit: (entry: PlanEntry) => void
+  onEdit: (estimate: Estimate) => void
   onDelete: (id: string) => void
 }
 
@@ -181,17 +181,17 @@ function GroupCard({ title, periodLabel, calculated, totals, onEdit, onDelete }:
     <section>
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</h2>
-        <p className="text-xs text-white/60">{calculated.length} {calculated.length === 1 ? 'entry' : 'entries'}</p>
+        <p className="text-xs text-white/60">{calculated.length} {calculated.length === 1 ? 'estimate' : 'estimates'}</p>
       </div>
       <div className="space-y-3">
-        {calculated.map(({ entry, result, label }) => (
-          <PlanEntryRow
-            key={entry.id}
-            entry={entry}
+        {calculated.map(({ estimate, result, label }) => (
+          <EstimateRow
+            key={estimate.id}
+            estimate={estimate}
             result={result}
             label={label}
-            onEdit={() => onEdit(entry)}
-            onDelete={() => onDelete(entry.id)}
+            onEdit={() => onEdit(estimate)}
+            onDelete={() => onDelete(estimate.id)}
           />
         ))}
       </div>
@@ -219,7 +219,7 @@ function GroupCard({ title, periodLabel, calculated, totals, onEdit, onDelete }:
   )
 }
 
-function totals(items: CalculatedEntry[]) {
+function totals(items: CalculatedEstimate[]) {
   return items.reduce(
     (acc, { result }) => {
       if (!result) return acc

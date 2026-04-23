@@ -3,7 +3,7 @@ import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-rout
 import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
-import { PlanProvider, usePlan } from '../plan/PlanState'
+import { EstimatesProvider, useEstimates } from '../estimates/EstimatesState'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -12,17 +12,17 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <SharedCalculatorProvider>
-      <PlanProvider>
+      <EstimatesProvider>
         <RootLayoutInner />
-      </PlanProvider>
+      </EstimatesProvider>
     </SharedCalculatorProvider>
   )
 }
 
 function RootLayoutInner() {
   const { pathname } = useLocation()
-  const { entries } = usePlan()
-  const planCount = entries.length
+  const { estimates } = useEstimates()
+  const estimateCount = estimates.length
   const navRef = useRef<HTMLElement>(null)
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
   const wasVisible = useRef(false)
@@ -116,7 +116,7 @@ function RootLayoutInner() {
             <span className="mx-1 hidden text-white/20 sm:inline">|</span>
             <Link to="/estimates" className={navLinkClass}>
               Estimates
-              <NavCountBadge count={planCount} />
+              <NavCountBadge count={estimateCount} />
             </Link>
           </nav>
         </Container>

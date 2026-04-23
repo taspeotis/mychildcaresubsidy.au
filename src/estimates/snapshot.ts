@@ -6,7 +6,7 @@ import { calculateVicDaily, calculateVicFortnightlySessions } from '../calculato
 import { computeDebtRecovery, WEEKDAYS } from '../config'
 import type { DayConfig } from '../components/FortnightlyGrid'
 import type { FortnightlySession } from '../types'
-import type { PlanEntry, PlanEntryResult, SharedSnapshot } from './types'
+import type { Estimate, EstimateResult, SharedSnapshot } from './types'
 
 const num = (s: string) => Number(s) || 0
 
@@ -69,8 +69,8 @@ function applyFortnightDebt(shared: SharedSnapshot, ccsEntitlement: number, stat
   return { debtPerDay: debt.debtPerDay, gap }
 }
 
-export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
-  const { shared, mode } = entry
+export function calculateEstimate(estimate: Estimate): EstimateResult | null {
+  const { shared, mode } = estimate
   const ccs = num(shared.ccsPercent)
   const wh = num(shared.withholding)
   const ccsHours = num(shared.ccsHours) || 72
@@ -79,7 +79,7 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
     const fee = num(shared.sessionFee)
     if (fee <= 0 || shared.sessionEnd <= shared.sessionStart) return null
 
-    switch (entry.scheme) {
+    switch (estimate.scheme) {
       case 'ccs': {
         const r = calculateCcsDaily({
           ccsPercent: ccs,
@@ -87,8 +87,8 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
           sessionFee: fee,
           sessionStartHour: shared.sessionStart,
           sessionEndHour: shared.sessionEnd,
-          careType: entry.local.careType,
-          schoolAge: entry.local.careType === 'oshc' ? true : entry.local.schoolAge,
+          careType: estimate.local.careType,
+          schoolAge: estimate.local.careType === 'oshc' ? true : estimate.local.schoolAge,
         })
         if (!r) return null
         const debt = applyDailyDebt(shared, r.ccsEntitlement, 0, fee)
@@ -101,13 +101,13 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
           sessionFee: fee,
           sessionStartHour: shared.sessionStart,
           sessionEndHour: shared.sessionEnd,
-          kindyProgramHours: num(entry.local.preschoolHours),
+          kindyProgramHours: num(estimate.local.preschoolHours),
         })
         const debt = applyDailyDebt(shared, r.ccsEntitlement, r.kindyFundingAmount, fee)
         return { sessionFees: fee, ccsEntitlement: r.ccsEntitlement, stateFunding: r.kindyFundingAmount, debtRecovery: debt.debtPerDay, gap: debt.gap }
       }
       case 'nsw': {
-        const weeks = num(entry.local.serviceWeeks) || 50
+        const weeks = num(estimate.local.serviceWeeks) || 50
         const dpw = num(shared.daysPerWeek) || 3
         const r = calculateNswDaily({
           ccsPercent: ccs,
@@ -115,8 +115,8 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
           sessionFee: fee,
           sessionStartHour: shared.sessionStart,
           sessionEndHour: shared.sessionEnd,
-          ageGroup: entry.local.ageGroup,
-          feeReliefTier: entry.local.feeReliefTier,
+          ageGroup: estimate.local.ageGroup,
+          feeReliefTier: estimate.local.feeReliefTier,
           serviceWeeks: weeks,
           daysPerWeek: dpw,
         })
@@ -130,21 +130,21 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
           sessionFee: fee,
           sessionStartHour: shared.sessionStart,
           sessionEndHour: shared.sessionEnd,
-          kindyProgramHours: num(entry.local.kindyHours),
+          kindyProgramHours: num(estimate.local.kindyHours),
         })
         const debt = applyDailyDebt(shared, r.ccsEntitlement, r.kindyFundingAmount, fee)
         return { sessionFees: fee, ccsEntitlement: r.ccsEntitlement, stateFunding: r.kindyFundingAmount, debtRecovery: debt.debtPerDay, gap: debt.gap }
       }
       case 'vic': {
         const dpw = num(shared.daysPerWeek) || 3
-        const khrs = entry.local.kinderHours === '15-3yo' ? 15 : num(entry.local.kinderHours) || 15
+        const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
         const r = calculateVicDaily({
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
           sessionStartHour: shared.sessionStart,
           sessionEndHour: shared.sessionEnd,
-          cohort: entry.local.cohort,
+          cohort: estimate.local.cohort,
           kinderHoursPerWeek: khrs,
           daysPerWeek: dpw,
         })
@@ -155,17 +155,17 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
   }
 
   // weekly or fortnightly: always calculate a full fortnight
-  switch (entry.scheme) {
+  switch (estimate.scheme) {
     case 'ccs': {
-      const days = daysForMode(entry.local, mode)
+      const days = daysForMode(estimate.local, mode)
       const sessions = simpleSessions(days)
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateCcsFortnightly({
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,
-        careType: entry.local.careType,
-        schoolAge: entry.local.careType === 'oshc' ? true : entry.local.schoolAge,
+        careType: estimate.local.careType,
+        schoolAge: estimate.local.careType === 'oshc' ? true : estimate.local.schoolAge,
         sessions,
       })
       if (!r) return null
@@ -174,9 +174,9 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
       return { sessionFees: r.totalSessionFees, ccsEntitlement: r.totalCcsEntitlement, stateFunding: 0, debtRecovery: debt.debtPerDay, gap: debt.gap }
     }
     case 'act': {
-      const days = daysForMode(entry.local, mode)
-      const ph = num(entry.local.fnPreschoolHours) || 6
-      const sessions = programSessions(days, entry.local.fnPreschoolStart, ph)
+      const days = daysForMode(estimate.local, mode)
+      const ph = num(estimate.local.fnPreschoolHours) || 6
+      const sessions = programSessions(days, estimate.local.fnPreschoolStart, ph)
       if (!days.some((d) => d.booked && num(d.sessionFee) > 0)) return null
       const programWeeks = Math.round(300 / ph)
       const r = calculateActFortnightly(
@@ -187,16 +187,16 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
       return { sessionFees: r.totalSessionFees, ccsEntitlement: r.totalCcsEntitlement, stateFunding: r.totalKindyFunding, debtRecovery: debt.debtPerDay, gap: debt.gap }
     }
     case 'nsw': {
-      const days = daysForMode(entry.local, mode)
+      const days = daysForMode(estimate.local, mode)
       const sessions = simpleSessions(days)
-      const weeks = num(entry.local.serviceWeeks) || 50
+      const weeks = num(estimate.local.serviceWeeks) || 50
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateNswFortnightlySessions({
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,
-        ageGroup: entry.local.ageGroup,
-        feeReliefTier: entry.local.feeReliefTier,
+        ageGroup: estimate.local.ageGroup,
+        feeReliefTier: estimate.local.feeReliefTier,
         serviceWeeks: weeks,
         sessions,
       })
@@ -205,24 +205,24 @@ export function calculateEntry(entry: PlanEntry): PlanEntryResult | null {
       return { sessionFees: r.totalSessionFees, ccsEntitlement: r.totalCcsEntitlement, stateFunding: r.totalFeeRelief, debtRecovery: debt.debtPerDay, gap: debt.gap }
     }
     case 'qld': {
-      const days = daysForMode(entry.local, mode)
-      const kh = num(entry.local.fnKindyHours) || 7.5
-      const sessions = programSessions(days, entry.local.fnKindyStart, kh)
+      const days = daysForMode(estimate.local, mode)
+      const kh = num(estimate.local.fnKindyHours) || 7.5
+      const sessions = programSessions(days, estimate.local.fnKindyStart, kh)
       if (!days.some((d) => d.booked && num(d.sessionFee) > 0)) return null
       const r = calculateQldFortnightly({ ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions })
       const debt = applyFortnightDebt(shared, r.totalCcsEntitlement, r.totalKindyFunding, r.totalSessionFees, bookedCount(days))
       return { sessionFees: r.totalSessionFees, ccsEntitlement: r.totalCcsEntitlement, stateFunding: r.totalKindyFunding, debtRecovery: debt.debtPerDay, gap: debt.gap }
     }
     case 'vic': {
-      const days = daysForMode(entry.local, mode)
+      const days = daysForMode(estimate.local, mode)
       const sessions = simpleSessions(days)
-      const khrs = entry.local.kinderHours === '15-3yo' ? 15 : num(entry.local.kinderHours) || 15
+      const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateVicFortnightlySessions({
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,
-        cohort: entry.local.cohort,
+        cohort: estimate.local.cohort,
         kinderHoursPerWeek: khrs,
         sessions,
       })

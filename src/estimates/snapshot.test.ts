@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { calculateEntry } from './snapshot'
-import type { PlanEntry, SharedSnapshot } from './types'
+import { calculateEstimate } from './snapshot'
+import type { Estimate, SharedSnapshot } from './types'
 import type { DayConfig } from '../components/FortnightlyGrid'
 
 function baseShared(overrides: Partial<SharedSnapshot> = {}): SharedSnapshot {
@@ -47,9 +47,9 @@ function fortnightDays(pattern: boolean[], hasKindyPattern?: boolean[]): DayConf
   )
 }
 
-describe('calculateEntry', () => {
+describe('calculateEstimate', () => {
   it('calculates CCS daily', () => {
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'ccs',
@@ -59,7 +59,7 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { careType: 'centre-based', schoolAge: false, weeklyDays: [], days: [] },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.sessionFees).toBe(150)
     expect(result!.ccsEntitlement).toBeGreaterThan(0)
@@ -68,7 +68,7 @@ describe('calculateEntry', () => {
   })
 
   it('returns null for CCS daily with zero fee', () => {
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'ccs',
@@ -78,12 +78,12 @@ describe('calculateEntry', () => {
       shared: baseShared({ sessionFee: '0' }),
       local: { careType: 'centre-based', schoolAge: false, weeklyDays: [], days: [] },
     }
-    expect(calculateEntry(entry)).toBeNull()
+    expect(calculateEstimate(estimate)).toBeNull()
   })
 
   it('calculates CCS fortnightly with booked days', () => {
     const booked = fortnightDays([true, true, true, false, false, true, true, true, false, false])
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'ccs',
@@ -93,7 +93,7 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { careType: 'centre-based', schoolAge: false, weeklyDays: [], days: booked },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.sessionFees).toBe(900) // 6 days × $150
     expect(result!.ccsEntitlement).toBeGreaterThan(0)
@@ -101,7 +101,7 @@ describe('calculateEntry', () => {
   })
 
   it('returns null for CCS fortnightly with no booked days', () => {
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'ccs',
@@ -111,7 +111,7 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { careType: 'centre-based', schoolAge: false, weeklyDays: [], days: fortnightDays(Array(10).fill(false)) },
     }
-    expect(calculateEntry(entry)).toBeNull()
+    expect(calculateEstimate(estimate)).toBeNull()
   })
 
   it('calculates QLD fortnightly with kindy days and returns state funding', () => {
@@ -120,7 +120,7 @@ describe('calculateEntry', () => {
       [true, true, false, false, false, true, true, false, false, false],
       [true, true, false, false, false, true, true, false, false, false],
     )
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'qld',
@@ -137,14 +137,14 @@ describe('calculateEntry', () => {
         days: booked,
       },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.stateFunding).toBeGreaterThan(0)
     expect(result!.gap).toBeLessThan(result!.sessionFees)
   })
 
   it('calculates NSW daily with state fee relief', () => {
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'nsw',
@@ -154,7 +154,7 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { ageGroup: '4+', feeReliefTier: 'standard', serviceWeeks: '50', weeklyDays: [], days: [] },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.stateFunding).toBeGreaterThan(0)
   })
@@ -164,7 +164,7 @@ describe('calculateEntry', () => {
       [true, false, false, false, false, true, false, false, false, false],
       [true, false, false, false, false, true, false, false, false, false],
     )
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'act',
@@ -181,13 +181,13 @@ describe('calculateEntry', () => {
         days: booked,
       },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.stateFunding).toBeGreaterThan(0)
   })
 
   it('calculates VIC daily with offset', () => {
-    const entry: PlanEntry = {
+    const estimate: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'vic',
@@ -197,14 +197,14 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { kinderHours: '15', cohort: 'standard', weeklyDays: [], days: [] },
     }
-    const result = calculateEntry(entry)
+    const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.stateFunding).toBeGreaterThan(0)
   })
 
   it('applies debt recovery to the gap fee', () => {
     const booked = fortnightDays([true, true, true, false, false, true, true, true, false, false])
-    const withoutDebt: PlanEntry = {
+    const withoutDebt: Estimate = {
       id: 'x',
       createdAt: 0,
       scheme: 'ccs',
@@ -214,12 +214,12 @@ describe('calculateEntry', () => {
       shared: baseShared(),
       local: { careType: 'centre-based', schoolAge: false, weeklyDays: [], days: booked },
     }
-    const withDebt: PlanEntry = {
+    const withDebt: Estimate = {
       ...withoutDebt,
       shared: baseShared({ debtRecovery: '10', debtRecoveryMode: 'percent' }),
     }
-    const a = calculateEntry(withoutDebt)!
-    const b = calculateEntry(withDebt)!
+    const a = calculateEstimate(withoutDebt)!
+    const b = calculateEstimate(withDebt)!
     expect(b.gap).toBeGreaterThan(a.gap)
     expect(b.debtRecovery).toBeGreaterThan(0)
     expect(a.debtRecovery).toBe(0)

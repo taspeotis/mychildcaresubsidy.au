@@ -12,15 +12,15 @@ import { ResultCard } from '../components/ResultCard'
 import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
-import { AddToPlanFooter } from '../components/AddToPlanFooter'
+import { AddEstimateFooter } from '../components/AddEstimateFooter'
 import { calculateNswDaily, calculateNswFortnightlySessions, NSW_FEE_RELIEF } from '../calculators/nsw'
 import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
 import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
-import { usePlan } from '../plan/PlanState'
-import { formatEntryLabel } from '../plan/labels'
-import type { PlanEntryInput, PlanMode } from '../plan/types'
+import { useEstimates } from '../estimates/EstimatesState'
+import { formatEstimateLabel } from '../estimates/labels'
+import type { EstimateInput, EstimateMode } from '../estimates/types'
 
 export const Route = createFileRoute('/nsw')({
   component: NswCalculator,
@@ -155,42 +155,42 @@ function NswCalculator() {
     : null
 
   // Plan integration
-  const { entries, editingId, editingEntry, addEntry, updateEntry, cancelEditing } = usePlan()
+  const { estimates, editingId, editingEstimate, addEstimate, updateEstimate, cancelEditing } = useEstimates()
   const navigate = useNavigate()
   const hydratedIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!editingId) { hydratedIdRef.current = null; return }
-    const entry = entries.find((e) => e.id === editingId)
-    if (!entry) { cancelEditing(); return }
-    if (entry.scheme !== 'nsw') { cancelEditing(); return }
+    const estimate = estimates.find((e) => e.id === editingId)
+    if (!estimate) { cancelEditing(); return }
+    if (estimate.scheme !== 'nsw') { cancelEditing(); return }
     if (hydratedIdRef.current === editingId) return
-    shared.setCcsPercent(entry.shared.ccsPercent)
-    shared.setWithholding(entry.shared.withholding)
-    shared.setCcsHours(entry.shared.ccsHours)
-    shared.setSessionFee(entry.shared.sessionFee)
-    shared.setSessionStart(entry.shared.sessionStart)
-    shared.setSessionEnd(entry.shared.sessionEnd)
-    shared.setDaysPerWeek(entry.shared.daysPerWeek)
-    shared.setDebtRecovery(entry.shared.debtRecovery)
-    shared.setDebtRecoveryMode(entry.shared.debtRecoveryMode)
-    shared.setChildName(entry.childName)
-    shared.setServiceName(entry.serviceName)
-    setAgeGroup(entry.local.ageGroup)
-    setFeeReliefTier(entry.local.feeReliefTier)
-    setServiceWeeks(entry.local.serviceWeeks)
-    setWeeklyDays(entry.local.weeklyDays)
-    setDays(entry.local.days)
-    setMode(entry.mode)
+    shared.setCcsPercent(estimate.shared.ccsPercent)
+    shared.setWithholding(estimate.shared.withholding)
+    shared.setCcsHours(estimate.shared.ccsHours)
+    shared.setSessionFee(estimate.shared.sessionFee)
+    shared.setSessionStart(estimate.shared.sessionStart)
+    shared.setSessionEnd(estimate.shared.sessionEnd)
+    shared.setDaysPerWeek(estimate.shared.daysPerWeek)
+    shared.setDebtRecovery(estimate.shared.debtRecovery)
+    shared.setDebtRecoveryMode(estimate.shared.debtRecoveryMode)
+    shared.setChildName(estimate.childName)
+    shared.setServiceName(estimate.serviceName)
+    setAgeGroup(estimate.local.ageGroup)
+    setFeeReliefTier(estimate.local.feeReliefTier)
+    setServiceWeeks(estimate.local.serviceWeeks)
+    setWeeklyDays(estimate.local.weeklyDays)
+    setDays(estimate.local.days)
+    setMode(estimate.mode)
     hydratedIdRef.current = editingId
-  }, [editingId, entries, cancelEditing, shared])
+  }, [editingId, estimates, cancelEditing, shared])
 
-  const isEditing = editingEntry?.scheme === 'nsw'
+  const isEditing = editingEstimate?.scheme === 'nsw'
   const editingPosition = useMemo(() => {
-    if (!isEditing || !editingEntry) return 0
-    return entries.findIndex((e) => e.id === editingEntry.id) + 1
-  }, [entries, editingEntry, isEditing])
-  const editingLabel = isEditing && editingEntry ? formatEntryLabel(editingEntry, editingPosition) : ''
+    if (!isEditing || !editingEstimate) return 0
+    return estimates.findIndex((e) => e.id === editingEstimate.id) + 1
+  }, [estimates, editingEstimate, isEditing])
+  const editingLabel = isEditing && editingEstimate ? formatEstimateLabel(editingEstimate, editingPosition) : ''
 
   const hasValidInput =
     mode === 'daily'
@@ -200,9 +200,9 @@ function NswCalculator() {
         : days.some((d) => d.booked && Number(d.sessionFee) > 0)
 
   function handleSubmit() {
-    const input: PlanEntryInput = {
+    const input: EstimateInput = {
       scheme: 'nsw',
-      mode: mode as PlanMode,
+      mode: mode as EstimateMode,
       shared: {
         ccsPercent: shared.ccsPercent,
         withholding: shared.withholding,
@@ -218,13 +218,13 @@ function NswCalculator() {
       childName: shared.childName,
       serviceName: shared.serviceName,
     }
-    if (isEditing && editingEntry) {
-      updateEntry(editingEntry.id, input)
+    if (isEditing && editingEstimate) {
+      updateEstimate(editingEstimate.id, input)
       cancelEditing()
       navigate({ to: '/estimates' })
       return
     }
-    addEntry(input)
+    addEstimate(input)
     shared.resetExceptHousehold()
     setAgeGroup('4+')
     setFeeReliefTier('standard')
@@ -600,13 +600,13 @@ function NswCalculator() {
               </>
             )}
 
-            <AddToPlanFooter
+            <AddEstimateFooter
               onSubmit={handleSubmit}
               onCancel={isEditing ? cancelEditing : undefined}
               isEditing={isEditing}
               editingLabel={editingLabel}
               disabled={!hasValidInput}
-              hasEntries={entries.length > 0}
+              hasEntries={estimates.length > 0}
             />
           </div>
         </div>
