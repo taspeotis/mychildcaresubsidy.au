@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Container } from '../components/Container'
+import { StickyPanel } from '../components/StickyPanel'
 import { PlanEntryRow } from '../components/PlanEntryRow'
 import { Button } from '../components/Button'
 import { usePlan } from '../plan/PlanState'
@@ -56,81 +57,92 @@ function PlanPage() {
 
   return (
     <Container className="py-10">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1 text-sm font-medium text-white/70 transition-colors hover:text-white"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            Back
-          </Link>
-          <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-white">Your Cost Plan</h1>
-          <p className="mt-2 text-sm text-white/80">
-            Estimates you've added from the calculators. Edit any entry to revisit the full calculator.
-          </p>
+      <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
+        {/* Sidebar panel */}
+        <aside className="relative mb-8 lg:mb-0">
+          <StickyPanel className="rounded-2xl sidebar-gradient p-6 lg:p-8">
+            <Link
+              to="/"
+              className="mb-5 inline-flex items-center gap-1 text-sm font-medium text-white/70 transition-colors hover:text-white"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              Back
+            </Link>
+            <h1 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-white">Your Cost Plan</h1>
+            <p className="text-sm leading-relaxed text-white/70">
+              Estimates you've added from the calculators. Edit any entry to revisit the full calculator.
+            </p>
+            {entries.length > 0 && (
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-white/50">On your plan</p>
+                <p className="mt-2 text-sm text-white/80">
+                  {entries.length} {entries.length === 1 ? 'estimate' : 'estimates'}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="mt-4 text-xs font-medium text-white/60 underline underline-offset-2 transition-colors hover:text-white"
+                >
+                  Clear all entries
+                </button>
+              </div>
+            )}
+          </StickyPanel>
+        </aside>
+
+        {/* Main content */}
+        <div className="min-w-0 space-y-6">
+          {entries.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              {showSiblingNudge && (
+                <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900">
+                  <p className="font-bold">Have you set the sibling rate?</p>
+                  <p className="mt-1">
+                    The second and later children in care usually qualify for a higher CCS percentage (up to 95%).
+                    Edit each sibling to reflect your actual rate from myGov.
+                  </p>
+                </div>
+              )}
+
+              {fortnightly.length > 0 && (
+                <GroupCard
+                  title="Fortnightly Estimates"
+                  periodLabel="Fortnight"
+                  calculated={fortnightly}
+                  totals={fortnightlyTotals}
+                  onEdit={handleEdit}
+                  onDelete={deleteEntry}
+                />
+              )}
+
+              {hasBoth && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <p className="font-bold">Mixed daily and fortnightly estimates</p>
+                  <p className="mt-1">
+                    Daily estimates don't capture attendance across a full fortnight (including kindy/preschool days),
+                    so we haven't combined them with your fortnightly totals.
+                    Edit each daily entry and switch to Weekly or Fortnightly mode for a more accurate household picture.
+                  </p>
+                </div>
+              )}
+
+              {daily.length > 0 && (
+                <GroupCard
+                  title="Daily Estimates"
+                  periodLabel="Day"
+                  calculated={daily}
+                  totals={dailyTotals}
+                  onEdit={handleEdit}
+                  onDelete={deleteEntry}
+                />
+              )}
+            </>
+          )}
         </div>
-
-        {entries.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className="space-y-6">
-            {showSiblingNudge && (
-              <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-brand-900">
-                <p className="font-bold">Have you set the sibling rate?</p>
-                <p className="mt-1">
-                  The second and later children in care usually qualify for a higher CCS percentage (up to 95%).
-                  Edit each sibling to reflect your actual rate from myGov.
-                </p>
-              </div>
-            )}
-
-            {fortnightly.length > 0 && (
-              <GroupCard
-                title="Fortnightly estimates"
-                periodLabel="fortnight"
-                calculated={fortnightly}
-                totals={fortnightlyTotals}
-                onEdit={handleEdit}
-                onDelete={deleteEntry}
-              />
-            )}
-
-            {hasBoth && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                <p className="font-bold">Mixed daily and fortnightly estimates</p>
-                <p className="mt-1">
-                  Daily estimates don't capture attendance across a full fortnight (including kindy/preschool days),
-                  so we haven't combined them with your fortnightly totals.
-                  Edit each daily entry and switch to Weekly or Fortnightly mode for a more accurate household picture.
-                </p>
-              </div>
-            )}
-
-            {daily.length > 0 && (
-              <GroupCard
-                title="Daily estimates"
-                periodLabel="day"
-                calculated={daily}
-                totals={dailyTotals}
-                onEdit={handleEdit}
-                onDelete={deleteEntry}
-              />
-            )}
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={handleClearAll}
-                className="text-xs font-medium text-white/60 underline underline-offset-2 transition-colors hover:text-white"
-              >
-                Clear all entries
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </Container>
   )
@@ -185,7 +197,7 @@ function GroupCard({ title, periodLabel, calculated, totals, onEdit, onDelete }:
       </div>
       <div className="mt-4 rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50 p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-bold text-slate-900">Household total per {periodLabel}</p>
+          <p className="text-sm font-bold text-slate-900">Household Total Per {periodLabel}</p>
           <p className="text-2xl font-bold tabular-nums text-brand-700">{fmt(totals.gap)}</p>
         </div>
         <dl className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">

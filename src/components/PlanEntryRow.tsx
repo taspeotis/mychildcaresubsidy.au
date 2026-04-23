@@ -11,9 +11,9 @@ interface PlanEntryRowProps {
 }
 
 const MODE_NOUN: Record<string, string> = {
-  daily: 'day',
-  weekly: 'fortnight',
-  fortnightly: 'fortnight',
+  daily: 'Day',
+  weekly: 'Fortnight',
+  fortnightly: 'Fortnight',
 }
 
 export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEntryRowProps) {
@@ -28,7 +28,7 @@ export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEnt
             <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
               {meta.label}
             </span>
-            <span className="text-xs text-slate-500">per {period}</span>
+            <span className="text-xs text-slate-500">Per {period}</span>
           </div>
           <h3 className="mt-1.5 text-base font-bold text-slate-900 break-words">{label}</h3>
         </div>
