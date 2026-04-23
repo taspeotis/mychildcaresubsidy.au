@@ -21,9 +21,14 @@ import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
 import type { FortnightlySession } from '../types'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/qld')({
   component: QldCalculator,
+  head: () => pageMeta({
+    title: 'QLD Free Kindy Calculator',
+    description: "Estimate out-of-pocket costs for Queensland's Free Kindy (30 hrs/fortnight) with the Child Care Subsidy.",
+  }),
 })
 
 const KINDY_PROGRAM_OPTIONS = [

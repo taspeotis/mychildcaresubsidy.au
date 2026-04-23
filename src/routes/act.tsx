@@ -21,9 +21,14 @@ import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
 import type { FortnightlySession } from '../types'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/act')({
   component: ActCalculator,
+  head: () => pageMeta({
+    title: 'ACT Free 3-Year-Old Preschool Calculator',
+    description: "Estimate out-of-pocket costs combining the ACT's 3-year-old preschool with the Child Care Subsidy.",
+  }),
 })
 
 const PRESCHOOL_OPTIONS = [

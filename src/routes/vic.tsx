@@ -20,9 +20,14 @@ import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/vic')({
   component: VicCalculator,
+  head: () => pageMeta({
+    title: 'VIC Free Kinder Calculator',
+    description: "Estimate out-of-pocket costs combining Victoria's Free Kinder offset with the Child Care Subsidy.",
+  }),
 })
 
 const AGE_OPTIONS = [

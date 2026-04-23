@@ -9,9 +9,14 @@ import { calculateEstimate } from '../estimates/snapshot'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { Estimate, EstimateResult } from '../estimates/types'
 import { fmt } from '../config'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/estimates')({
   component: EstimatesPage,
+  head: () => pageMeta({
+    title: 'Your Estimates',
+    description: 'Saved child care estimates for your household with combined fortnightly totals.',
+  }),
 })
 
 interface CalculatedEstimate {

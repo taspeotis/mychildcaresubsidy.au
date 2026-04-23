@@ -20,9 +20,14 @@ import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/ccs')({
   component: CcsCalculator,
+  head: () => pageMeta({
+    title: 'Federal Child Care Subsidy Calculator',
+    description: 'Estimate your CCS percentage and gap fees for centre-based day care, family day care, and outside school hours care.',
+  }),
 })
 
 const CARE_TYPE_OPTIONS = [

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
+import { createRootRoute, HeadContent, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
@@ -82,6 +82,7 @@ function RootLayoutInner() {
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
+      <HeadContent />
       <header className="header-glow sticky top-0 z-40 bg-brand-900">
         <Container className="flex h-auto min-h-[4rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
           <Link to="/" className="shrink-0 inline-flex items-center gap-2">

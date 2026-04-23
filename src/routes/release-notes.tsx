@@ -3,9 +3,14 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { Container } from '../components/Container'
 import { StickyPanel } from '../components/StickyPanel'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/release-notes')({
   component: ReleaseNotes,
+  head: () => pageMeta({
+    title: 'Release Notes',
+    description: "What's new on mychildcaresubsidy.au.",
+  }),
 })
 
 interface Release {

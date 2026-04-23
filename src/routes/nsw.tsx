@@ -21,9 +21,14 @@ import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/nsw')({
   component: NswCalculator,
+  head: () => pageMeta({
+    title: 'NSW Start Strong Calculator',
+    description: 'Estimate out-of-pocket costs combining NSW Start Strong with the Child Care Subsidy.',
+  }),
 })
 
 const AGE_OPTIONS = [

@@ -1,8 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Container } from '../components/Container'
+import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
+  head: () => pageMeta({
+    title: 'Child Care Subsidy Calculator for Australian Families',
+    description: 'Work out your out-of-pocket child care costs after the Child Care Subsidy and state kindy or preschool funding.',
+  }),
 })
 
 const STATE_PROGRAMS = [
