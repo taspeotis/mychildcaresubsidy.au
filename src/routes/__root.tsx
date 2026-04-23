@@ -120,8 +120,9 @@ function RootLayoutInner() {
             <Link to="/qld" className={navLinkClass}>QLD</Link>
             <Link to="/vic" className={navLinkClass}>VIC</Link>
             <span className="mx-1 hidden text-white/20 sm:inline">|</span>
-            <Link to="/estimates" className={navLinkClass}>
-              Estimates
+            <Link to="/estimates" className={navLinkClass} aria-label="Estimates">
+              <span className="sm:hidden">Est</span>
+              <span className="hidden sm:inline">Estimates</span>
               <NavCountBadge count={estimateCount} />
             </Link>
           </nav>
