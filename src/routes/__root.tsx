@@ -1,14 +1,28 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
+import { NavCountBadge } from '../components/NavCountBadge'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
+import { PlanProvider, usePlan } from '../plan/PlanState'
 
 export const Route = createRootRoute({
   component: RootLayout,
 })
 
 function RootLayout() {
+  return (
+    <SharedCalculatorProvider>
+      <PlanProvider>
+        <RootLayoutInner />
+      </PlanProvider>
+    </SharedCalculatorProvider>
+  )
+}
+
+function RootLayoutInner() {
   const { pathname } = useLocation()
+  const { entries } = usePlan()
+  const planCount = entries.length
   const navRef = useRef<HTMLElement>(null)
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
   const wasVisible = useRef(false)
@@ -99,14 +113,17 @@ function RootLayout() {
             <Link to="/nsw" className={navLinkClass}>NSW</Link>
             <Link to="/qld" className={navLinkClass}>QLD</Link>
             <Link to="/vic" className={navLinkClass}>VIC</Link>
+            <span className="mx-1 hidden text-white/20 sm:inline">|</span>
+            <Link to="/plan" className={navLinkClass}>
+              Plan
+              <NavCountBadge count={planCount} />
+            </Link>
           </nav>
         </Container>
       </header>
 
       <main className="flex-1 pb-16">
-        <SharedCalculatorProvider>
-          <Outlet />
-        </SharedCalculatorProvider>
+        <Outlet />
       </main>
 
       <footer className="footer-glow bg-brand-900">

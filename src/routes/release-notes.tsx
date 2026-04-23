@@ -16,6 +16,15 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    date: '23 April 2026',
+    id: '2026-04-23',
+    changes: [
+      'Cost Plan lets you line up estimates for each of your children in one place. Add a child from any calculator and see a fortnightly household total on the new Plan page. Edit, remove, or clear entries whenever you need.',
+      'Child name and service name fields on every calculator. Both are optional and only used to label entries on your plan.',
+      'Your plan is saved in your browser, so it\'s still there when you come back.',
+    ],
+  },
+  {
     date: '29 March 2026',
     id: '2026-03-29',
     changes: [

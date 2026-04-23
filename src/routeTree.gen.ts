@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VicRouteImport } from './routes/vic'
 import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
 import { Route as QldRouteImport } from './routes/qld'
+import { Route as PlanRouteImport } from './routes/plan'
 import { Route as NswRouteImport } from './routes/nsw'
 import { Route as CcsRouteImport } from './routes/ccs'
 import { Route as ActRouteImport } from './routes/act'
@@ -30,6 +31,11 @@ const ReleaseNotesRoute = ReleaseNotesRouteImport.update({
 const QldRoute = QldRouteImport.update({
   id: '/qld',
   path: '/qld',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanRoute = PlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NswRoute = NswRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
+  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
+  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
@@ -77,21 +85,39 @@ export interface FileRoutesById {
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
   '/nsw': typeof NswRoute
+  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/act' | '/ccs' | '/nsw' | '/qld' | '/release-notes' | '/vic'
+  fullPaths:
+    | '/'
+    | '/act'
+    | '/ccs'
+    | '/nsw'
+    | '/plan'
+    | '/qld'
+    | '/release-notes'
+    | '/vic'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/act' | '/ccs' | '/nsw' | '/qld' | '/release-notes' | '/vic'
+  to:
+    | '/'
+    | '/act'
+    | '/ccs'
+    | '/nsw'
+    | '/plan'
+    | '/qld'
+    | '/release-notes'
+    | '/vic'
   id:
     | '__root__'
     | '/'
     | '/act'
     | '/ccs'
     | '/nsw'
+    | '/plan'
     | '/qld'
     | '/release-notes'
     | '/vic'
@@ -102,6 +128,7 @@ export interface RootRouteChildren {
   ActRoute: typeof ActRoute
   CcsRoute: typeof CcsRoute
   NswRoute: typeof NswRoute
+  PlanRoute: typeof PlanRoute
   QldRoute: typeof QldRoute
   ReleaseNotesRoute: typeof ReleaseNotesRoute
   VicRoute: typeof VicRoute
@@ -128,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/qld'
       fullPath: '/qld'
       preLoaderRoute: typeof QldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan': {
+      id: '/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nsw': {
@@ -166,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActRoute: ActRoute,
   CcsRoute: CcsRoute,
   NswRoute: NswRoute,
+  PlanRoute: PlanRoute,
   QldRoute: QldRoute,
   ReleaseNotesRoute: ReleaseNotesRoute,
   VicRoute: VicRoute,
