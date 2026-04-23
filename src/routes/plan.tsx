@@ -60,15 +60,15 @@ function PlanPage() {
         <div className="mb-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 transition-colors hover:text-brand-900"
+            className="inline-flex items-center gap-1 text-sm font-medium text-white/70 transition-colors hover:text-white"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
             Back
           </Link>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Your Cost Plan</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">Your Cost Plan</h1>
+          <p className="mt-3 text-base text-white/80 sm:text-lg">
             Estimates you've added from the calculators. Edit any entry to revisit the full calculator.
           </p>
         </div>
@@ -124,7 +124,7 @@ function PlanPage() {
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="text-xs font-medium text-slate-500 underline underline-offset-2 transition-colors hover:text-red-600"
+                className="text-xs font-medium text-white/60 underline underline-offset-2 transition-colors hover:text-white"
               >
                 Clear all entries
               </button>
@@ -168,8 +168,8 @@ function GroupCard({ title, periodLabel, calculated, totals, onEdit, onDelete }:
   return (
     <section>
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</h2>
-        <p className="text-xs text-slate-500">{calculated.length} {calculated.length === 1 ? 'entry' : 'entries'}</p>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</h2>
+        <p className="text-xs text-white/60">{calculated.length} {calculated.length === 1 ? 'entry' : 'entries'}</p>
       </div>
       <div className="space-y-3">
         {calculated.map(({ entry, result, label }) => (
