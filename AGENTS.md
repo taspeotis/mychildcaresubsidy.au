@@ -12,7 +12,9 @@
 src/
   calculators/      # Pure calculation logic (ccs, act, nsw, qld, vic)
   components/       # Reusable UI components
-  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic)
+  context/          # Shared calculator state provider
+  estimates/        # Saved estimates feature (provider, snapshot, types, labels)
+  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic, estimates, release-notes)
   styles/index.css  # Tailwind theme + custom CSS classes
   config.ts         # Shared default values for calculator inputs
   types.ts          # Shared TypeScript types
@@ -51,6 +53,8 @@ Two palettes defined as CSS custom properties in `src/styles/index.css` under `@
 
 Tailwind utilities like `bg-brand-600` and `text-accent-400` work natively.
 
+A third accent — Tailwind's built-in **teal** (`teal-500`→`teal-700`) — is used only for the `/estimates` route (nav pill, nav count badge text, row Edit button). Picked to sit visually between the warm purple and warm orange without clashing.
+
 ### Color scheme prop
 
 Components accept an optional `colorScheme?: 'accent' | 'brand'` prop (type exported from `src/types.ts`). This controls the accent colour used for interactive elements — gradients, focus rings, buttons, badges, highlighted text, etc.
@@ -60,7 +64,7 @@ Components accept an optional `colorScheme?: 'accent' | 'brand'` prop (type expo
 
 Components that support `colorScheme`: `ToggleGroup`, `CalculatorSidebar`, `CcsDetailsCard`, `FortnightlyGrid` (including `DayEditModal`), `ResultCard`, `CcsCalculatorModal`, `InputField`, `SelectField`, `TimePicker`, `Button` (via its existing `color` prop with a `'brand'` option).
 
-The navbar pill also changes colour: purple gradient (`from-brand-600 to-brand-800`) when CCS is active, orange gradient (`from-accent-400 to-accent-600`) for state routes. The pill colour is tracked via the `route` field in the pill state to prevent flash on navigation.
+The navbar pill also changes colour: purple gradient (`from-brand-600 to-brand-800`) when CCS is active, teal gradient (`from-teal-500 to-teal-700`) when `/estimates` is active, orange gradient (`from-accent-400 to-accent-600`) for state routes. The pill colour is tracked via the `route` field in the pill state to prevent flash on navigation.
 
 ### Custom CSS classes
 
@@ -82,7 +86,7 @@ Each calculator page uses a two-column layout on desktop: a sticky `CalculatorSi
 
 ### Navbar layout
 
-The navbar has the site name on the left and calculator links on the right. On desktop, all links fit in one line. On mobile, the nav wraps to two lines: CCS on the first line (visually distinct), state/territory calculators on the second. The CCS link uses a different style (brand colours) to distinguish it from state/territory scheme links.
+The navbar has the site name on the left and calculator links on the right: CCS, then the state/territory calculators (alphabetical), then **Estimates**. Separators (`|`) divide the three groups on `sm+`. The Estimates link carries a `NavCountBadge` showing how many estimates are saved — hidden when zero. Badge is white with teal text and a `ring-2 ring-brand-900` so it stays readable over any pill state.
 
 ### FortnightlyGrid component
 
@@ -138,9 +142,26 @@ Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (
 
 ### Shared calculator state
 
-Common inputs (CCS %, withholding, CCS hours/fortnight, session fee, session start/end, days per week) are shared across all calculators via `SharedCalculatorProvider` in `src/context/SharedCalculatorState.tsx`. Changing a value on one calculator page carries over when you navigate to another. Calculator-specific inputs (kindy hours, care type, cohort, etc.) remain local to each route.
+Common inputs (CCS %, withholding, CCS hours/fortnight, session fee, session start/end, days per week, debt recovery amount + mode, child name, service name) are shared across all calculators via `SharedCalculatorProvider` in `src/context/SharedCalculatorState.tsx`. Changing a value on one calculator page carries over when you navigate to another. Calculator-specific inputs (kindy hours, care type, cohort, etc.) remain local to each route.
+
+`resetExceptHousehold()` resets the session/schedule fields and child name to defaults but preserves household-level fields (CCS %, withholding, debt recovery, service name). Called after an estimate is added to Estimates, so the next child is quicker to enter without re-typing income-driven values.
 
 The provider wraps the `<Outlet />` in `__root.tsx`. Each calculator calls `useSharedCalculatorState()` to read and write shared values.
+
+### Estimates
+
+Users can save an estimate for each child from any calculator and view a combined household total at `/estimates`. Implementation lives in `src/estimates/`:
+
+- **`types.ts`** — `Estimate` (discriminated union by scheme), `EstimateInput`, `EstimateResult`, per-scheme local snapshots, `SCHEME_META`.
+- **`EstimatesState.tsx`** — `EstimatesProvider` + `useEstimates()` hook. Wrapped inside `SharedCalculatorProvider` in `__root.tsx`. State persists to `localStorage` under `mccs.estimates.v1` (versioned; mismatched versions silently discard).
+- **`snapshot.ts`** — `calculateEstimate()` runs the appropriate calculator for a stored estimate, returning a normalised `EstimateResult` (`sessionFees`, `ccsEntitlement`, `stateFunding`, `debtRecovery`, `gap`). Inputs are stored — results are re-derived every render so rate-table updates apply retroactively.
+- **`labels.ts`** — `formatEstimateLabel()` produces the display string (`"Olivia at Little Acorns"` / `"Olivia"` / `"Child 2 at Little Acorns"` / `"Child 2"`).
+
+Each calculator renders `<AddEstimateFooter />` after its result card. The footer reads `childName` and `serviceName` from shared state and shows an "Add Estimate" button (or "Save Changes" / Cancel when editing). On add, the calculator calls `addEstimate`, `resetExceptHousehold()`, resets its own local state, and navigates to `/estimates`.
+
+Edit flow: the Estimates page calls `startEditing(id)` and navigates to the originating scheme. On that route, a `useEffect` keyed on `editingId` detects the hydration request, copies the stored snapshot back into shared + local state, and the footer switches to edit mode. Nav-away (clicking another scheme) calls `cancelEditing()` silently. Cancel and Save both navigate back to `/estimates`.
+
+The `/estimates` page groups estimates by mode: daily-mode entries and fortnightly/weekly entries are separated (different periods can't be honestly summed). A mixing-hint banner appears when both groups are present. A sibling-rate nudge banner appears when 2+ estimates share the same CCS %, suggesting the user review the sibling rate.
 
 ### Activity test (CCS hours)
 
