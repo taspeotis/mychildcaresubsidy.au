@@ -34,8 +34,8 @@ function RootLayoutInner() {
     const nav = navRef.current
     if (!nav) return
     const update = () => {
-      setCanScrollLeft(nav.scrollLeft > 4)
-      setCanScrollRight(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4)
+      setCanScrollLeft(nav.scrollLeft > 16)
+      setCanScrollRight(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 16)
     }
     update()
     nav.addEventListener('scroll', update, { passive: true })
@@ -150,7 +150,7 @@ function RootLayoutInner() {
             </nav>
             <div
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-start bg-gradient-to-r from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-200 sm:hidden ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`}
+              className={`pointer-events-none absolute inset-y-0 left-0 flex w-16 items-center justify-start bg-gradient-to-r from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-500 ease-out sm:hidden ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`}
             >
               <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -158,7 +158,7 @@ function RootLayoutInner() {
             </div>
             <div
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-end bg-gradient-to-l from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-200 sm:hidden ${canScrollRight ? 'opacity-100' : 'opacity-0'}`}
+              className={`pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-end bg-gradient-to-l from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-500 ease-out sm:hidden ${canScrollRight ? 'opacity-100' : 'opacity-0'}`}
             >
               <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
