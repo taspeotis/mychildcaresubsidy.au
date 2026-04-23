@@ -27,6 +27,25 @@ function RootLayoutInner() {
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
   const wasVisible = useRef(false)
   const pillRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const update = () => {
+      setCanScrollLeft(nav.scrollLeft > 4)
+      setCanScrollRight(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4)
+    }
+    update()
+    nav.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(nav)
+    return () => {
+      nav.removeEventListener('scroll', update)
+      ro.disconnect()
+    }
+  }, [])
 
   useLayoutEffect(() => {
     const nav = navRef.current
@@ -101,33 +120,51 @@ function RootLayoutInner() {
             </svg>
             <span className="text-base font-bold leading-none tracking-tight text-white sm:text-lg sm:leading-none">my<span className="text-accent-400">childcare</span>subsidy.au</span>
           </Link>
-          <nav ref={navRef} className="nav-scroll relative flex w-full flex-nowrap items-center gap-x-0.5 overflow-x-auto sm:w-auto sm:gap-x-1 sm:overflow-visible">
+          <div className="relative w-full sm:w-auto">
+            <nav ref={navRef} className="nav-scroll relative flex flex-nowrap items-center gap-x-0.5 overflow-x-auto sm:gap-x-1 sm:overflow-visible">
+              <div
+                ref={pillRef}
+                className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${
+                  pill.route === '/ccs'
+                    ? 'from-brand-600 to-brand-800'
+                    : pill.route === '/estimates'
+                      ? 'from-teal-500 to-teal-700'
+                      : 'from-accent-400 to-accent-600'
+                }`}
+                style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}
+              />
+              <Link to="/ccs" className={navLinkClass}>
+                CCS
+              </Link>
+              <span className="mx-1 hidden text-white/20 sm:inline">|</span>
+              {/* State calculators - alphabetical */}
+              <Link to="/act" className={navLinkClass}>ACT</Link>
+              <Link to="/nsw" className={navLinkClass}>NSW</Link>
+              <Link to="/qld" className={navLinkClass}>QLD</Link>
+              <Link to="/vic" className={navLinkClass}>VIC</Link>
+              <span className="mx-1 hidden text-white/20 sm:inline">|</span>
+              <Link to="/estimates" className={navLinkClass}>
+                Estimates
+                <NavCountBadge count={estimateCount} />
+              </Link>
+            </nav>
             <div
-              ref={pillRef}
-              className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${
-                pill.route === '/ccs'
-                  ? 'from-brand-600 to-brand-800'
-                  : pill.route === '/estimates'
-                    ? 'from-teal-500 to-teal-700'
-                    : 'from-accent-400 to-accent-600'
-              }`}
-              style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}
-            />
-            <Link to="/ccs" className={navLinkClass}>
-              CCS
-            </Link>
-            <span className="mx-1 hidden text-white/20 sm:inline">|</span>
-            {/* State calculators - alphabetical */}
-            <Link to="/act" className={navLinkClass}>ACT</Link>
-            <Link to="/nsw" className={navLinkClass}>NSW</Link>
-            <Link to="/qld" className={navLinkClass}>QLD</Link>
-            <Link to="/vic" className={navLinkClass}>VIC</Link>
-            <span className="mx-1 hidden text-white/20 sm:inline">|</span>
-            <Link to="/estimates" className={navLinkClass}>
-              Estimates
-              <NavCountBadge count={estimateCount} />
-            </Link>
-          </nav>
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-start bg-gradient-to-r from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-200 sm:hidden ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`}
+            >
+              <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </div>
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-end bg-gradient-to-l from-brand-900 via-brand-900/80 to-transparent transition-opacity duration-200 sm:hidden ${canScrollRight ? 'opacity-100' : 'opacity-0'}`}
+            >
+              <svg className="h-4 w-4 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+          </div>
         </Container>
       </header>
 
