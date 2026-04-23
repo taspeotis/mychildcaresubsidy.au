@@ -105,7 +105,7 @@ function RootLayoutInner() {
                 pill.route === '/ccs'
                   ? 'from-brand-600 to-brand-800'
                   : pill.route === '/estimates'
-                    ? 'from-blue-500 to-blue-700'
+                    ? 'from-teal-500 to-teal-700'
                     : 'from-accent-400 to-accent-600'
               }`}
               style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}

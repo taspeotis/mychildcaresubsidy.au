@@ -43,7 +43,7 @@ export function EstimateRow({ estimate, result, label, onEdit, onDelete }: Estim
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:from-blue-400 hover:to-blue-600"
+            className="rounded-lg bg-gradient-to-b from-teal-500 to-teal-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:from-teal-400 hover:to-teal-600"
           >
             Edit
           </button>
