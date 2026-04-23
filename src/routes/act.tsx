@@ -245,6 +245,7 @@ function ActCalculator() {
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
       true,
     ))
+    navigate({ to: '/plan' })
   }
 
   return (

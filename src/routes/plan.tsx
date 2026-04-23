@@ -67,8 +67,8 @@ function PlanPage() {
             </svg>
             Back
           </Link>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">Your Cost Plan</h1>
-          <p className="mt-3 text-base text-white/80 sm:text-lg">
+          <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-white">Your Cost Plan</h1>
+          <p className="mt-2 text-sm text-white/80">
             Estimates you've added from the calculators. Edit any entry to revisit the full calculator.
           </p>
         </div>
@@ -142,7 +142,7 @@ function EmptyState() {
       <h2 className="text-lg font-bold text-slate-900">Your plan is empty</h2>
       <p className="mt-2 text-sm text-slate-600">
         Open a calculator, fill in your details, and click{' '}
-        <span className="font-bold text-accent-600">Add to plan</span> at the bottom to save an estimate here.
+        <span className="font-bold text-accent-600">Add To Plan</span> at the bottom to save an estimate here.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Button href="/ccs" color="brand">CCS</Button>

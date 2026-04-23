@@ -237,6 +237,7 @@ function NswCalculator() {
     setDays(createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
+    navigate({ to: '/plan' })
   }
 
   return (

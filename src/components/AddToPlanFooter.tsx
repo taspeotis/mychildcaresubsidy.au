@@ -93,7 +93,7 @@ export function AddToPlanFooter({
           disabled={disabled}
           className={clsx('w-full sm:w-auto', disabled && 'cursor-not-allowed opacity-50')}
         >
-          {isEditing ? 'Save changes' : 'Add to plan'}
+          {isEditing ? 'Save Changes' : 'Add To Plan'}
         </Button>
       </div>
     </div>
