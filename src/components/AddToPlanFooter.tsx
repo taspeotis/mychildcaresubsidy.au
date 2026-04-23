@@ -45,11 +45,11 @@ export function AddToPlanFooter({
       ) : (
         <div className="mb-5">
           <h2 className="text-lg font-bold text-slate-900">
-            {hasEntries ? 'Add another estimate to your plan.' : "Plan your family's child care costs"}
+            {hasEntries ? 'Save another estimate.' : "Running the numbers for more than one child?"}
           </h2>
           {!hasEntries && (
             <p className="mt-2 text-sm text-slate-600">
-              Add estimates for each of your children to see what care costs your household.
+              Save this estimate and do one for each of your children to see what care costs your household.
             </p>
           )}
         </div>
@@ -93,7 +93,7 @@ export function AddToPlanFooter({
           disabled={disabled}
           className={clsx('w-full sm:w-auto', disabled && 'cursor-not-allowed opacity-50')}
         >
-          {isEditing ? 'Save Changes' : 'Add To Plan'}
+          {isEditing ? 'Save Changes' : 'Add Estimate'}
         </Button>
       </div>
     </div>

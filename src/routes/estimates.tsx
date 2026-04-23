@@ -10,8 +10,8 @@ import { formatEntryLabel } from '../plan/labels'
 import type { PlanEntry, PlanEntryResult } from '../plan/types'
 import { fmt } from '../config'
 
-export const Route = createFileRoute('/plan')({
-  component: PlanPage,
+export const Route = createFileRoute('/estimates')({
+  component: EstimatesPage,
 })
 
 interface CalculatedEntry {
@@ -20,7 +20,7 @@ interface CalculatedEntry {
   label: string
 }
 
-function PlanPage() {
+function EstimatesPage() {
   const { entries, deleteEntry, clearAll, startEditing } = usePlan()
   const navigate = useNavigate()
 
@@ -50,7 +50,7 @@ function PlanPage() {
   }
 
   function handleClearAll() {
-    if (window.confirm('Remove all entries from your plan? This cannot be undone.')) {
+    if (window.confirm('Remove all your estimates? This cannot be undone.')) {
       clearAll()
     }
   }
@@ -70,13 +70,13 @@ function PlanPage() {
               </svg>
               Back
             </Link>
-            <h1 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-white">Your Cost Plan</h1>
+            <h1 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-white">Your Estimates</h1>
             <p className="text-sm leading-relaxed text-white/70">
-              Estimates you've added from the calculators. Edit any entry to revisit the full calculator.
+              Saved from the calculators. Edit any estimate to revisit the full calculator for that child.
             </p>
             {entries.length > 0 && (
               <div className="mt-6 border-t border-white/10 pt-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-white/50">On your plan</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-white/50">Saved</p>
                 <p className="mt-2 text-sm text-white/80">
                   {entries.length} {entries.length === 1 ? 'estimate' : 'estimates'}
                 </p>
@@ -85,7 +85,7 @@ function PlanPage() {
                   onClick={handleClearAll}
                   className="mt-4 text-xs font-medium text-white/60 underline underline-offset-2 transition-colors hover:text-white"
                 >
-                  Clear all entries
+                  Clear All
                 </button>
               </div>
             )}
@@ -151,10 +151,10 @@ function PlanPage() {
 function EmptyState() {
   return (
     <div className="rounded-2xl card-glass p-8 text-center">
-      <h2 className="text-lg font-bold text-slate-900">Your plan is empty</h2>
+      <h2 className="text-lg font-bold text-slate-900">No estimates yet</h2>
       <p className="mt-2 text-sm text-slate-600">
         Open a calculator, fill in your details, and click{' '}
-        <span className="font-bold text-accent-600">Add To Plan</span> at the bottom to save an estimate here.
+        <span className="font-bold text-accent-600">Add Estimate</span> at the bottom to save one here.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Button href="/ccs" color="brand">CCS</Button>

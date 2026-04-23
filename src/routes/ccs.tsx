@@ -213,7 +213,7 @@ function CcsCalculator() {
     if (isEditing && editingEntry) {
       updateEntry(editingEntry.id, input)
       cancelEditing()
-      navigate({ to: '/plan' })
+      navigate({ to: '/estimates' })
       return
     }
     addEntry(input)
@@ -228,7 +228,7 @@ function CcsCalculator() {
     setDays(createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
-    navigate({ to: '/plan' })
+    navigate({ to: '/estimates' })
   }
 
   return (

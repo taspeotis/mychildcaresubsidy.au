@@ -19,9 +19,9 @@ const RELEASES: Release[] = [
     date: '23 April 2026',
     id: '2026-04-23',
     changes: [
-      'Cost Plan lets you line up estimates for each of your children in one place. Add a child from any calculator and see a fortnightly household total on the new Plan page. Edit, remove, or clear entries whenever you need.',
-      'Child name and service name fields on every calculator. Both are optional and only used to label entries on your plan.',
-      'Your plan is saved in your browser, so it\'s still there when you come back.',
+      'Save estimates for each of your children and see a fortnightly household total in one place. Use the new Estimates page to edit or remove any estimate later.',
+      'Optional child name and service name fields on every calculator, used to label saved estimates.',
+      'Your estimates are saved in your browser, so they\'re still there when you come back.',
     ],
   },
   {

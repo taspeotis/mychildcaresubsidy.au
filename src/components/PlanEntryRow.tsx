@@ -43,7 +43,7 @@ export function PlanEntryRow({ entry, result, label, onEdit, onDelete }: PlanEnt
           <button
             type="button"
             onClick={onDelete}
-            aria-label={`Remove ${label} from plan`}
+            aria-label={`Remove ${label}`}
             className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
           >
             Remove

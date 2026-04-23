@@ -219,7 +219,7 @@ function QldCalculator() {
     if (isEditing && editingEntry) {
       updateEntry(editingEntry.id, input)
       cancelEditing()
-      navigate({ to: '/plan' })
+      navigate({ to: '/estimates' })
       return
     }
     addEntry(input)
@@ -237,7 +237,7 @@ function QldCalculator() {
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
       true,
     ))
-    navigate({ to: '/plan' })
+    navigate({ to: '/estimates' })
   }
 
   return (

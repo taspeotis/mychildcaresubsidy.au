@@ -12,8 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VicRouteImport } from './routes/vic'
 import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
 import { Route as QldRouteImport } from './routes/qld'
-import { Route as PlanRouteImport } from './routes/plan'
 import { Route as NswRouteImport } from './routes/nsw'
+import { Route as EstimatesRouteImport } from './routes/estimates'
 import { Route as CcsRouteImport } from './routes/ccs'
 import { Route as ActRouteImport } from './routes/act'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,14 +33,14 @@ const QldRoute = QldRouteImport.update({
   path: '/qld',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlanRoute = PlanRouteImport.update({
-  id: '/plan',
-  path: '/plan',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const NswRoute = NswRouteImport.update({
   id: '/nsw',
   path: '/nsw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstimatesRoute = EstimatesRouteImport.update({
+  id: '/estimates',
+  path: '/estimates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CcsRoute = CcsRouteImport.update({
@@ -63,8 +63,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
+  '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
-  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
@@ -73,8 +73,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
+  '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
-  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
@@ -84,8 +84,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/act': typeof ActRoute
   '/ccs': typeof CcsRoute
+  '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
-  '/plan': typeof PlanRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/vic': typeof VicRoute
@@ -96,8 +96,8 @@ export interface FileRouteTypes {
     | '/'
     | '/act'
     | '/ccs'
+    | '/estimates'
     | '/nsw'
-    | '/plan'
     | '/qld'
     | '/release-notes'
     | '/vic'
@@ -106,8 +106,8 @@ export interface FileRouteTypes {
     | '/'
     | '/act'
     | '/ccs'
+    | '/estimates'
     | '/nsw'
-    | '/plan'
     | '/qld'
     | '/release-notes'
     | '/vic'
@@ -116,8 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/act'
     | '/ccs'
+    | '/estimates'
     | '/nsw'
-    | '/plan'
     | '/qld'
     | '/release-notes'
     | '/vic'
@@ -127,8 +127,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActRoute: typeof ActRoute
   CcsRoute: typeof CcsRoute
+  EstimatesRoute: typeof EstimatesRoute
   NswRoute: typeof NswRoute
-  PlanRoute: typeof PlanRoute
   QldRoute: typeof QldRoute
   ReleaseNotesRoute: typeof ReleaseNotesRoute
   VicRoute: typeof VicRoute
@@ -157,18 +157,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QldRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/plan': {
-      id: '/plan'
-      path: '/plan'
-      fullPath: '/plan'
-      preLoaderRoute: typeof PlanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/nsw': {
       id: '/nsw'
       path: '/nsw'
       fullPath: '/nsw'
       preLoaderRoute: typeof NswRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estimates': {
+      id: '/estimates'
+      path: '/estimates'
+      fullPath: '/estimates'
+      preLoaderRoute: typeof EstimatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ccs': {
@@ -199,8 +199,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActRoute: ActRoute,
   CcsRoute: CcsRoute,
+  EstimatesRoute: EstimatesRoute,
   NswRoute: NswRoute,
-  PlanRoute: PlanRoute,
   QldRoute: QldRoute,
   ReleaseNotesRoute: ReleaseNotesRoute,
   VicRoute: VicRoute,
