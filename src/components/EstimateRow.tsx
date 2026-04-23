@@ -44,10 +44,10 @@ export function EstimateRow({ estimate, result, label, onEdit, onDelete }: Estim
             type="button"
             onClick={onEdit}
             className={clsx(
-              'rounded-lg border-2 bg-white px-3 py-1.5 text-xs font-bold transition-colors',
+              'rounded-lg bg-gradient-to-b px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors',
               isCcs
-                ? 'border-brand-300 text-brand-700 hover:border-brand-500 hover:bg-brand-50'
-                : 'border-accent-300 text-accent-600 hover:border-accent-500 hover:bg-accent-50',
+                ? 'from-brand-500 to-brand-700 hover:from-brand-400 hover:to-brand-600'
+                : 'from-accent-400 to-accent-600 hover:from-accent-300 hover:to-accent-500',
             )}
           >
             Edit
@@ -56,7 +56,7 @@ export function EstimateRow({ estimate, result, label, onEdit, onDelete }: Estim
             type="button"
             onClick={onDelete}
             aria-label={`Remove ${label}`}
-            className="rounded-lg border-2 border-red-300 bg-white px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:border-red-500 hover:bg-red-50"
+            className="rounded-lg bg-gradient-to-b from-red-500 to-red-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:from-red-400 hover:to-red-600"
           >
             Remove
           </button>

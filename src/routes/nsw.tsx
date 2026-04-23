@@ -602,7 +602,7 @@ function NswCalculator() {
 
             <AddEstimateFooter
               onSubmit={handleSubmit}
-              onCancel={isEditing ? cancelEditing : undefined}
+              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: "/estimates" }) } : undefined}
               isEditing={isEditing}
               editingLabel={editingLabel}
               disabled={!hasValidInput}
