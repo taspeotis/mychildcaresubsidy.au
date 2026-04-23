@@ -43,12 +43,7 @@ export function EstimateRow({ estimate, result, label, onEdit, onDelete }: Estim
           <button
             type="button"
             onClick={onEdit}
-            className={clsx(
-              'rounded-lg bg-gradient-to-b px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors',
-              isCcs
-                ? 'from-brand-500 to-brand-700 hover:from-brand-400 hover:to-brand-600'
-                : 'from-accent-400 to-accent-600 hover:from-accent-300 hover:to-accent-500',
-            )}
+            className="rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:from-blue-400 hover:to-blue-600"
           >
             Edit
           </button>

@@ -101,7 +101,13 @@ function RootLayoutInner() {
           <nav ref={navRef} className="relative flex flex-wrap items-center gap-x-0.5 gap-y-1 sm:gap-x-1">
             <div
               ref={pillRef}
-              className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${pill.route === '/ccs' ? 'from-brand-600 to-brand-800' : 'from-accent-400 to-accent-600'}`}
+              className={`absolute rounded-lg bg-gradient-to-b transition-all duration-300 ease-out ${
+                pill.route === '/ccs'
+                  ? 'from-brand-600 to-brand-800'
+                  : pill.route === '/estimates'
+                    ? 'from-blue-500 to-blue-700'
+                    : 'from-accent-400 to-accent-600'
+              }`}
               style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}
             />
             <Link to="/ccs" className={navLinkClass}>
