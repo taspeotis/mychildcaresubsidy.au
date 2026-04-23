@@ -18,12 +18,11 @@ interface MetaTag {
  * into Open Graph tags so social shares look right.
  */
 export function pageMeta({ title, description }: PageMetaInput): { meta: MetaTag[] } {
-  const fullTitle = `${title} | ${SITE}`
   return {
     meta: [
-      { title: fullTitle },
+      { title: `${title} | ${SITE}` },
       { name: 'description', content: description },
-      { property: 'og:title', content: fullTitle },
+      { property: 'og:title', content: title },
       { property: 'og:description', content: description },
     ],
   }
