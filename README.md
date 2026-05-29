@@ -5,7 +5,7 @@ Free, open-source calculator for estimating out-of-pocket child care costs in Au
 ## Calculators
 
 - **Federal CCS** for centre-based day care, family day care, and outside school hours care (OSHC), including school-age children
-- **ACT** 3-Year-Old Preschool
+- **ACT** Three-Year-Old Preschool
 - **NSW** Start Strong
 - **QLD** Free Kindy
 - **VIC** Free Kinder

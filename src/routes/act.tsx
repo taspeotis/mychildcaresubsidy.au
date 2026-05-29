@@ -26,8 +26,8 @@ import { pageMeta } from '../seo'
 export const Route = createFileRoute('/act')({
   component: ActCalculator,
   head: () => pageMeta({
-    title: 'ACT Free 3-Year-Old Preschool Calculator',
-    description: "Estimate out-of-pocket costs combining the ACT's 3-year-old preschool with the Child Care Subsidy.",
+    title: 'ACT Free Three-Year-Old Preschool Calculator',
+    description: "Estimate out-of-pocket costs combining the ACT's three-year-old preschool with the Child Care Subsidy.",
   }),
 })
 
@@ -268,8 +268,8 @@ function ActCalculator() {
             <StickyPanel className="rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="ACT"
-                schemeName="Free 3-Year-Old Preschool"
-                description="The ACT provides 300 hours per year of funded preschool for 3-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
+                schemeName="Free Three-Year-Old Preschool"
+                description="The ACT provides 300 hours per year of funded preschool for three-year-olds enrolled in approved long day care centres. Funding covers one preschool day per week, with hours varying by program length."
                 keyFacts={[
                   { label: 'Annual Hours Funded', value: '300 hours' },
                   { label: 'Days per Week', value: '1 day' },

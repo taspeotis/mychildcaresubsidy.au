@@ -1,5 +1,5 @@
 /**
- * ACT 3-Year-Old Preschool calculator tests.
+ * ACT Three-Year-Old Preschool calculator tests.
  *
  * Sources:
  *   - ACT Government — Free three-year-old preschool

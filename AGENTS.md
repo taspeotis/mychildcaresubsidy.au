@@ -30,7 +30,7 @@ The federal Child Care Subsidy calculator estimates out-of-pocket costs for cent
 
 Funded hours model. 30 hours per fortnight of funded kindergarten in long day care. The subsidy covers the kindy program hours (typically two 7.5-hour days per week). You pay only for the remaining gap hours after CCS.
 
-### ACT — 3-Year-Old Preschool
+### ACT — Three-Year-Old Preschool
 
 Funded hours model. 6 to 7.5 hours of funded preschool on one day per week at participating long day care services. Similar gap-hours approach to QLD.
 

@@ -2,7 +2,7 @@ import type { DailyInputs, DailyResult, FortnightlyInputs, FortnightlyResult, Fo
 import { CCS_HOURLY_RATE_CAP } from './ccs'
 import { computeSessionCcs, roundTo } from './shared'
 
-// ACT 3-Year-Old Preschool: $2,575/year for 300 hours, paid to provider
+// ACT Three-Year-Old Preschool: $2,575/year for 300 hours, paid to provider
 // Default 40 program weeks/year
 export const ACT_PROGRAM_WEEKS_PER_YEAR = 40
 export const ACT_TOTAL_PROGRAM_HOURS = 300
@@ -12,7 +12,7 @@ export function getActKindyHoursPerWeek(programWeeks: number = ACT_PROGRAM_WEEKS
 }
 
 /**
- * Calculate daily out-of-pocket cost for an ACT 3-Year-Old Preschool session.
+ * Calculate daily out-of-pocket cost for an ACT Three-Year-Old Preschool session.
  * The preschool program hours are free to the parent. The funding
  * ($2,575/year) is paid directly to the provider.
  */
@@ -62,7 +62,7 @@ export function calculateActDaily(inputs: DailyInputs): DailyResult {
 }
 
 /**
- * Calculate fortnightly out-of-pocket costs for ACT 3-Year-Old Preschool.
+ * Calculate fortnightly out-of-pocket costs for ACT Three-Year-Old Preschool.
  */
 export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks: number = ACT_PROGRAM_WEEKS_PER_YEAR): FortnightlyResult {
   const kindyHoursPerWeek = getActKindyHoursPerWeek(programWeeks)

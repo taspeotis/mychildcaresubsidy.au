@@ -77,7 +77,7 @@ const RELEASES: Release[] = [
     date: '3 February 2026',
     id: '2026-02-03',
     changes: [
-      'ACT Free 3-Year-Old Preschool calculator with 300 funded hours per year.',
+      'ACT Free Three-Year-Old Preschool calculator with 300 funded hours per year.',
     ],
   },
   {
