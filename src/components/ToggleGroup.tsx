@@ -9,9 +9,11 @@ interface ToggleGroupProps {
   variant?: 'dark' | 'light'
   colorScheme?: ColorScheme
   className?: string
+  /** Accessible name for the group, announced by screen readers. */
+  ariaLabel?: string
 }
 
-export function ToggleGroup({ options, value, onChange, variant = 'dark', colorScheme = 'accent', className }: ToggleGroupProps) {
+export function ToggleGroup({ options, value, onChange, variant = 'dark', colorScheme = 'accent', className, ariaLabel }: ToggleGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
   const mounted = useRef(false)
@@ -61,7 +63,7 @@ export function ToggleGroup({ options, value, onChange, variant = 'dark', colorS
   }, [])
 
   return (
-    <div ref={containerRef} className={clsx(
+    <div ref={containerRef} role="group" aria-label={ariaLabel} className={clsx(
       'relative flex rounded-xl p-1.5',
       variant === 'dark' ? 'bg-white/10' : 'bg-slate-100',
       className,

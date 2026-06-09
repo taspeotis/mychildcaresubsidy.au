@@ -116,6 +116,7 @@ export function CcsDetailsCard({
                     ]}
                     value={ccsHours}
                     onChange={onCcsHoursChange}
+                    ariaLabel="Subsidised hours per fortnight"
                     variant="light"
                     colorScheme={colorScheme}
                   />

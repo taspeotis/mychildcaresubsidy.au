@@ -294,6 +294,7 @@ function NswCalculator() {
                   ]}
                   value={mode}
                   onChange={setMode}
+                  ariaLabel="Calculation period"
                 />
               </CalculatorSidebar>
             </StickyPanel>

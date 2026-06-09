@@ -288,6 +288,7 @@ function CcsCalculator() {
                   ]}
                   value={mode}
                   onChange={setMode}
+                  ariaLabel="Calculation period"
                   colorScheme="brand"
                 />
               </CalculatorSidebar>
