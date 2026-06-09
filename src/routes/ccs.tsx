@@ -257,9 +257,9 @@ function CcsCalculator() {
                 description="The federal Child Care Subsidy reduces your child care fees based on family income. It applies to centre-based day care, family day care, and outside school hours care (OSHC)."
                 keyFacts={[
                   { label: 'Max Subsidy', value: 'Up to 90%' },
-                  { label: 'Rate Cap (LDC)', value: `$${CCS_HOURLY_RATE_CAP}/hr` },
-                  { label: 'Rate Cap (School)', value: `$${CCS_HOURLY_RATE_CAP_SCHOOL_AGE}/hr` },
-                  { label: 'Rate Cap (FDC)', value: `$${FDC_HOURLY_RATE_CAP}/hr` },
+                  { label: 'Rate Cap (LDC)', value: `${fmt(CCS_HOURLY_RATE_CAP)}/hr` },
+                  { label: 'Rate Cap (School)', value: `${fmt(CCS_HOURLY_RATE_CAP_SCHOOL_AGE)}/hr` },
+                  { label: 'Rate Cap (FDC)', value: `${fmt(FDC_HOURLY_RATE_CAP)}/hr` },
                 ]}
                 guidance={[
                   {

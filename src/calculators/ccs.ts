@@ -1,9 +1,10 @@
-// FY2026 Child Care Subsidy rate tables per Commonwealth legislation
+// FY2026-27 Child Care Subsidy rate tables per Commonwealth legislation
+// Effective 6 July 2026 (CPI-indexed). Source: education.gov.au
 
-// Hourly fee caps (FY2026)
-export const CCS_HOURLY_RATE_CAP = 14.63 // Centre Based LDC, below school age
-export const CCS_HOURLY_RATE_CAP_SCHOOL_AGE = 12.81
-export const FDC_HOURLY_RATE_CAP = 13.56
+// Hourly fee caps (FY2026-27)
+export const CCS_HOURLY_RATE_CAP = 15.19 // Centre Based LDC, below school age
+export const CCS_HOURLY_RATE_CAP_SCHOOL_AGE = 13.30
+export const FDC_HOURLY_RATE_CAP = 14.08
 
 // CCS Withholding default
 export const DEFAULT_WITHHOLDING_PERCENT = 5
@@ -17,40 +18,40 @@ export const ACTIVITY_TEST_HOURS = {
 
 /**
  * Calculate Standard CCS percentage based on family adjusted taxable income.
- * FY2025-26 rates per Services Australia (updated 7 July 2025).
+ * FY2026-27 rates per education.gov.au (effective 6 July 2026).
  */
 export function calculateStandardCcsPercent(income: number): number {
-  if (income <= 85_279) return 90
-  if (income >= 535_279) return 0
+  if (income <= 88_520) return 90
+  if (income >= 538_520) return 0
 
   // Tapers at 1% per $5,000 from 90%
-  const reduction = Math.floor((income - 85_279) / 5_000) * 1
+  const reduction = Math.floor((income - 88_520) / 5_000) * 1
   return Math.max(0, 90 - reduction)
 }
 
 /**
  * Calculate Higher CCS percentage for 2nd+ under-6 child.
- * FY2025-26 rates per education.gov.au.
+ * FY2026-27 rates per education.gov.au (effective 6 July 2026).
  */
 export function calculateHigherCcsPercent(income: number): number {
-  if (income <= 143_273) return 95
-  if (income >= 367_563) return 0
+  if (income <= 146_437) return 95
+  if (income >= 370_727) return 0
 
-  if (income < 188_273) {
+  if (income < 191_437) {
     // Tapers at 1% per $3,000 from 95%
-    const reduction = Math.floor((income - 143_273) / 3_000) * 1
+    const reduction = Math.floor((income - 146_437) / 3_000) * 1
     return Math.max(80, 95 - reduction)
   }
 
-  if (income < 267_563) return 80
+  if (income < 270_727) return 80
 
-  if (income < 357_563) {
+  if (income < 360_727) {
     // Tapers at 1% per $3,000 from 80%
-    const reduction = Math.floor((income - 267_563) / 3_000) * 1
+    const reduction = Math.floor((income - 270_727) / 3_000) * 1
     return Math.max(50, 80 - reduction)
   }
 
-  if (income < 367_563) return 50
+  if (income < 370_727) return 50
 
   return 0
 }
@@ -71,7 +72,7 @@ export interface CcsEstimateResult {
 
 /**
  * Estimate CCS % for a family.
- * useHigherCcs = true for 2nd+ under-6 child when income < $367,563
+ * useHigherCcs = true for 2nd+ under-6 child when income < $370,727
  */
 export function estimateCcs(inputs: CcsEstimateInputs): CcsEstimateResult {
   const standardPercent = calculateStandardCcsPercent(inputs.income)
@@ -80,7 +81,7 @@ export function estimateCcs(inputs: CcsEstimateInputs): CcsEstimateResult {
   const eligibleForHigher =
     inputs.useHigherCcs &&
     inputs.numberOfChildren > 1 &&
-    inputs.income < 367_563
+    inputs.income < 370_727
 
   return {
     standardPercent,

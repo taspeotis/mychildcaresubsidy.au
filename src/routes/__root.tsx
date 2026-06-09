@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRootRoute, HeadContent, Link, Outlet, useLocation } from '@tanstack/react-router'
 import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
+import { RateChangeBanner } from '../components/RateChangeBanner'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
 import { EstimatesProvider, useEstimates } from '../estimates/EstimatesState'
 
@@ -169,13 +170,14 @@ function RootLayoutInner() {
       </header>
 
       <main className="flex-1 pb-16">
+        <RateChangeBanner />
         <Outlet />
       </main>
 
       <footer className="footer-glow bg-brand-900">
         <Container className="py-8 text-center text-xs text-white/50 space-y-3">
           <p>These calculators give estimates only, not financial advice. Your actual costs may differ.</p>
-          <p>CCS rates applicable to fiscal year 2025&ndash;26. State and territory rates applicable to 2026 calendar year.</p>
+          <p>CCS rates applicable to fiscal year 2026&ndash;27. State and territory rates applicable to 2026 calendar year.</p>
           <p>
             This site is{' '}
             <a href="https://github.com/taspeotis/mychildcaresubsidy.au" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">

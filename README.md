@@ -20,7 +20,7 @@ The federal government subsidises child care fees based on family income (up to 
 
 ## Rates
 
-Federal CCS rates are for FY2025-26 (July 2025 to June 2026). State and territory rates are for calendar year 2026.
+Federal CCS rates are for FY2026-27 (July 2026 to June 2027). State and territory rates are for calendar year 2026.
 
 Estimates only, not financial advice.
 

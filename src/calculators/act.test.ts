@@ -35,14 +35,15 @@ describe('calculateActDaily', () => {
 
     })
 
-    // CCS on full session: $14.63 cap × 85% = $12.44/hr × 10 hrs = $124.40
-    expect(result.ccsAmount).toBe(124.4)
-    // ACT gap uses pre-withholding: $150 − $124.40 = $25.60
-    expect(result.gapBeforeKindy).toBe(25.6)
-    // Kindy: 6 hrs × ($15 − $12.44) = $15.36
-    expect(result.kindyFundingAmount).toBe(15.36)
-    // Gap = 4 non-preschool hrs × $2.56/hr = $10.24
-    expect(result.estimatedGapFee).toBe(10.24)
+    // $150 / 10 hrs = $15.00/hr, which is below the $15.19 cap,
+    // so CCS is on the actual fee: $15.00 × 85% = $12.75/hr × 10 hrs = $127.50
+    expect(result.ccsAmount).toBe(127.5)
+    // ACT gap uses pre-withholding: $150 − $127.50 = $22.50
+    expect(result.gapBeforeKindy).toBe(22.5)
+    // Kindy: 6 hrs × ($15 − $12.75) = $13.50
+    expect(result.kindyFundingAmount).toBe(13.5)
+    // Gap = 4 non-preschool hrs × $2.25/hr = $9.00
+    expect(result.estimatedGapFee).toBe(9)
   })
 
   /**
@@ -60,10 +61,10 @@ describe('calculateActDaily', () => {
 
     })
 
-    // 7.5 hrs × $2.56 = $19.20 funded
-    expect(result.kindyFundingAmount).toBe(19.2)
-    // 2.5 non-preschool hrs × $2.56 = $6.40
-    expect(result.estimatedGapFee).toBe(6.4)
+    // 7.5 hrs × $2.25 = $16.875 → $16.88 funded
+    expect(result.kindyFundingAmount).toBe(16.88)
+    // $22.50 gap − $16.88 funded = $5.62 (≈ 2.5 non-preschool hrs × $2.25)
+    expect(result.estimatedGapFee).toBe(5.62)
   })
 
   /**
@@ -203,8 +204,8 @@ describe('ACT edge cases', () => {
 
     expect(result.ccsEntitlement).toBe(0)
     // ACT gap uses ccsAmount (pre-withholding), not ccsEntitlement
-    // ccsAmount = $14.63 cap * 85% = $12.44/hr * 10 hrs = $124.40
-    expect(result.gapBeforeKindy).toBe(25.6)
+    // $15.00/hr fee is below the $15.19 cap: $15.00 * 85% = $12.75/hr * 10 hrs = $127.50
+    expect(result.gapBeforeKindy).toBe(22.5)
     // Kindy funding should still apply
     expect(result.kindyFundingAmount).toBeGreaterThan(0)
   })

@@ -32,7 +32,7 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
       <div role="dialog" aria-modal="true" aria-labelledby="ccs-modal-title" className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl card-glass p-8">
         <h2 id="ccs-modal-title" className="text-xl font-bold text-slate-900">Estimate Your CCS %</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Based on FY2026 Child Care Subsidy rates
+          Based on FY2026-27 Child Care Subsidy rates
         </p>
 
         <div className="mt-5 space-y-4">

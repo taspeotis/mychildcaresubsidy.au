@@ -136,6 +136,14 @@ The navbar and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 **Resize handling**: A `ResizeObserver` on the container re-measures the active element on window/container resize, snapping the pill to the correct position without animation.
 
+### Rate change banner
+
+`RateChangeBanner` (`src/components/RateChangeBanner.tsx`) is a site-wide, dismissable notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It tells users the calculators now use the upcoming FY2026-27 CCS rates and links to the official education.gov.au announcement. Dismissal persists to `localStorage` under `mccs.banner.fy2627-rates`; bump that key's version suffix to re-surface a new notice after a future rate change. Styled in the brand (purple) palette to match the CCS theme; responsive (stacked icon/text/close on mobile, vertically centred close button on `sm+`).
+
+### CCS rate tables
+
+Federal CCS hourly rate caps and income thresholds live in `src/calculators/ccs.ts` (`CCS_HOURLY_RATE_CAP`, `CCS_HOURLY_RATE_CAP_SCHOOL_AGE`, `FDC_HOURLY_RATE_CAP`, and the `calculateStandardCcsPercent` / `calculateHigherCcsPercent` thresholds). These are the FY2026-27 figures (effective 6 July 2026, CPI-indexed). When the rates change, update the constants/thresholds and the comments there, the FY label in the footer (`__root.tsx`), the modal subtitle (`CcsCalculatorModal.tsx`), the README rates note, and the affected calculator tests, then add a release note.
+
 ### Scroll restoration
 
 Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (not the deprecated `<ScrollRestoration />` component).

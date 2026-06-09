@@ -8,13 +8,13 @@
  *
  *   - Family Assistance Guide 3.5.3 (hourly rate cap examples)
  *     https://guides.dss.gov.au/family-assistance-guide/3/5/3
- *     "Mahunta": CBDC, $154/session (10 hrs), $15.40/hr exceeds cap of $14.63
+ *     "Mahunta": CBDC, $154/session (10 hrs), $15.40/hr exceeds cap of $15.19
  *
- * All rates are FY2025-26 (July 2025 – June 2026).
+ * All rates are FY2026-27 (effective 6 July 2026).
  */
 import { describe, it, expect } from 'vitest'
 import { calculateCcsDaily, calculateCcsFortnightly } from './ccsCalculator'
-import { calculateStandardCcsPercent } from './ccs'
+import { calculateStandardCcsPercent, calculateHigherCcsPercent, estimateCcs, CCS_HOURLY_RATE_CAP } from './ccs'
 
 describe('calculateCcsDaily', () => {
   /**
@@ -35,7 +35,7 @@ describe('calculateCcsDaily', () => {
     })
 
     expect(result).not.toBeNull()
-    // $10/hr is below the cap of $14.63, so CCS is based on actual fee
+    // $10/hr is below the cap of $15.19, so CCS is based on actual fee
     expect(result!.ccsHourlyRate).toBe(5) // $10 × 50% = $5.00 (per FAG 3.5.4)
     expect(result!.ccsAmount).toBe(50) // $5 × 10 hrs
     expect(result!.ccsWithholding).toBe(2.5) // $50 × 5%
@@ -46,7 +46,7 @@ describe('calculateCcsDaily', () => {
   /**
    * Family Assistance Guide 3.5.3 "Mahunta" example.
    * The Mahunta family's 1yo attends CBDC at $154/session (10 hours).
-   * Hourly rate = $15.40, which exceeds the cap of $14.63.
+   * Hourly rate = $15.40, which exceeds the cap of $15.19.
    * CCS is calculated on the capped rate.
    * The FAG doesn't specify CCS %, so we use 85%.
    */
@@ -63,19 +63,19 @@ describe('calculateCcsDaily', () => {
 
     expect(result).not.toBeNull()
     expect(result!.hourlySessionFee).toBeCloseTo(15.4, 2)
-    // Fee $15.40/hr exceeds cap $14.63, so CCS based on cap
-    expect(result!.ccsHourlyRate).toBe(12.44) // $14.63 × 85%
-    expect(result!.ccsAmount).toBe(124.4) // $12.44 × 10
-    expect(result!.ccsWithholding).toBe(6.22) // $124.40 × 5%
-    expect(result!.ccsEntitlement).toBe(118.18) // $124.40 – $6.22
-    expect(result!.estimatedGapFee).toBe(35.82) // $154 – $118.18
+    // Fee $15.40/hr exceeds cap $15.19, so CCS based on cap
+    expect(result!.ccsHourlyRate).toBe(12.91) // $15.19 × 85%
+    expect(result!.ccsAmount).toBe(129.1) // $12.91 × 10
+    expect(result!.ccsWithholding).toBe(6.455) // $129.10 × 5%
+    expect(result!.ccsEntitlement).toBe(122.645) // $129.10 – $6.455
+    expect(result!.estimatedGapFee).toBe(31.36) // $154 – $122.645, rounded
   })
 
   /**
-   * OSHC uses the school-age hourly rate cap ($12.81).
+   * OSHC uses the school-age hourly rate cap ($13.30).
    * Source: Family Assistance Guide 3.5.3
    */
-  it('FAG 3.5.3 — OSHC uses school-age cap ($12.81)', () => {
+  it('FAG 3.5.3 — OSHC uses school-age cap ($13.30)', () => {
     const result = calculateCcsDaily({
       ccsPercent: 85,
       ccsWithholdingPercent: 5,
@@ -87,9 +87,9 @@ describe('calculateCcsDaily', () => {
     })
 
     expect(result).not.toBeNull()
-    expect(result!.hourlyRateCap).toBe(12.81)
-    // $20/hr exceeds $12.81 cap
-    expect(result!.ccsHourlyRate).toBe(10.89) // $12.81 × 85%
+    expect(result!.hourlyRateCap).toBe(13.3)
+    // $20/hr exceeds $13.30 cap
+    expect(result!.ccsHourlyRate).toBe(11.31) // $13.30 × 85%
   })
 })
 
@@ -222,19 +222,20 @@ describe('edge cases', () => {
 })
 
 describe('CCS percentage boundaries', () => {
-  it('returns 90% at income <= 85,279', () => {
-    expect(calculateStandardCcsPercent(85_279)).toBe(90)
+  it('returns 90% at income <= 88,520', () => {
+    expect(calculateStandardCcsPercent(88_520)).toBe(90)
     expect(calculateStandardCcsPercent(80_000)).toBe(90)
   })
 
-  it('returns 0% at income >= 535,279', () => {
-    expect(calculateStandardCcsPercent(535_279)).toBe(0)
+  it('returns 0% at income >= 538,520', () => {
+    expect(calculateStandardCcsPercent(538_520)).toBe(0)
     expect(calculateStandardCcsPercent(600_000)).toBe(0)
   })
 
   it('tapers correctly just above threshold', () => {
-    // $90,279 is in the range ($85,279, $90,279], reduction = floor((90279 - 85279) / 5000) * 1 = 1
-    expect(calculateStandardCcsPercent(90_279)).toBe(89)
+    // $93,520 is one full $5,000 step above the $88,520 threshold,
+    // so reduction = floor((93520 - 88520) / 5000) * 1 = 1 → 89%
+    expect(calculateStandardCcsPercent(93_520)).toBe(89)
   })
 })
 
@@ -357,5 +358,124 @@ describe('fortnightly rounding consistency', () => {
 
     const sumCcs = result!.sessions.reduce((s, r) => s + r.ccsEntitlement, 0)
     expect(result!.totalCcsEntitlement).toBe(Math.round(sumCcs * 100) / 100)
+  })
+})
+
+/**
+ * Higher CCS for the 2nd and younger children aged 5 or under.
+ * FY2026-27 bands per the "Rates for second and younger children 2026-27"
+ * table on https://www.education.gov.au/early-childhood/child-care-subsidy
+ * Two tapers (1% per $3,000) bracket two flat bands (80%, 50%).
+ */
+describe('calculateHigherCcsPercent (second/younger child)', () => {
+  it('returns 95% at or below $146,437', () => {
+    expect(calculateHigherCcsPercent(0)).toBe(95)
+    expect(calculateHigherCcsPercent(100_000)).toBe(95)
+    expect(calculateHigherCcsPercent(146_437)).toBe(95)
+  })
+
+  it('tapers 95% → 80% at 1% per $3,000 above $146,437', () => {
+    expect(calculateHigherCcsPercent(149_437)).toBe(94) // first full $3,000 step
+    expect(calculateHigherCcsPercent(191_436)).toBe(81) // last taper point before the flat band
+  })
+
+  it('returns 80% across $191,437 to below $270,727', () => {
+    expect(calculateHigherCcsPercent(191_437)).toBe(80) // continuous with the taper (81 → 80)
+    expect(calculateHigherCcsPercent(230_000)).toBe(80)
+    expect(calculateHigherCcsPercent(270_726)).toBe(80)
+  })
+
+  it('tapers 80% → 50% at 1% per $3,000 above $270,727', () => {
+    expect(calculateHigherCcsPercent(270_727)).toBe(80) // continuous with the flat band
+    expect(calculateHigherCcsPercent(273_727)).toBe(79)
+    expect(calculateHigherCcsPercent(360_726)).toBe(51) // last taper point before the 50% band
+  })
+
+  it('returns 50% across $360,727 to below $370,727', () => {
+    expect(calculateHigherCcsPercent(360_727)).toBe(50) // continuous with the taper (51 → 50)
+    expect(calculateHigherCcsPercent(370_726)).toBe(50)
+  })
+
+  it('returns 0% (standard rate applies) at or above $370,727', () => {
+    expect(calculateHigherCcsPercent(370_727)).toBe(0)
+    expect(calculateHigherCcsPercent(400_000)).toBe(0)
+  })
+})
+
+describe('estimateCcs', () => {
+  it('applies the higher rate for a 2nd+ child under 6 when eligible', () => {
+    const result = estimateCcs({ income: 80_000, numberOfChildren: 2, isFirstChildUnder6: true, useHigherCcs: true })
+    expect(result.standardPercent).toBe(90)
+    expect(result.higherPercent).toBe(95)
+    expect(result.applicablePercent).toBe(95)
+    expect(result.hourlyRateCap).toBe(CCS_HOURLY_RATE_CAP) // returns the LDC cap
+  })
+
+  it('uses the standard rate when there is only one child', () => {
+    const result = estimateCcs({ income: 80_000, numberOfChildren: 1, isFirstChildUnder6: true, useHigherCcs: true })
+    expect(result.applicablePercent).toBe(result.standardPercent)
+    expect(result.applicablePercent).toBe(90)
+  })
+
+  it('uses the standard rate when higher CCS is not requested', () => {
+    const result = estimateCcs({ income: 80_000, numberOfChildren: 3, isFirstChildUnder6: true, useHigherCcs: false })
+    expect(result.applicablePercent).toBe(result.standardPercent)
+  })
+
+  it('does not apply the higher rate once income reaches $370,727', () => {
+    const result = estimateCcs({ income: 380_000, numberOfChildren: 2, isFirstChildUnder6: true, useHigherCcs: true })
+    // Higher CCS no longer applies, so the standard (tapered) rate is used.
+    expect(result.higherPercent).toBe(0)
+    expect(result.applicablePercent).toBe(result.standardPercent)
+    expect(result.applicablePercent).toBe(32) // 90 − floor((380,000 − 88,520) / 5,000)
+  })
+})
+
+describe('hourly rate caps by care type', () => {
+  it('Family Day Care uses the FDC cap ($14.08) when the fee exceeds it', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 160, // $16/hr over 10 hrs, exceeds the FDC cap
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'family-day-care',
+      schoolAge: false,
+    })
+
+    expect(result).not.toBeNull()
+    expect(result!.hourlyRateCap).toBe(14.08)
+    expect(result!.ccsHourlyRate).toBe(11.97) // $14.08 × 85%
+    expect(result!.estimatedGapFee).toBe(46.29) // $160 − $113.715
+  })
+
+  it('Family Day Care uses the same cap regardless of school age', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 160,
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'family-day-care',
+      schoolAge: true,
+    })
+
+    // FDC is age-agnostic — not the $13.30 school-age cap.
+    expect(result!.hourlyRateCap).toBe(14.08)
+  })
+
+  it('centre-based school-age uses the school-age cap ($13.30) via the schoolAge flag', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 150, // $15/hr over 10 hrs, exceeds the school-age cap
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'centre-based',
+      schoolAge: true,
+    })
+
+    expect(result!.hourlyRateCap).toBe(13.3)
+    expect(result!.ccsHourlyRate).toBe(11.31) // $13.30 × 85%
   })
 })
