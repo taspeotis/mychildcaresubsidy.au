@@ -38,6 +38,9 @@ function formatOnBlur(value: string, fmt: InputFormat, min?: number, max?: numbe
 
 export function InputField({ label, hint, prefix, suffix, error, format: fmt, colorScheme = 'accent', className, id, onBlur, onChange, min, max, ...props }: InputFieldProps) {
   const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-')
+  const hintId = hint ? `${inputId}-hint` : undefined
+  const errorId = error ? `${inputId}-error` : undefined
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
   const isTextMode = !!fmt
   const numMin = min != null ? Number(min) : undefined
   const numMax = max != null ? Number(max) : undefined
@@ -67,11 +70,13 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, co
       <label htmlFor={inputId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      {hint && <p id={hintId} className="mt-1 text-xs text-slate-500">{hint}</p>}
       <div className="mt-auto pt-1.5">
       <div className="relative">
         <input
           id={inputId}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
           className={clsx(
             'block w-full rounded-xl border-2 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition-colors',
             'placeholder:text-slate-400',
@@ -99,7 +104,7 @@ export function InputField({ label, hint, prefix, suffix, error, format: fmt, co
         )}
       </div>
       </div>
-      {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
+      {error && <p id={errorId} className="mt-1.5 text-xs text-red-600">{error}</p>}
     </div>
   )
 }

@@ -34,7 +34,7 @@ export function CalculatorSidebar({
     <>
       <Link
         to="/"
-        className={`inline-flex items-center text-sm font-medium text-white/60 transition-colors ${colorScheme === 'brand' ? 'hover:text-brand-400' : 'hover:text-accent-400'}`}
+        className={`inline-flex items-center text-sm font-medium text-white/70 transition-colors ${colorScheme === 'brand' ? 'hover:text-brand-400' : 'hover:text-accent-400'}`}
       >
         <svg
           className="mr-1.5 h-4 w-4"
@@ -59,7 +59,7 @@ export function CalculatorSidebar({
 
       {children && (
         <div className="mt-6">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-white/50 mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-white/70 mb-3">
             Calculate
           </h3>
           {children}
@@ -67,7 +67,7 @@ export function CalculatorSidebar({
       )}
 
       <div className="mt-6">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-white/50">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-white/70">
           Key Facts
         </h3>
         <dl className="mt-3 space-y-2">
@@ -81,7 +81,7 @@ export function CalculatorSidebar({
       </div>
 
       <details className="group mt-6 [&[open]]:mt-6" open>
-        <summary className="cursor-pointer select-none text-xs font-bold uppercase tracking-wide text-white/50 lg:pointer-events-none lg:select-text">
+        <summary className="cursor-pointer select-none text-xs font-bold uppercase tracking-wide text-white/70 lg:pointer-events-none lg:select-text">
           Calculator Guide
           <svg
             className="ml-1 inline h-3 w-3 transition-transform group-open:rotate-90 lg:hidden"
@@ -97,7 +97,7 @@ export function CalculatorSidebar({
           {guidance.map((item) => (
             <div key={item.title}>
               <h4 className="text-sm font-medium text-white">{item.title}</h4>
-              <p className="mt-0.5 text-xs text-white/60 leading-relaxed">{item.description}</p>
+              <p className="mt-0.5 text-xs text-white/70 leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>

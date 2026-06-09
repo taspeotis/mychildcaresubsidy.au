@@ -59,7 +59,7 @@ function HomePage() {
         <Container className="pt-20 pb-14 sm:pt-28 sm:pb-20">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              What will <span className="text-accent-400">child care</span> actually cost you?
+              What will <span className="text-accent-400">child care</span> cost you?
             </h1>
             <p className="mt-5 text-lg text-white/80">
               Work out your out-of-pocket child care costs after the federal Child Care Subsidy and your state or territory's kindy or preschool funding.

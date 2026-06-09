@@ -25,6 +25,7 @@ function generateTimeOptions(min: number, max: number, step: number): { value: n
 
 export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, step = 0.25, colorScheme = 'accent', className, id }: TimePickerProps) {
   const pickerId = id ?? label.toLowerCase().replace(/\s+/g, '-')
+  const hintId = hint ? `${pickerId}-hint` : undefined
   const options = generateTimeOptions(min, max, step)
 
   return (
@@ -32,11 +33,12 @@ export function TimePicker({ label, hint, value, onChange, min = 5, max = 21, st
       <label htmlFor={pickerId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      {hint && <p id={hintId} className="mt-1 text-xs text-slate-500">{hint}</p>}
       <div className="mt-auto pt-1.5">
       <div className="relative">
         <select
           id={pickerId}
+          aria-describedby={hintId}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className={clsx(

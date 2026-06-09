@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { estimateCcs } from '../calculators/ccs'
 import type { ColorScheme } from '../types'
+import { useDialog } from '../hooks/useDialog'
 import { InputField } from './InputField'
 import { Button } from './Button'
 
@@ -12,11 +13,15 @@ interface CcsCalculatorModalProps {
 }
 
 export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'accent' }: CcsCalculatorModalProps) {
+  if (!open) return null
+  return <CcsCalculatorModalInner onClose={onClose} onApply={onApply} colorScheme={colorScheme} />
+}
+
+function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: Omit<CcsCalculatorModalProps, 'open'>) {
+  const dialogRef = useDialog<HTMLDivElement>(onClose)
   const [income, setIncome] = useState('')
   const [numChildren, setNumChildren] = useState('1')
   const [isSecondChild, setIsSecondChild] = useState(false)
-
-  if (!open) return null
 
   const incomeValue = Number(income.replace(/,/g, '')) || 0
   const result = estimateCcs({
@@ -27,9 +32,9 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
   })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-brand-950/70 backdrop-blur-md" onClick={onClose} />
-      <div role="dialog" aria-modal="true" aria-labelledby="ccs-modal-title" className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl card-glass p-8">
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="ccs-modal-title" className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl card-glass p-8 focus:outline-none">
         <h2 id="ccs-modal-title" className="text-xl font-bold text-slate-900">Estimate Your CCS %</h2>
         <p className="mt-1 text-sm text-slate-600">
           Based on FY2026-27 Child Care Subsidy rates

@@ -10,16 +10,18 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
 
 export function SelectField({ label, hint, options, colorScheme = 'accent', className, id, ...props }: SelectFieldProps) {
   const selectId = id ?? label.toLowerCase().replace(/\s+/g, '-')
+  const hintId = hint ? `${selectId}-hint` : undefined
   return (
     <div className={clsx('flex flex-col', className)}>
       <label htmlFor={selectId} className="block text-sm font-bold text-slate-900">
         {label}
       </label>
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      {hint && <p id={hintId} className="mt-1 text-xs text-slate-500">{hint}</p>}
       <div className="mt-auto pt-1.5">
       <div className="relative">
         <select
           id={selectId}
+          aria-describedby={hintId}
           className={clsx(
             'block w-full appearance-none rounded-xl border-2 border-slate-200 bg-white py-3 pr-10 pl-4 text-sm text-slate-900 shadow-sm transition-colors',
             colorScheme === 'brand'

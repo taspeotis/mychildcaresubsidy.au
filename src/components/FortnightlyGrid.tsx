@@ -2,6 +2,7 @@ import { useState } from 'react'
 import clsx from 'clsx'
 import type { ColorScheme } from '../types'
 import { WEEKDAYS, formatTime } from '../config'
+import { useDialog } from '../hooks/useDialog'
 import { InputField } from './InputField'
 import { TimePicker } from './TimePicker'
 
@@ -133,6 +134,8 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                         key={i}
                         type="button"
                         onClick={() => toggleDay(i)}
+                        aria-pressed={booked}
+                        aria-label={`${WEEKDAYS[dayIdx]}${weekCount > 1 ? `, week ${week + 1}` : ''}`}
                         className={clsx(
                           'h-9 w-9 rounded-full text-xs font-bold transition-colors',
                           booked
@@ -263,15 +266,16 @@ function DayEditModal({
   onCancel: () => void
 }) {
   const [draft, setDraft] = useState<DayConfig>(day)
+  const dialogRef = useDialog<HTMLDivElement>(onCancel)
 
   function update(patch: Partial<DayConfig>) {
     setDraft((prev) => ({ ...prev, ...patch }))
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') onCancel() }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div role="dialog" aria-modal="true" aria-labelledby="day-edit-title" className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="day-edit-title" className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl focus:outline-none">
         <div className="flex items-center justify-between mb-5">
           <h3 id="day-edit-title" className="text-lg font-bold text-slate-900">{dayLabel}</h3>
           <button type="button" onClick={onCancel} aria-label="Close" className="text-slate-400 hover:text-slate-600">

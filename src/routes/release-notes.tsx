@@ -24,7 +24,7 @@ const RELEASES: Release[] = [
     date: '9 June 2026',
     id: '2026-06-09',
     changes: [
-      'The federal CCS hourly rate caps and income thresholds rise on 6 July 2026. The calculators now use these new FY2026-27 rates, so your estimates reflect what child care will actually cost once the changes take effect.',
+      'The federal CCS hourly rate caps and income thresholds rise on 6 July 2026. The calculators now use these new FY2026-27 rates, so your estimates reflect what child care will cost once the changes take effect.',
     ],
   },
   {
