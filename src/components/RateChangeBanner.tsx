@@ -8,6 +8,11 @@ const DISMISS_KEY = 'mccs.banner.fy2627-rates'
 const ARTICLE_URL =
   'https://www.education.gov.au/early-childhood/announcements/child-care-subsidy-hourly-rate-caps-are-changing-soon-1'
 
+// The new rates take effect on this date. From then on "changing soon" is no
+// longer accurate (and the calculator already uses the new rates), so the
+// banner hides itself. Local time, so it flips at midnight on the 6th.
+const RATES_EFFECTIVE = new Date(2026, 6, 6) // 6 July 2026
+
 /**
  * Site-wide dismissable notice that the calculators now use the upcoming
  * FY2026-27 CCS rates. Dismissal persists in localStorage so it stays hidden
@@ -22,7 +27,7 @@ export function RateChangeBanner() {
     }
   })
 
-  if (dismissed) return null
+  if (dismissed || new Date() >= RATES_EFFECTIVE) return null
 
   function dismiss() {
     setDismissed(true)

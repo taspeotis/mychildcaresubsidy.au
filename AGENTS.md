@@ -138,7 +138,7 @@ The navbar and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 ### Rate change banner
 
-`RateChangeBanner` (`src/components/RateChangeBanner.tsx`) is a site-wide, dismissable notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It tells users the calculators now use the upcoming FY2026-27 CCS rates and links to the official education.gov.au announcement. Dismissal persists to `localStorage` under `mccs.banner.fy2627-rates`; bump that key's version suffix to re-surface a new notice after a future rate change. Styled in the brand (purple) palette to match the CCS theme; responsive (stacked icon/text/close on mobile, vertically centred close button on `sm+`).
+`RateChangeBanner` (`src/components/RateChangeBanner.tsx`) is a site-wide, dismissable notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It tells users the calculators now use the upcoming FY2026-27 CCS rates and links to the official education.gov.au announcement. Dismissal persists to `localStorage` under `mccs.banner.fy2627-rates`; bump that key's version suffix to re-surface a new notice after a future rate change. It also auto-hides from its `RATES_EFFECTIVE` date (6 July 2026), once the new rates take effect and "changing soon" is no longer accurate. Styled in the brand (purple) palette to match the CCS theme; responsive (stacked icon/text/close on mobile, vertically centred close button on `sm+`).
 
 ### CCS rate tables
 
