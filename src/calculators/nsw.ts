@@ -20,6 +20,8 @@ export interface NswDailyInputs {
   feeReliefTier: NswFeeReliefTier
   serviceWeeks: number
   daysPerWeek: number
+  /** CCS hourly rate cap (LDC). Defaults to the latest FY2026-27 cap when omitted. */
+  hourlyRateCap?: number
 }
 
 export interface NswDailyResult {
@@ -43,7 +45,7 @@ export function calculateNswDaily(inputs: NswDailyInputs): NswDailyResult {
     sessionEndHour: inputs.sessionEndHour,
     ccsPercent: inputs.ccsPercent,
     ccsWithholdingPercent: inputs.ccsWithholdingPercent,
-    hourlyRateCap: CCS_HOURLY_RATE_CAP,
+    hourlyRateCap: inputs.hourlyRateCap ?? CCS_HOURLY_RATE_CAP,
   })
 
   const gapBeforeFeeRelief = roundTo(inputs.sessionFee - ccs.ccsEntitlement, 2)
@@ -95,6 +97,7 @@ export function calculateNswFortnightlySessions(inputs: {
   feeReliefTier: NswFeeReliefTier
   serviceWeeks: number
   sessions: NswSessionInput[]
+  hourlyRateCap?: number
 }): NswFortnightlySessionsResult | null {
   const week1Booked = inputs.sessions.slice(0, 5).filter((s) => s.booked).length
   const week2Booked = inputs.sessions.slice(5, 10).filter((s) => s.booked).length
@@ -126,7 +129,7 @@ export function calculateNswFortnightlySessions(inputs: {
       sessionEndHour: s.sessionEndHour,
       ccsPercent: inputs.ccsPercent,
       ccsWithholdingPercent: inputs.ccsWithholdingPercent,
-      hourlyRateCap: CCS_HOURLY_RATE_CAP,
+      hourlyRateCap: inputs.hourlyRateCap ?? CCS_HOURLY_RATE_CAP,
       ccsHoursAvailable: remainingCcsHours,
     })
     remainingCcsHours -= ccs.applicableCcsHours

@@ -3,6 +3,7 @@ import { calculateActDaily, calculateActFortnightly } from '../calculators/act'
 import { calculateNswDaily, calculateNswFortnightlySessions } from '../calculators/nsw'
 import { calculateQldDaily, calculateQldFortnightly } from '../calculators/qld'
 import { calculateVicDaily, calculateVicFortnightlySessions } from '../calculators/vic'
+import { RATE_SETS, type RateSet } from '../calculators/ccs'
 import { computeDebtRecovery, WEEKDAYS } from '../config'
 import type { DayConfig } from '../components/FortnightlyGrid'
 import type { FortnightlySession } from '../types'
@@ -69,7 +70,7 @@ function applyFortnightDebt(shared: SharedSnapshot, ccsEntitlement: number, stat
   return { debtPerDay: debt.debtPerDay, gap }
 }
 
-export function calculateEstimate(estimate: Estimate): EstimateResult | null {
+export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SETS.new): EstimateResult | null {
   const { shared, mode } = estimate
   const ccs = num(shared.ccsPercent)
   const wh = num(shared.withholding)
@@ -89,6 +90,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
           sessionEndHour: shared.sessionEnd,
           careType: estimate.local.careType,
           schoolAge: estimate.local.careType === 'oshc' ? true : estimate.local.schoolAge,
+          rateSet,
         })
         if (!r) return null
         const debt = applyDailyDebt(shared, r.ccsEntitlement, 0, fee)
@@ -96,6 +98,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       }
       case 'act': {
         const r = calculateActDaily({
+          hourlyRateCap: rateSet.ldcCap,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -110,6 +113,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
         const weeks = num(estimate.local.serviceWeeks) || 50
         const dpw = num(shared.daysPerWeek) || 3
         const r = calculateNswDaily({
+          hourlyRateCap: rateSet.ldcCap,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -125,6 +129,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       }
       case 'qld': {
         const r = calculateQldDaily({
+          hourlyRateCap: rateSet.ldcCap,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -139,6 +144,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
         const dpw = num(shared.daysPerWeek) || 3
         const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
         const r = calculateVicDaily({
+          hourlyRateCap: rateSet.ldcCap,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -167,6 +173,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
         careType: estimate.local.careType,
         schoolAge: estimate.local.careType === 'oshc' ? true : estimate.local.schoolAge,
         sessions,
+        rateSet,
       })
       if (!r) return null
       const booked = sessions.filter((s) => s.booked && s.sessionFee > 0).length
@@ -180,7 +187,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       if (!days.some((d) => d.booked && num(d.sessionFee) > 0)) return null
       const programWeeks = Math.round(300 / ph)
       const r = calculateActFortnightly(
-        { ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions },
+        { ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions, hourlyRateCap: rateSet.ldcCap },
         programWeeks,
       )
       const debt = applyFortnightDebt(shared, r.totalCcsEntitlement, r.totalKindyFunding, r.totalSessionFees, bookedCount(days))
@@ -192,6 +199,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       const weeks = num(estimate.local.serviceWeeks) || 50
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateNswFortnightlySessions({
+        hourlyRateCap: rateSet.ldcCap,
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,
@@ -209,7 +217,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       const kh = num(estimate.local.fnKindyHours) || 7.5
       const sessions = programSessions(days, estimate.local.fnKindyStart, kh)
       if (!days.some((d) => d.booked && num(d.sessionFee) > 0)) return null
-      const r = calculateQldFortnightly({ ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions })
+      const r = calculateQldFortnightly({ ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions, hourlyRateCap: rateSet.ldcCap })
       const debt = applyFortnightDebt(shared, r.totalCcsEntitlement, r.totalKindyFunding, r.totalSessionFees, bookedCount(days))
       return { sessionFees: r.totalSessionFees, ccsEntitlement: r.totalCcsEntitlement, stateFunding: r.totalKindyFunding, debtRecovery: debt.debtPerDay, gap: debt.gap }
     }
@@ -219,6 +227,7 @@ export function calculateEstimate(estimate: Estimate): EstimateResult | null {
       const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateVicFortnightlySessions({
+        hourlyRateCap: rateSet.ldcCap,
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,

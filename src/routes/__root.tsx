@@ -4,9 +4,14 @@ import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
 import { RateChangeBanner } from '../components/RateChangeBanner'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
+import { useRates } from '../context/RatesState'
 import { EstimatesProvider, useEstimates } from '../estimates/EstimatesState'
 
 export const Route = createRootRoute({
+  // `rates` selects a historical CCS rate set (see useRates / the Settings page).
+  // Validated at the root so it's preserved and typed across every route.
+  validateSearch: (search: Record<string, unknown>): { rates?: string } =>
+    typeof search.rates === 'string' ? { rates: search.rates } : {},
   component: RootLayout,
 })
 
@@ -23,6 +28,7 @@ function RootLayout() {
 function RootLayoutInner() {
   const { pathname } = useLocation()
   const { estimates } = useEstimates()
+  const { rateSet } = useRates()
   const estimateCount = estimates.length
   const navRef = useRef<HTMLElement>(null)
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
@@ -177,7 +183,7 @@ function RootLayoutInner() {
       <footer className="footer-glow bg-brand-900">
         <Container className="py-8 text-center text-xs text-white/50 space-y-3">
           <p>These calculators give estimates only, not financial advice. Your actual costs may differ.</p>
-          <p>CCS rates applicable to fiscal year 2026&ndash;27. State and territory rates applicable to 2026 calendar year.</p>
+          <p>CCS rates applicable to fiscal year {rateSet.fyLabel}. State and territory rates applicable to 2026 calendar year.</p>
           <p>
             This site is{' '}
             <a href="https://github.com/taspeotis/mychildcaresubsidy.au" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
@@ -191,6 +197,10 @@ function RootLayoutInner() {
             .{' '}
             <Link to="/release-notes" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
               Release notes
+            </Link>
+            .{' '}
+            <Link to="/settings" search={(prev) => prev} className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
+              Settings
             </Link>
             .
           </p>

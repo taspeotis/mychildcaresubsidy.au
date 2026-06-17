@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
 import { Container } from './Container'
+import { useRates } from '../context/RatesState'
+import { RATES_EFFECTIVE } from '../calculators/ccs'
 
 // Bump the version suffix when a new rate-change notice should re-appear for
 // users who dismissed a previous one.
@@ -8,17 +11,57 @@ const DISMISS_KEY = 'mccs.banner.fy2627-rates'
 const ARTICLE_URL =
   'https://www.education.gov.au/early-childhood/announcements/child-care-subsidy-hourly-rate-caps-are-changing-soon-1'
 
-// The new rates take effect on this date. From then on "changing soon" is no
-// longer accurate (and the calculator already uses the new rates), so the
-// banner hides itself. Local time, so it flips at midnight on the 6th.
-const RATES_EFFECTIVE = new Date(2026, 6, 6) // 6 July 2026
-
 /**
- * Site-wide dismissable notice that the calculators now use the upcoming
- * FY2026-27 CCS rates. Dismissal persists in localStorage so it stays hidden
- * on return visits until the next rate change bumps DISMISS_KEY.
+ * Site-wide notice mounted above every route.
+ *
+ * Two modes:
+ *  - Default (latest rates): a dismissable heads-up that the rates change on
+ *    6 July 2026 and the calculators already use them. Auto-hides once those
+ *    rates take effect. Mentions, quietly, that the previous rates are
+ *    available in Settings.
+ *  - Historical (a `?rates=` set is active): a persistent, non-dismissable
+ *    notice that an older rate set is in use, with a one-click way back.
  */
 export function RateChangeBanner() {
+  const { rateSet, isDefault } = useRates()
+  const { pathname } = useLocation()
+
+  if (!isDefault) {
+    // The historical notice is for when you're actually using a calculator, so
+    // don't show it on the Settings page where the rate year is chosen.
+    if (pathname === '/settings') return null
+    return (
+      <Container className="pt-6">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-snug text-amber-900 sm:items-center sm:gap-4 sm:p-5">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-700 sm:mt-0">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l3.75 2.25M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <span className="font-semibold">You&rsquo;re viewing historical FY{rateSet.fyLabel} rates.</span>{' '}
+            <span className="text-amber-800/90">
+              These are the Child Care Subsidy caps and thresholds from that year, kept for checking
+              past estimates.{' '}
+              <Link
+                to="."
+                search={() => ({})}
+                className="font-medium text-amber-900 underline underline-offset-2 transition-colors hover:text-amber-950"
+              >
+                Switch to current rates
+              </Link>
+              .
+            </span>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  return <DefaultRateBanner />
+}
+
+function DefaultRateBanner() {
   const [dismissed, setDismissed] = useState(() => {
     try {
       return window.localStorage.getItem(DISMISS_KEY) === '1'
@@ -27,6 +70,8 @@ export function RateChangeBanner() {
     }
   })
 
+  // Once the new rates take effect, "changing soon" is no longer accurate (and
+  // they're now the current rates), so the heads-up hides itself.
   if (dismissed || new Date() >= RATES_EFFECTIVE) return null
 
   function dismiss() {
@@ -60,7 +105,19 @@ export function RateChangeBanner() {
             >
               Read the announcement
             </a>
-            .
+            .{' '}
+            <span className="text-brand-700/80">
+              Checking figures against last year&rsquo;s rates? You can switch to the previous
+              FY2025&ndash;26 rates in{' '}
+              <Link
+                to="/settings"
+                search={(prev) => prev}
+                className="font-medium text-brand-700 underline underline-offset-2 transition-colors hover:text-brand-900"
+              >
+                Settings
+              </Link>
+              .
+            </span>
           </span>
         </div>
 

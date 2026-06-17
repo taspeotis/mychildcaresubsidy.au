@@ -3,6 +3,8 @@ const SITE = 'mychildcaresubsidy.au'
 interface PageMetaInput {
   title: string
   description: string
+  /** Set true to keep the page out of search engines (e.g. low-key utility pages). */
+  noindex?: boolean
 }
 
 interface MetaTag {
@@ -17,13 +19,14 @@ interface MetaTag {
  * Appends " | mychildcaresubsidy.au" to the title and mirrors title/description
  * into Open Graph tags so social shares look right.
  */
-export function pageMeta({ title, description }: PageMetaInput): { meta: MetaTag[] } {
+export function pageMeta({ title, description, noindex }: PageMetaInput): { meta: MetaTag[] } {
   return {
     meta: [
       { title: `${title} | ${SITE}` },
       { name: 'description', content: description },
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
+      ...(noindex ? [{ name: 'robots', content: 'noindex' }] : []),
     ],
   }
 }

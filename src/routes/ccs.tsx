@@ -14,9 +14,9 @@ import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
 import { calculateCcsDaily, calculateCcsFortnightly, getHourlyRateCap } from '../calculators/ccsCalculator'
 import type { CareType } from '../calculators/ccsCalculator'
-import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { DEFAULTS, fmt, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
+import { useRates } from '../context/RatesState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -43,6 +43,7 @@ const CHILD_AGE_OPTIONS = [
 
 function CcsCalculator() {
   const shared = useSharedCalculatorState()
+  const { rateSet } = useRates()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -68,7 +69,7 @@ function CcsCalculator() {
 
   // Force school age when OSHC is selected
   const effectiveSchoolAge = careType === 'oshc' ? true : schoolAge
-  const hourlyRateCap = getHourlyRateCap(careType, effectiveSchoolAge)
+  const hourlyRateCap = getHourlyRateCap(careType, effectiveSchoolAge, rateSet)
 
   const dailyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -85,8 +86,9 @@ function CcsCalculator() {
       sessionEndHour: shared.sessionEnd,
       careType,
       schoolAge: effectiveSchoolAge,
+      rateSet,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, careType, effectiveSchoolAge])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, careType, effectiveSchoolAge, rateSet])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -111,8 +113,9 @@ function CcsCalculator() {
       careType,
       schoolAge: effectiveSchoolAge,
       sessions,
+      rateSet,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, careType, effectiveSchoolAge, weeklyDays])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, careType, effectiveSchoolAge, weeklyDays, rateSet])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -141,8 +144,9 @@ function CcsCalculator() {
       careType,
       schoolAge: effectiveSchoolAge,
       sessions,
+      rateSet,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, careType, effectiveSchoolAge, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, careType, effectiveSchoolAge, days, rateSet])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -257,9 +261,9 @@ function CcsCalculator() {
                 description="The federal Child Care Subsidy reduces your child care fees based on family income. It applies to centre-based day care, family day care, and outside school hours care (OSHC)."
                 keyFacts={[
                   { label: 'Max Subsidy', value: 'Up to 90%' },
-                  { label: 'Rate Cap (LDC)', value: `${fmt(CCS_HOURLY_RATE_CAP)}/hr` },
-                  { label: 'Rate Cap (School)', value: `${fmt(CCS_HOURLY_RATE_CAP_SCHOOL_AGE)}/hr` },
-                  { label: 'Rate Cap (FDC)', value: `${fmt(FDC_HOURLY_RATE_CAP)}/hr` },
+                  { label: 'Rate Cap (LDC)', value: `${fmt(rateSet.ldcCap)}/hr` },
+                  { label: 'Rate Cap (School)', value: `${fmt(rateSet.schoolAgeCap)}/hr` },
+                  { label: 'Rate Cap (FDC)', value: `${fmt(rateSet.fdcCap)}/hr` },
                 ]}
                 guidance={[
                   {

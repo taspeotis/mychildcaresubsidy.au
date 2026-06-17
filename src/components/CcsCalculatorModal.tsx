@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { estimateCcs } from '../calculators/ccs'
 import type { ColorScheme } from '../types'
+import { useRates } from '../context/RatesState'
 import { useDialog } from '../hooks/useDialog'
 import { InputField } from './InputField'
 import { Button } from './Button'
@@ -19,6 +20,7 @@ export function CcsCalculatorModal({ open, onClose, onApply, colorScheme = 'acce
 
 function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: Omit<CcsCalculatorModalProps, 'open'>) {
   const dialogRef = useDialog<HTMLDivElement>(onClose)
+  const { rateSet } = useRates()
   const [income, setIncome] = useState('')
   const [numChildren, setNumChildren] = useState('1')
   const [isSecondChild, setIsSecondChild] = useState(false)
@@ -29,7 +31,7 @@ function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: O
     numberOfChildren: Number(numChildren) || 1,
     isFirstChildUnder6: true,
     useHigherCcs: isSecondChild,
-  })
+  }, rateSet)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -37,7 +39,7 @@ function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: O
       <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="ccs-modal-title" className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl card-glass p-8 focus:outline-none">
         <h2 id="ccs-modal-title" className="text-xl font-bold text-slate-900">Estimate Your CCS %</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Based on FY2026-27 Child Care Subsidy rates
+          Based on FY{rateSet.fyLabel} Child Care Subsidy rates
         </p>
 
         <div className="mt-5 space-y-4">

@@ -14,10 +14,10 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
 import { calculateNswDaily, calculateNswFortnightlySessions, NSW_FEE_RELIEF } from '../calculators/nsw'
-import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
 import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
+import { useRates } from '../context/RatesState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -43,6 +43,7 @@ const TIER_OPTIONS = [
 
 function NswCalculator() {
   const shared = useSharedCalculatorState()
+  const { rateSet } = useRates()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -86,8 +87,9 @@ function NswCalculator() {
       feeReliefTier,
       serviceWeeks: weeks,
       daysPerWeek: dpw,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, ageGroup, feeReliefTier, serviceWeeks, shared.daysPerWeek])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, ageGroup, feeReliefTier, serviceWeeks, shared.daysPerWeek, rateSet])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -114,8 +116,9 @@ function NswCalculator() {
       feeReliefTier,
       serviceWeeks: weeks,
       sessions,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, weeklyDays])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, weeklyDays, rateSet])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -148,8 +151,9 @@ function NswCalculator() {
       feeReliefTier,
       serviceWeeks: weeks,
       sessions,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, days, rateSet])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -371,7 +375,7 @@ function NswCalculator() {
                   const fee = Number(shared.sessionFee)
                   const hrs = dailyResult.sessionHoursDecimal
                   const hrly = dailyResult.hourlySessionFee
-                  const cap = CCS_HOURLY_RATE_CAP
+                  const cap = rateSet.ldcCap
                   const ccsPct = Number(shared.ccsPercent) || 0
                   const whPct = Number(shared.withholding) || 0
                   const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100

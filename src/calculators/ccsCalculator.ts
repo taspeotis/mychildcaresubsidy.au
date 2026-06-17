@@ -1,12 +1,12 @@
-import { CCS_HOURLY_RATE_CAP, CCS_HOURLY_RATE_CAP_SCHOOL_AGE, FDC_HOURLY_RATE_CAP } from './ccs'
+import { RATE_SETS, type RateSet } from './ccs'
 import { computeSessionCcs, roundTo } from './shared'
 
 export type CareType = 'centre-based' | 'family-day-care' | 'oshc'
 
-export function getHourlyRateCap(careType: CareType, schoolAge: boolean): number {
-  if (careType === 'family-day-care') return FDC_HOURLY_RATE_CAP
-  if (careType === 'oshc' || schoolAge) return CCS_HOURLY_RATE_CAP_SCHOOL_AGE
-  return CCS_HOURLY_RATE_CAP
+export function getHourlyRateCap(careType: CareType, schoolAge: boolean, rates: RateSet = RATE_SETS.new): number {
+  if (careType === 'family-day-care') return rates.fdcCap
+  if (careType === 'oshc' || schoolAge) return rates.schoolAgeCap
+  return rates.ldcCap
 }
 
 export interface CcsDailyInputs {
@@ -17,6 +17,8 @@ export interface CcsDailyInputs {
   sessionEndHour: number
   careType: CareType
   schoolAge: boolean
+  /** Which CCS rate set to use. Defaults to the latest (FY2026-27). */
+  rateSet?: RateSet
 }
 
 export interface CcsDailyResult {
@@ -33,7 +35,7 @@ export interface CcsDailyResult {
 export function calculateCcsDaily(inputs: CcsDailyInputs): CcsDailyResult | null {
   if (inputs.sessionEndHour - inputs.sessionStartHour <= 0 || inputs.sessionFee <= 0) return null
 
-  const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge)
+  const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge, inputs.rateSet ?? RATE_SETS.new)
   const ccs = computeSessionCcs({
     sessionFee: inputs.sessionFee,
     sessionStartHour: inputs.sessionStartHour,
@@ -69,6 +71,8 @@ export interface CcsFortnightlyInputs {
   careType: CareType
   schoolAge: boolean
   sessions: CcsFortnightlySession[]
+  /** Which CCS rate set to use. Defaults to the latest (FY2026-27). */
+  rateSet?: RateSet
 }
 
 export interface CcsFortnightlySessionResult {
@@ -87,7 +91,7 @@ export interface CcsFortnightlyResult {
 }
 
 export function calculateCcsFortnightly(inputs: CcsFortnightlyInputs): CcsFortnightlyResult | null {
-  const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge)
+  const hourlyRateCap = getHourlyRateCap(inputs.careType, inputs.schoolAge, inputs.rateSet ?? RATE_SETS.new)
   let remainingCcsHours = inputs.fortnightlyCcsHours
 
   const hasBookedDay = inputs.sessions.some((s) => s.booked && s.sessionFee > 0)

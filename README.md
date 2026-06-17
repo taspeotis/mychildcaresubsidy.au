@@ -22,6 +22,8 @@ The federal government subsidises child care fees based on family income (up to 
 
 Federal CCS rates are for FY2026-27 (July 2026 to June 2027). State and territory rates are for calendar year 2026.
 
+If you need to check figures against the previous year's rates (for example, verifying a service's historical kindy funding), the Settings page lets you switch the calculators to the 2025-26 rates. The choice is kept in the page's address, so a calculator can be bookmarked at those rates.
+
 Estimates only, not financial advice.
 
 ## Development

@@ -13,10 +13,10 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
 import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
-import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
+import { useRates } from '../context/RatesState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -44,6 +44,7 @@ const COHORT_OPTIONS = [
 
 function VicCalculator() {
   const shared = useSharedCalculatorState()
+  const { rateSet } = useRates()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -86,8 +87,9 @@ function VicCalculator() {
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
       daysPerWeek: dpw,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek, rateSet])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -112,8 +114,9 @@ function VicCalculator() {
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
       sessions,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, weeklyDays])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, weeklyDays, rateSet])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -144,8 +147,9 @@ function VicCalculator() {
       cohort,
       kinderHoursPerWeek: kinderHoursNum,
       sessions,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, days, rateSet])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -354,7 +358,7 @@ function VicCalculator() {
                   const fee = Number(shared.sessionFee)
                   const hrs = dailyResult.sessionHoursDecimal
                   const hrly = dailyResult.hourlySessionFee
-                  const cap = CCS_HOURLY_RATE_CAP
+                  const cap = rateSet.ldcCap
                   const ccsPct = Number(shared.ccsPercent) || 0
                   const whPct = Number(shared.withholding) || 0
                   const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100

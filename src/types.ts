@@ -7,6 +7,8 @@ export interface DailyInputs {
   sessionStartHour: number
   sessionEndHour: number
   kindyProgramHours: number
+  /** CCS hourly rate cap (LDC). Defaults to the latest FY2026-27 cap when omitted. */
+  hourlyRateCap?: number
 }
 
 export interface DailyResult {
@@ -40,6 +42,8 @@ export interface FortnightlyInputs {
   ccsWithholdingPercent: number
   fortnightlyCcsHours: number
   sessions: FortnightlySession[]
+  /** CCS hourly rate cap (LDC). Defaults to the latest FY2026-27 cap when omitted. */
+  hourlyRateCap?: number
 }
 
 export interface FortnightlySessionResult extends DailyResult {

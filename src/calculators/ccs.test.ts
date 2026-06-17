@@ -14,7 +14,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { calculateCcsDaily, calculateCcsFortnightly } from './ccsCalculator'
-import { calculateStandardCcsPercent, calculateHigherCcsPercent, estimateCcs, CCS_HOURLY_RATE_CAP } from './ccs'
+import { calculateStandardCcsPercent, calculateHigherCcsPercent, estimateCcs, CCS_HOURLY_RATE_CAP, RATE_SETS } from './ccs'
 
 describe('calculateCcsDaily', () => {
   /**
@@ -477,5 +477,45 @@ describe('hourly rate caps by care type', () => {
 
     expect(result!.hourlyRateCap).toBe(13.3)
     expect(result!.ccsHourlyRate).toBe(11.31) // $13.30 × 85%
+  })
+})
+
+describe('historical FY2025-26 rate set', () => {
+  const rates = RATE_SETS.current
+
+  it('uses the FY2025-26 Standard CCS thresholds', () => {
+    expect(calculateStandardCcsPercent(85_279, rates)).toBe(90)
+    expect(calculateStandardCcsPercent(90_279, rates)).toBe(89) // first full $5,000 step
+    expect(calculateStandardCcsPercent(535_279, rates)).toBe(0)
+  })
+
+  it('uses the FY2025-26 Higher CCS thresholds', () => {
+    expect(calculateHigherCcsPercent(143_273, rates)).toBe(95)
+    expect(calculateHigherCcsPercent(146_273, rates)).toBe(94) // first full $3,000 step
+    expect(calculateHigherCcsPercent(367_563, rates)).toBe(0)
+  })
+
+  it('estimateCcs returns the FY2025-26 LDC cap ($14.63)', () => {
+    const result = estimateCcs(
+      { income: 80_000, numberOfChildren: 2, isFirstChildUnder6: true, useHigherCcs: true },
+      rates,
+    )
+    expect(result.applicablePercent).toBe(95)
+    expect(result.hourlyRateCap).toBe(14.63)
+  })
+
+  it('calculateCcsDaily applies the FY2025-26 cap when a rateSet is passed', () => {
+    const result = calculateCcsDaily({
+      ccsPercent: 85,
+      ccsWithholdingPercent: 5,
+      sessionFee: 160, // $16/hr over 10 hrs, exceeds the FY2025-26 LDC cap
+      sessionStartHour: 7,
+      sessionEndHour: 17,
+      careType: 'centre-based',
+      schoolAge: false,
+      rateSet: rates,
+    })
+
+    expect(result!.hourlyRateCap).toBe(14.63)
   })
 })

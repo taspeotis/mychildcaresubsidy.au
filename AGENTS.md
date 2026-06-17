@@ -14,7 +14,7 @@ src/
   components/       # Reusable UI components
   context/          # Shared calculator state provider
   estimates/        # Saved estimates feature (provider, snapshot, types, labels)
-  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic, estimates, release-notes)
+  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic, estimates, settings, release-notes)
   styles/index.css  # Tailwind theme + custom CSS classes
   config.ts         # Shared default values for calculator inputs
   types.ts          # Shared TypeScript types
@@ -138,11 +138,29 @@ The navbar and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 ### Rate change banner
 
-`RateChangeBanner` (`src/components/RateChangeBanner.tsx`) is a site-wide, dismissable notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It tells users the calculators now use the upcoming FY2026-27 CCS rates and links to the official education.gov.au announcement. Dismissal persists to `localStorage` under `mccs.banner.fy2627-rates`; bump that key's version suffix to re-surface a new notice after a future rate change. It also auto-hides from its `RATES_EFFECTIVE` date (6 July 2026), once the new rates take effect and "changing soon" is no longer accurate. Styled in the brand (purple) palette to match the CCS theme; responsive (stacked icon/text/close on mobile, vertically centred close button on `sm+`).
+`RateChangeBanner` (`src/components/RateChangeBanner.tsx`) is a site-wide notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It has two modes, driven by the active rate set (see "Rate sets and historical rates"):
+
+- **Default (latest rates)** — a dismissable purple heads-up that the FY2026-27 rates take effect on 6 July 2026 and the calculators already use them, linking to the education.gov.au announcement and (quietly) to `/settings` for the previous rates. Dismissal persists to `localStorage` under `mccs.banner.fy2627-rates`; bump that key's version suffix to re-surface it after a future rate change. Auto-hides from `RATES_EFFECTIVE` (6 July 2026, imported from `ccs.ts`), once "changing soon" is no longer accurate.
+- **Historical (a `?rates=` set is active)** — a persistent, non-dismissable amber notice that an older rate year is in use, with a "Switch to current rates" link that clears the `rates` param on the current route (`<Link to="." search={() => ({})}>`).
+
+### Rate sets and historical rates
+
+The calculators normally use the latest CCS rates, but a service (or anyone double-checking past figures) can switch to a historical rate year. The selection lives entirely in the URL `?rates=` search param — there is no stored preference, so a bare URL always resolves to the latest rates and parents never get "stuck" on an old set.
+
+- `RATE_SETS` in `src/calculators/ccs.ts` holds each year's caps + thresholds keyed by `RateSetId` (`current` = FY2025-26, `new` = FY2026-27), each with an `fyLabel` and a `urlSlug` (e.g. `2025-26`). `DEFAULT_RATE_SET` is the latest; `getRateSetBySlug()` maps a URL slug to a set.
+- `useRates()` (`src/context/RatesState.tsx`) reads the `rates` param (validated at the root route in `__root.tsx`) and returns `{ rateSet, isDefault }`. It's a hook, not a provider.
+- Pure calculators take an optional `rateSet` (CCS) or `hourlyRateCap` (state schemes), defaulting to the latest. Each calculator route reads `rateSet` from `useRates()`, passes it into the calc calls, and **includes `rateSet` in the `useMemo` dependency arrays** so switching rates recomputes. `snapshot.calculateEstimate(estimate, rateSet)` does the same for saved estimates.
+- The `/settings` route (`src/routes/settings.tsx`) is the entry point: pick a rate year, then open any calculator with that selection baked into a bookmarkable link (`/qld?rates=2025-26`). It's intentionally low-key — linked only from the footer, `noindex`, and left out of `sitemap.xml` so it isn't surfaced to parents.
 
 ### CCS rate tables
 
-Federal CCS hourly rate caps and income thresholds live in `src/calculators/ccs.ts` (`CCS_HOURLY_RATE_CAP`, `CCS_HOURLY_RATE_CAP_SCHOOL_AGE`, `FDC_HOURLY_RATE_CAP`, and the `calculateStandardCcsPercent` / `calculateHigherCcsPercent` thresholds). These are the FY2026-27 figures (effective 6 July 2026, CPI-indexed). When the rates change, update the constants/thresholds and the comments there, the FY label in the footer (`__root.tsx`), the modal subtitle (`CcsCalculatorModal.tsx`), the README rates note, and the affected calculator tests, then add a release note.
+Federal CCS hourly rate caps and income thresholds live in `src/calculators/ccs.ts` as `RATE_SETS` (see "Rate sets and historical rates"). Each set carries the caps (`ldcCap`, `schoolAgeCap`, `fdcCap`) and the Standard/Higher income thresholds used by `calculateStandardCcsPercent` / `calculateHigherCcsPercent`. `DEFAULT_RATE_SET` is the latest (currently FY2026-27, effective 6 July 2026, CPI-indexed); `CCS_HOURLY_RATE_CAP` etc. are kept as named exports mirroring it for back-compat.
+
+When the rates change for a new financial year:
+1. Add a new entry to `RATE_SETS` with that year's caps/thresholds and a `urlSlug`, and point `DEFAULT_RATE_SET` (and the `CCS_HOURLY_RATE_CAP*` exports) at it. Keep the prior year as a historical option (and surface it in the Settings `RATE_OPTIONS` list).
+2. Bump `RATES_EFFECTIVE` to the new effective date and the banner copy.
+3. The footer FY label (`__root.tsx`), the modal subtitle (`CcsCalculatorModal.tsx`), and the Settings page already read `rateSet.fyLabel` dynamically — no change needed there.
+4. Update the README rates note, the affected calculator tests (default-set assertions follow the new latest set; add/keep a historical block), then add a release note.
 
 ### Scroll restoration
 

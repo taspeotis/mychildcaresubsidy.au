@@ -55,12 +55,45 @@
   --color-accent-900: #6d1e0f;
 }
 
+/* Paint the header/footer colour on the root so the top/bottom overscroll
+   areas match those bars instead of showing white. */
+html {
+  background-color: var(--color-brand-900);
+}
+
 /* Page background with radial gradients for depth */
 .bg-page {
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123, 34, 160, 0.6) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 90% 100%, rgba(80, 21, 117, 0.5) 0%, transparent 50%),
     linear-gradient(180deg, #6b1d95 0%, #63198e 30%, #501575 100%);
+}
+
+/* Collapsible reveal (Settings rate-year card). Animates open via
+   grid-template-rows (0fr → 1fr) plus a fade, so selecting a historical rate
+   year slides its calculator links down. */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+.reveal__content {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+.reveal-open {
+  grid-template-rows: 1fr;
+}
+.reveal-open .reveal__content {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal__content {
+    transition: none;
+  }
 }
 
 /* Glass card with gradient and layered shadows */

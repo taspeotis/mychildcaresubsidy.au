@@ -23,7 +23,7 @@ export function calculateActDaily(inputs: DailyInputs): DailyResult {
     sessionEndHour: inputs.sessionEndHour,
     ccsPercent: inputs.ccsPercent,
     ccsWithholdingPercent: inputs.ccsWithholdingPercent,
-    hourlyRateCap: CCS_HOURLY_RATE_CAP,
+    hourlyRateCap: inputs.hourlyRateCap ?? CCS_HOURLY_RATE_CAP,
   })
 
   // CCS per hour (for gap on preschool hours) — uses ccsAmount (pre-withholding)
@@ -78,7 +78,7 @@ export function calculateActFortnightly(inputs: FortnightlyInputs, programWeeks:
       sessionEndHour: session.sessionEndHour,
       ccsPercent: inputs.ccsPercent,
       ccsWithholdingPercent: inputs.ccsWithholdingPercent,
-      hourlyRateCap: CCS_HOURLY_RATE_CAP,
+      hourlyRateCap: inputs.hourlyRateCap ?? CCS_HOURLY_RATE_CAP,
       ccsHoursAvailable: remainingCcsHours,
     })
     remainingCcsHours -= ccs.applicableCcsHours

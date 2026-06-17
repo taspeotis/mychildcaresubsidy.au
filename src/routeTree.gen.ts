@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VicRouteImport } from './routes/vic'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
 import { Route as QldRouteImport } from './routes/qld'
 import { Route as NswRouteImport } from './routes/nsw'
@@ -21,6 +22,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const VicRoute = VicRouteImport.update({
   id: '/vic',
   path: '/vic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReleaseNotesRoute = ReleaseNotesRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
+  '/settings': typeof SettingsRoute
   '/vic': typeof VicRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
+  '/settings': typeof SettingsRoute
   '/vic': typeof VicRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/nsw': typeof NswRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
+  '/settings': typeof SettingsRoute
   '/vic': typeof VicRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/nsw'
     | '/qld'
     | '/release-notes'
+    | '/settings'
     | '/vic'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/nsw'
     | '/qld'
     | '/release-notes'
+    | '/settings'
     | '/vic'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/nsw'
     | '/qld'
     | '/release-notes'
+    | '/settings'
     | '/vic'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   NswRoute: typeof NswRoute
   QldRoute: typeof QldRoute
   ReleaseNotesRoute: typeof ReleaseNotesRoute
+  SettingsRoute: typeof SettingsRoute
   VicRoute: typeof VicRoute
 }
 
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/vic'
       fullPath: '/vic'
       preLoaderRoute: typeof VicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/release-notes': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   NswRoute: NswRoute,
   QldRoute: QldRoute,
   ReleaseNotesRoute: ReleaseNotesRoute,
+  SettingsRoute: SettingsRoute,
   VicRoute: VicRoute,
 }
 export const routeTree = rootRouteImport

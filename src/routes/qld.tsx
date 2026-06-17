@@ -14,9 +14,9 @@ import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGri
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
 import { calculateQldDaily, calculateQldFortnightly, QLD_KINDY_HOURS_PER_WEEK } from '../calculators/qld'
-import { CCS_HOURLY_RATE_CAP } from '../calculators/ccs'
 import { DEFAULTS, fmt, WEEKDAYS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
+import { useRates } from '../context/RatesState'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -39,6 +39,7 @@ const KINDY_PROGRAM_OPTIONS = [
 
 function QldCalculator() {
   const shared = useSharedCalculatorState()
+  const { rateSet } = useRates()
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -82,8 +83,9 @@ function QldCalculator() {
       sessionStartHour: shared.sessionStart,
       sessionEndHour: shared.sessionEnd,
       kindyProgramHours: kh,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, kindyHours])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, kindyHours, rateSet])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -107,8 +109,8 @@ function QldCalculator() {
 
     if (!weeklyDays.some((d) => d.booked && (Number(d.sessionFee) || 0) > 0)) return null
 
-    return calculateQldFortnightly({ ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnKindyHours, fnKindyStart, weeklyDays])
+    return calculateQldFortnightly({ ccsPercent: ccs, ccsWithholdingPercent: wh, fortnightlyCcsHours: ccsHours, sessions, hourlyRateCap: rateSet.ldcCap })
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnKindyHours, fnKindyStart, weeklyDays, rateSet])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -145,8 +147,9 @@ function QldCalculator() {
       ccsWithholdingPercent: wh,
       fortnightlyCcsHours: ccsHours,
       sessions,
+      hourlyRateCap: rateSet.ldcCap,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnKindyHours, fnKindyStart, days])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, fnKindyHours, fnKindyStart, days, rateSet])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -353,7 +356,7 @@ function QldCalculator() {
                   const fee = Number(shared.sessionFee)
                   const hrs = dailyResult.sessionHoursDecimal
                   const hrly = dailyResult.hourlySessionFee
-                  const cap = CCS_HOURLY_RATE_CAP
+                  const cap = rateSet.ldcCap
                   const ccsPct = Number(shared.ccsPercent) || 0
                   const whPct = Number(shared.withholding) || 0
                   const ccsRate = dailyResult.applicableCcsHourlyRate

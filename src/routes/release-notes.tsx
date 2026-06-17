@@ -21,6 +21,13 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    date: '17 June 2026',
+    id: '2026-06-17',
+    changes: [
+      'Need last year’s rates? A new Settings page lets you switch the calculators to the 2025–26 Child Care Subsidy rates, handy if you’re checking figures against the previous year. Your choice is kept in the web address, so you can bookmark a calculator set to those rates. Everyone else keeps seeing the current rates by default.',
+    ],
+  },
+  {
     date: '9 June 2026',
     id: '2026-06-09',
     changes: [

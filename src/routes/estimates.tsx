@@ -5,6 +5,7 @@ import { StickyPanel } from '../components/StickyPanel'
 import { EstimateRow } from '../components/EstimateRow'
 import { Button } from '../components/Button'
 import { useEstimates } from '../estimates/EstimatesState'
+import { useRates } from '../context/RatesState'
 import { calculateEstimate } from '../estimates/snapshot'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { Estimate, EstimateResult } from '../estimates/types'
@@ -27,15 +28,16 @@ interface CalculatedEstimate {
 
 function EstimatesPage() {
   const { estimates, deleteEstimate, clearAll, startEditing } = useEstimates()
+  const { rateSet } = useRates()
   const navigate = useNavigate()
 
   const calculated = useMemo<CalculatedEstimate[]>(
     () => estimates.map((estimate, i) => ({
       estimate,
-      result: calculateEstimate(estimate),
+      result: calculateEstimate(estimate, rateSet),
       label: formatEstimateLabel(estimate, i + 1),
     })),
-    [estimates],
+    [estimates, rateSet],
   )
 
   const fortnightly = calculated.filter((c) => c.estimate.mode !== 'daily')
