@@ -78,6 +78,7 @@ function SettingsPage() {
                     <Link
                       to="/settings"
                       search={isDefaultOption ? {} : { rates: set.urlSlug }}
+                      resetScroll={false}
                       aria-current={selected ? 'true' : undefined}
                       className="flex items-start gap-3 p-4"
                     >
