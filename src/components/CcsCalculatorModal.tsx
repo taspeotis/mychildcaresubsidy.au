@@ -5,6 +5,7 @@ import { useRates } from '../context/RatesState'
 import { useDialog } from '../hooks/useDialog'
 import { InputField } from './InputField'
 import { Button } from './Button'
+import { Toggle } from './Toggle'
 
 interface CcsCalculatorModalProps {
   open: boolean
@@ -65,15 +66,12 @@ function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: O
             colorScheme={colorScheme}
           />
 
-          <label className="flex items-center gap-2 text-sm text-slate-900">
-            <input
-              type="checkbox"
-              checked={isSecondChild}
-              onChange={(e) => setIsSecondChild(e.target.checked)}
-              className={`rounded border-slate-300 ${colorScheme === 'brand' ? 'text-brand-600 focus:ring-brand-500' : 'text-accent-500 focus:ring-accent-500'}`}
-            />
-            This is the 2nd+ child under 6 (Higher CCS)
-          </label>
+          <Toggle
+            checked={isSecondChild}
+            onChange={setIsSecondChild}
+            label="This is the 2nd+ child under 6 (Higher CCS)"
+            colorScheme={colorScheme}
+          />
         </div>
 
         {incomeValue > 0 && (

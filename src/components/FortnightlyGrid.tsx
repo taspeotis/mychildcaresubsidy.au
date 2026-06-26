@@ -33,6 +33,8 @@ export interface FortnightlyGridProps {
   colorScheme?: ColorScheme
   defaults?: { sessionFee: string; sessionStart: number; sessionEnd: number }
   weeklyKindyHoursAllocated?: [number, number]
+  /** When true, fee/times are controlled globally, so per-day rows aren't individually editable. */
+  uniformSessions?: boolean
 }
 
 const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F'] as const
@@ -51,9 +53,12 @@ export function createDefaultDays(
   }))
 }
 
-export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent', defaults, weeklyKindyHoursAllocated }: FortnightlyGridProps) {
+export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingLabel, fmt, colorScheme = 'accent', defaults, weeklyKindyHoursAllocated, uniformSessions }: FortnightlyGridProps) {
   const [editingDay, setEditingDay] = useState<number | null>(null)
   const weekCount = Math.ceil(days.length / 5)
+  // With uniform sessions, fee/times are set globally. Rows only stay editable
+  // if there's a per-day setting left to change (e.g. a kindy/preschool day).
+  const lockRows = uniformSessions && !kindyToggle
 
   function updateDay(index: number, patch: Partial<DayConfig>) {
     const next = [...days]
@@ -175,12 +180,15 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setEditingDay(i)}
+                    onClick={lockRows ? undefined : () => setEditingDay(i)}
+                    disabled={lockRows}
                     className={clsx(
                       'w-full rounded-xl p-3 text-left transition-colors',
-                      day.booked
-                        ? 'bg-slate-50 hover:bg-slate-100'
-                        : 'hover:bg-slate-50',
+                      lockRows
+                        ? clsx('cursor-default', day.booked && 'bg-slate-50')
+                        : day.booked
+                          ? 'bg-slate-50 hover:bg-slate-100'
+                          : 'hover:bg-slate-50',
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -233,11 +241,12 @@ export function FortnightlyGrid({ days, onChange, results, kindyToggle, fundingL
           dayLabel={`${weekCount > 1 ? `Week ${Math.floor(editingDay / 5) + 1} ` : ''}${WEEKDAYS[editingDay % 5]}`}
           kindyToggle={kindyToggle}
           colorScheme={colorScheme}
+          uniformSessions={uniformSessions}
           onSave={(updated) => {
             updateDay(editingDay, updated)
             setEditingDay(null)
           }}
-          onApplyToBooked={hasOtherBooked ? (updated) => {
+          onApplyToBooked={hasOtherBooked && !uniformSessions ? (updated) => {
             applyToBooked(editingDay, updated)
             setEditingDay(null)
           } : undefined}
@@ -253,6 +262,7 @@ function DayEditModal({
   dayLabel,
   kindyToggle,
   colorScheme = 'accent',
+  uniformSessions,
   onSave,
   onApplyToBooked,
   onCancel,
@@ -261,6 +271,7 @@ function DayEditModal({
   dayLabel: string
   kindyToggle?: FortnightlyGridProps['kindyToggle']
   colorScheme?: ColorScheme
+  uniformSessions?: boolean
   onSave: (updated: DayConfig) => void
   onApplyToBooked?: (updated: DayConfig) => void
   onCancel: () => void
@@ -298,34 +309,38 @@ function DayEditModal({
 
           {draft.booked && (
             <>
-              <InputField
-                label="Session Fee"
-                value={draft.sessionFee}
-                onChange={(e) => update({ sessionFee: e.target.value })}
-                prefix="$"
-                format="currency"
-                min={0}
-                colorScheme={colorScheme}
-              />
+              {!uniformSessions && (
+                <>
+                  <InputField
+                    label="Session Fee"
+                    value={draft.sessionFee}
+                    onChange={(e) => update({ sessionFee: e.target.value })}
+                    prefix="$"
+                    format="currency"
+                    min={0}
+                    colorScheme={colorScheme}
+                  />
 
-              <div className="grid grid-cols-2 gap-3">
-                <TimePicker
-                  label="Session Start"
-                  value={draft.sessionStart}
-                  onChange={(v) => update({ sessionStart: v })}
-                  min={5}
-                  max={12}
-                  colorScheme={colorScheme}
-                />
-                <TimePicker
-                  label="Session End"
-                  value={draft.sessionEnd}
-                  onChange={(v) => update({ sessionEnd: v })}
-                  min={12}
-                  max={21}
-                  colorScheme={colorScheme}
-                />
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <TimePicker
+                      label="Session Start"
+                      value={draft.sessionStart}
+                      onChange={(v) => update({ sessionStart: v })}
+                      min={5}
+                      max={12}
+                      colorScheme={colorScheme}
+                    />
+                    <TimePicker
+                      label="Session End"
+                      value={draft.sessionEnd}
+                      onChange={(v) => update({ sessionEnd: v })}
+                      min={12}
+                      max={21}
+                      colorScheme={colorScheme}
+                    />
+                  </div>
+                </>
+              )}
 
               {kindyToggle && (
                 <label className="flex items-center gap-3 cursor-pointer">

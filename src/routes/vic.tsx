@@ -17,6 +17,7 @@ import type { VicCohort } from '../calculators/vic'
 import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import { useRates } from '../context/RatesState'
+import { useUniformSessions, daysAreUniform } from '../hooks/useUniformSessions'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -69,6 +70,10 @@ function VicCalculator() {
   )
 
   const kinderHoursNum = kinderHours === '15-3yo' ? 15 : Number(kinderHours) || 15
+
+  // When on, the Session Details card governs every booked day (weekly/fortnightly).
+  const uniform = useUniformSessions(shared, setWeeklyDays, setDays)
+  const { applyToAll, setApplyToAll } = uniform
 
   const dailyResult = useMemo(() => {
     const ccs = Number(shared.ccsPercent) || 0
@@ -185,6 +190,7 @@ function VicCalculator() {
     setCohort(estimate.local.cohort)
     setWeeklyDays(estimate.local.weeklyDays)
     setDays(estimate.local.days)
+    setApplyToAll(daysAreUniform(estimate.mode === 'fortnightly' ? estimate.local.days : estimate.local.weeklyDays))
     setMode(estimate.mode)
     hydratedIdRef.current = editingId
   }, [editingId, estimates, cancelEditing, shared])
@@ -240,6 +246,7 @@ function VicCalculator() {
     setDays(createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
+    setApplyToAll(true)
     navigate({ to: '/estimates' })
   }
 
@@ -315,17 +322,19 @@ function VicCalculator() {
               onDebtRecoveryModeChange={shared.setDebtRecoveryMode}
             />
 
+            <SessionDetailsCard
+              sessionFee={shared.sessionFee}
+              onSessionFeeChange={uniform.setSessionFee}
+              sessionStart={shared.sessionStart}
+              onSessionStartChange={uniform.setSessionStart}
+              sessionEnd={shared.sessionEnd}
+              onSessionEndChange={uniform.setSessionEnd}
+              applyToAll={mode === 'daily' ? undefined : applyToAll}
+              onApplyToAllChange={mode === 'daily' ? undefined : uniform.onApplyToAllChange}
+            />
+
             {mode === 'daily' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                />
-
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Free Kinder Details</h2>
                   <div className="mt-5 space-y-4">
@@ -403,15 +412,6 @@ function VicCalculator() {
 
             {mode === 'weekly' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                />
-
                 <div className="rounded-2xl card-glass p-8">
                   <h2 className="text-lg font-bold text-slate-900">Free Kinder Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
@@ -437,6 +437,7 @@ function VicCalculator() {
                   fundingLabel="Free Kinder"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  uniformSessions={applyToAll}
                 />
 
                 {weeklyResult && (() => {
@@ -512,17 +513,8 @@ function VicCalculator() {
 
             {mode === 'fortnightly' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                />
-
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Free Kinder Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
                       label="Kinder Program"
@@ -546,6 +538,7 @@ function VicCalculator() {
                   fundingLabel="Free Kinder"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  uniformSessions={applyToAll}
                 />
 
                 {fortnightlyResult && (() => {

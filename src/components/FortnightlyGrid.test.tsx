@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { createDefaultDays } from './FortnightlyGrid'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { FortnightlyGrid, createDefaultDays } from './FortnightlyGrid'
 
 const defaults = { sessionFee: '150.00', sessionStart: 7, sessionEnd: 18 }
+const fmt = (n: number) => `$${n.toFixed(2)}`
+
+function oneBookedWeek() {
+  const days = createDefaultDays(defaults, undefined, 1)
+  days[0] = { ...days[0], booked: true }
+  return days
+}
 
 describe('createDefaultDays', () => {
   it('creates 5 days with weeks=1', () => {
@@ -56,5 +64,39 @@ describe('createDefaultDays', () => {
     // Beyond pattern length, falls back to false
     expect(days[3].hasKindy).toBe(false)
     expect(days[9].hasKindy).toBe(false)
+  })
+})
+
+describe('FortnightlyGrid uniform sessions', () => {
+  it('opens the per-day editor when sessions are not uniform', () => {
+    render(<FortnightlyGrid days={oneBookedWeek()} onChange={() => {}} results={null} fundingLabel="CCS" fmt={fmt} />)
+    fireEvent.click(screen.getByText('Mon').closest('button')!)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('locks per-day editing when uniform and there is no per-day setting', () => {
+    render(<FortnightlyGrid days={oneBookedWeek()} onChange={() => {}} results={null} fundingLabel="CCS" fmt={fmt} uniformSessions />)
+    const row = screen.getByText('Mon').closest('button')!
+    expect(row).toBeDisabled()
+    fireEvent.click(row)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('keeps the editor for the kindy toggle but hides fee/times when uniform', () => {
+    render(
+      <FortnightlyGrid
+        days={oneBookedWeek()}
+        onChange={() => {}}
+        results={null}
+        fundingLabel="Free Kindy"
+        fmt={fmt}
+        kindyToggle={{ label: 'Kindy' }}
+        uniformSessions
+      />,
+    )
+    fireEvent.click(screen.getByText('Mon').closest('button')!)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Session Fee')).not.toBeInTheDocument()
+    expect(screen.getByText('Kindy day')).toBeInTheDocument()
   })
 })

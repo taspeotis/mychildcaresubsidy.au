@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import type { ColorScheme } from '../types'
 import { InputField } from './InputField'
 import { ToggleGroup } from './ToggleGroup'
+import { Toggle } from './Toggle'
 
 interface CcsDetailsCardProps {
   ccsPercent: string
@@ -139,19 +140,13 @@ export function CcsDetailsCard({
                 If Centrelink is recovering a debt from your CCS, they typically deduct 20% of your entitlement.
                 This reduces what's paid to your service but doesn't change your entitlement or state funding.
               </p>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={debtEnabled}
-                  aria-label="Apply debt recovery"
-                  onClick={() => handleDebtToggle(!debtEnabled)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${debtEnabled ? (colorScheme === 'brand' ? 'bg-brand-600 focus:ring-brand-500' : 'bg-accent-500 focus:ring-accent-500') : 'bg-slate-200 focus:ring-slate-400'}`}
-                >
-                  <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${debtEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                </button>
-                <span className="text-sm font-bold text-slate-700">Apply Debt Recovery</span>
-              </label>
+              <Toggle
+                checked={debtEnabled}
+                onChange={handleDebtToggle}
+                label="Apply Debt Recovery"
+                ariaLabel="Apply debt recovery"
+                colorScheme={colorScheme}
+              />
               {debtEnabled && (
                 <div className="space-y-3">
                   <div className="flex rounded-lg bg-slate-100 p-1 w-fit">

@@ -21,6 +21,13 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    date: '26 June 2026',
+    id: '2026-06-26',
+    changes: [
+      'In weekly and fortnightly mode, the session fee and times you enter now apply to every booked day, so changing them updates your whole estimate right away. That makes it easy to compare options, like seeing how a 10-hour day stacks up against a 12-hour day across the fortnight. Need different fees or times on different days? Turn off “Apply to All Days” to set each day on its own.',
+    ],
+  },
+  {
     date: '17 June 2026',
     id: '2026-06-17',
     changes: [

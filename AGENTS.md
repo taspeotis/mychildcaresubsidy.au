@@ -62,7 +62,7 @@ Components accept an optional `colorScheme?: 'accent' | 'brand'` prop (type expo
 - **`'accent'`** (default) — Orange palette. Used by state/territory calculators (ACT, NSW, QLD, VIC).
 - **`'brand'`** — Purple palette. Used by the federal CCS calculator to visually distinguish it from state/territory schemes.
 
-Components that support `colorScheme`: `ToggleGroup`, `CalculatorSidebar`, `CcsDetailsCard`, `FortnightlyGrid` (including `DayEditModal`), `ResultCard`, `CcsCalculatorModal`, `InputField`, `SelectField`, `TimePicker`, `Button` (via its existing `color` prop with a `'brand'` option).
+Components that support `colorScheme`: `ToggleGroup`, `CalculatorSidebar`, `CcsDetailsCard`, `SessionDetailsCard`, `FortnightlyGrid` (including `DayEditModal`), `ResultCard`, `CcsCalculatorModal`, `InputField`, `SelectField`, `TimePicker`, `Toggle`, `Button` (via its existing `color` prop with a `'brand'` option).
 
 The navbar pill also changes colour: purple gradient (`from-brand-600 to-brand-800`) when CCS is active, teal gradient (`from-teal-500 to-teal-700`) when `/estimates` is active, orange gradient (`from-accent-400 to-accent-600`) for state routes. The pill colour is tracked via the `route` field in the pill state to prevent flash on navigation.
 
@@ -97,8 +97,22 @@ Key props:
 - `kindyToggle?: { label: string; maxPerWeek?: number }` — Optional kindy/preschool checkbox column. `maxPerWeek` enforces a limit (e.g. ACT allows 1 preschool day per week).
 - `fundingLabel: string` — Column header for state/territory funding (e.g. "Free Kindy", "Start Strong", "Preschool", "Free Kinder")
 - `results: DayResult[] | null` — Per-day calculated results mapped from the calculator output
+- `uniformSessions?: boolean` — When true, fee/times are controlled globally (see "Apply to All Days"). With no per-day setting left (`kindyToggle` absent) the day rows are locked and booking happens via the day pills; with a `kindyToggle` the editor still opens for the kindy/preschool designation but hides the fee/time inputs.
 
 Days default to `booked: false`. The `createDefaultDays` helper creates the initial 10-day array with uniform fee/time defaults and an optional `kindyPattern` boolean array.
+
+### Toggle component
+
+`Toggle` (`src/components/Toggle.tsx`) is the reusable on/off switch used for boolean options — Apply to All Days, Apply Debt Recovery, and the Higher CCS option in `CcsCalculatorModal`. It's scheme-coloured via `colorScheme` (`'brand'` purple for federal CCS, `'accent'` orange for state/territory), and clicking the visible label toggles it. Prefer it over a bare `<input type="checkbox">` for consistency.
+
+### Apply to All Days (uniform sessions)
+
+In weekly and fortnightly mode the `SessionDetailsCard` (fee + start/end) governs every booked day, driven by the `useUniformSessions` hook (`src/hooks/useUniformSessions.ts`):
+
+- The hook takes the shared state plus the route's day-array setters (`setWeeklyDays`, `setDays`) and returns `applyToAll`, `setApplyToAll`, session setters (`setSessionFee/Start/End`), and `onApplyToAllChange`. While `applyToAll` is on, editing a session field broadcasts it into every day; turning it on re-syncs all days to the current card values. The day arrays remain the source of truth, so saved estimates stay correct (no change to the estimate snapshot/localStorage format).
+- `daysAreUniform(days)` (same file) is used on estimate hydration to set the toggle: on when all booked days share fee/times, off otherwise. After a save, the toggle resets to on.
+- Each calculator renders the `SessionDetailsCard` **once**, lifted out of the per-mode blocks. It passes `applyToAll`/`onApplyToAllChange` only in weekly/fortnightly (so the switch is hidden in daily mode), and passes `uniformSessions={applyToAll}` to its `FortnightlyGrid`(s).
+- The mode "settings" card titles are now consistent across weekly and fortnightly within each calculator (e.g. "Care Type", "Free Kindy Settings") — no more "Fortnightly Settings". The daily-mode card can still differ where it edits different state (e.g. QLD/ACT daily vs fortnightly program hours).
 
 ### Form field alignment in grids
 

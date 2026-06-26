@@ -17,6 +17,7 @@ import type { CareType } from '../calculators/ccsCalculator'
 import { DEFAULTS, fmt, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
 import { useRates } from '../context/RatesState'
+import { useUniformSessions, daysAreUniform } from '../hooks/useUniformSessions'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { EstimateInput, EstimateMode } from '../estimates/types'
@@ -66,6 +67,10 @@ function CcsCalculator() {
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ),
   )
+
+  // When on, the Session Details card governs every booked day (weekly/fortnightly).
+  const uniform = useUniformSessions(shared, setWeeklyDays, setDays)
+  const { applyToAll, setApplyToAll } = uniform
 
   // Force school age when OSHC is selected
   const effectiveSchoolAge = careType === 'oshc' ? true : schoolAge
@@ -182,6 +187,7 @@ function CcsCalculator() {
     setSchoolAge(estimate.local.schoolAge)
     setWeeklyDays(estimate.local.weeklyDays)
     setDays(estimate.local.days)
+    setApplyToAll(daysAreUniform(estimate.mode === 'fortnightly' ? estimate.local.days : estimate.local.weeklyDays))
     setMode(estimate.mode)
     hydratedIdRef.current = editingId
   }, [editingId, estimates, cancelEditing, shared])
@@ -237,6 +243,7 @@ function CcsCalculator() {
     setDays(createDefaultDays(
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
+    setApplyToAll(true)
     navigate({ to: '/estimates' })
   }
 
@@ -317,45 +324,47 @@ function CcsCalculator() {
               onDebtRecoveryModeChange={shared.setDebtRecoveryMode}
             />
 
+            <SessionDetailsCard
+              sessionFee={shared.sessionFee}
+              onSessionFeeChange={uniform.setSessionFee}
+              sessionStart={shared.sessionStart}
+              onSessionStartChange={uniform.setSessionStart}
+              sessionEnd={shared.sessionEnd}
+              onSessionEndChange={uniform.setSessionEnd}
+              colorScheme="brand"
+              applyToAll={mode === 'daily' ? undefined : applyToAll}
+              onApplyToAllChange={mode === 'daily' ? undefined : uniform.onApplyToAllChange}
+            />
+
+            <div className="rounded-2xl card-glass p-8">
+              <h2 className="text-lg font-bold text-slate-900">Care Type</h2>
+              <div className="mt-5 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <SelectField
+                    label="Type of Care"
+                    options={CARE_TYPE_OPTIONS}
+                    value={careType}
+                    onChange={(e) => setCareType(e.target.value as CareType)}
+                    colorScheme="brand"
+                  />
+                  <SelectField
+                    label="Child's Age"
+                    hint={careType === 'oshc' ? 'OSHC is for school-age children' : undefined}
+                    options={CHILD_AGE_OPTIONS}
+                    value={effectiveSchoolAge ? 'school' : 'below'}
+                    onChange={(e) => setSchoolAge(e.target.value === 'school')}
+                    disabled={careType === 'oshc'}
+                    colorScheme="brand"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Hourly rate cap: {fmt(hourlyRateCap)}/hr
+                </p>
+              </div>
+            </div>
+
             {mode === 'daily' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                  colorScheme="brand"
-                />
-
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Care Type</h2>
-                  <div className="mt-5 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <SelectField
-                        label="Type of Care"
-                        options={CARE_TYPE_OPTIONS}
-                        value={careType}
-                        onChange={(e) => setCareType(e.target.value as CareType)}
-                        colorScheme="brand"
-                      />
-                      <SelectField
-                        label="Child's Age"
-                        hint={careType === 'oshc' ? 'OSHC is for school-age children' : undefined}
-                        options={CHILD_AGE_OPTIONS}
-                        value={effectiveSchoolAge ? 'school' : 'below'}
-                        onChange={(e) => setSchoolAge(e.target.value === 'school')}
-                        disabled={careType === 'oshc'}
-                        colorScheme="brand"
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      Hourly rate cap: {fmt(hourlyRateCap)}/hr
-                    </p>
-                  </div>
-                </div>
-
                 {dailyResult && (() => {
                   const fee = Number(shared.sessionFee)
                   const hrs = dailyResult.sessionHours
@@ -404,37 +413,6 @@ function CcsCalculator() {
 
             {mode === 'weekly' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                  colorScheme="brand"
-                />
-
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Care Type</h2>
-                  <div className="mt-5 grid grid-cols-2 gap-4">
-                    <SelectField
-                      label="Type of Care"
-                      options={CARE_TYPE_OPTIONS}
-                      value={careType}
-                      onChange={(e) => setCareType(e.target.value as CareType)}
-                      colorScheme="brand"
-                    />
-                    <SelectField
-                      label="Child's Age"
-                      options={CHILD_AGE_OPTIONS}
-                      value={effectiveSchoolAge ? 'school' : 'below'}
-                      onChange={(e) => setSchoolAge(e.target.value === 'school')}
-                      disabled={careType === 'oshc'}
-                      colorScheme="brand"
-                    />
-                  </div>
-                </div>
-
                 <FortnightlyGrid
                   days={weeklyDays}
                   onChange={setWeeklyDays}
@@ -443,6 +421,7 @@ function CcsCalculator() {
                   fmt={fmt}
                   colorScheme="brand"
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  uniformSessions={applyToAll}
                 />
 
                 {weeklyResult && (() => {
@@ -515,37 +494,6 @@ function CcsCalculator() {
 
             {mode === 'fortnightly' && (
               <>
-                <SessionDetailsCard
-                  sessionFee={shared.sessionFee}
-                  onSessionFeeChange={shared.setSessionFee}
-                  sessionStart={shared.sessionStart}
-                  onSessionStartChange={shared.setSessionStart}
-                  sessionEnd={shared.sessionEnd}
-                  onSessionEndChange={shared.setSessionEnd}
-                  colorScheme="brand"
-                />
-
-                <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Fortnightly Settings</h2>
-                  <div className="mt-5 grid grid-cols-2 gap-4">
-                    <SelectField
-                      label="Type of Care"
-                      options={CARE_TYPE_OPTIONS}
-                      value={careType}
-                      onChange={(e) => setCareType(e.target.value as CareType)}
-                      colorScheme="brand"
-                    />
-                    <SelectField
-                      label="Child's Age"
-                      options={CHILD_AGE_OPTIONS}
-                      value={effectiveSchoolAge ? 'school' : 'below'}
-                      onChange={(e) => setSchoolAge(e.target.value === 'school')}
-                      disabled={careType === 'oshc'}
-                      colorScheme="brand"
-                    />
-                  </div>
-                </div>
-
                 <FortnightlyGrid
                   days={days}
                   onChange={setDays}
@@ -554,6 +502,7 @@ function CcsCalculator() {
                   fmt={fmt}
                   colorScheme="brand"
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
+                  uniformSessions={applyToAll}
                 />
 
                 {fortnightlyResult && (() => {
