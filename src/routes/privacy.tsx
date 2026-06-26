@@ -17,14 +17,7 @@ function PrivacyPage() {
   return (
     <Page
       title="Privacy"
-      sidebar={
-        <>
-          <p className="text-sm leading-relaxed text-white/70">
-            What happens to your information when you use this site. There isn&rsquo;t much to it.
-          </p>
-          <p className="mt-4 text-xs text-white/50">Last updated 26 June 2026.</p>
-        </>
-      }
+      sidebar={<p className="text-xs text-white/50">Last updated 26 June 2026.</p>}
     >
       <section className="rounded-2xl card-glass p-6 sm:p-8">
         <h2 className="text-lg font-bold text-slate-900">Your figures stay in your browser</h2>
