@@ -13,6 +13,7 @@ import { Route as VicRouteImport } from './routes/vic'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
 import { Route as QldRouteImport } from './routes/qld'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NswRouteImport } from './routes/nsw'
 import { Route as EstimatesRouteImport } from './routes/estimates'
 import { Route as CcsRouteImport } from './routes/ccs'
@@ -37,6 +38,11 @@ const ReleaseNotesRoute = ReleaseNotesRouteImport.update({
 const QldRoute = QldRouteImport.update({
   id: '/qld',
   path: '/qld',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NswRoute = NswRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/ccs': typeof CcsRoute
   '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
+  '/privacy': typeof PrivacyRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/settings': typeof SettingsRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/ccs': typeof CcsRoute
   '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
+  '/privacy': typeof PrivacyRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/settings': typeof SettingsRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/ccs': typeof CcsRoute
   '/estimates': typeof EstimatesRoute
   '/nsw': typeof NswRoute
+  '/privacy': typeof PrivacyRoute
   '/qld': typeof QldRoute
   '/release-notes': typeof ReleaseNotesRoute
   '/settings': typeof SettingsRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/ccs'
     | '/estimates'
     | '/nsw'
+    | '/privacy'
     | '/qld'
     | '/release-notes'
     | '/settings'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/ccs'
     | '/estimates'
     | '/nsw'
+    | '/privacy'
     | '/qld'
     | '/release-notes'
     | '/settings'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/ccs'
     | '/estimates'
     | '/nsw'
+    | '/privacy'
     | '/qld'
     | '/release-notes'
     | '/settings'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   CcsRoute: typeof CcsRoute
   EstimatesRoute: typeof EstimatesRoute
   NswRoute: typeof NswRoute
+  PrivacyRoute: typeof PrivacyRoute
   QldRoute: typeof QldRoute
   ReleaseNotesRoute: typeof ReleaseNotesRoute
   SettingsRoute: typeof SettingsRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/qld'
       fullPath: '/qld'
       preLoaderRoute: typeof QldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nsw': {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   CcsRoute: CcsRoute,
   EstimatesRoute: EstimatesRoute,
   NswRoute: NswRoute,
+  PrivacyRoute: PrivacyRoute,
   QldRoute: QldRoute,
   ReleaseNotesRoute: ReleaseNotesRoute,
   SettingsRoute: SettingsRoute,

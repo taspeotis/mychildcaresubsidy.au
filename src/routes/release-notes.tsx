@@ -1,8 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { Container } from '../components/Container'
-import { StickyPanel } from '../components/StickyPanel'
+import { Page } from '../components/Page'
 import { pageMeta } from '../seo'
 
 export const Route = createFileRoute('/release-notes')({
@@ -181,63 +180,49 @@ function ReleaseNotes() {
   }, [visibleIds])
 
   return (
-    <Container className="py-10">
-      <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-10 xl:grid-cols-[360px_1fr]">
-        {/* Sidebar */}
-        <aside className="relative mb-8 lg:mb-0">
-          <StickyPanel className="rounded-2xl sidebar-gradient p-6 lg:p-8">
-            <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors mb-5">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
-              Back
-            </Link>
-            <h1 className="text-2xl font-bold leading-tight text-white mb-6">Release Notes</h1>
-            <nav ref={navRef} className="relative space-y-1">
-              <div
-                ref={pillRef}
-                className="absolute left-0 w-full rounded-lg bg-white/15 transition-all duration-300 ease-out"
-                style={{ opacity: 0 }}
-              />
-              {RELEASES.map((release) => (
-                <a
-                  key={release.id}
-                  ref={(el) => setLinkRef(release.id, el)}
-                  href={`#${release.id}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    document.getElementById(release.id)?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className={clsx(
-                    'relative block rounded-lg px-3 py-2 text-sm transition-colors',
-                    visibleIds.has(release.id)
-                      ? 'font-bold text-white'
-                      : 'text-white/60 hover:text-white',
-                  )}
-                >
-                  {release.date}
-                </a>
-              ))}
-            </nav>
-          </StickyPanel>
-        </aside>
-
-        {/* Main content */}
-        <div className="min-w-0 space-y-6">
+    <Page
+      title="Release Notes"
+      sidebar={
+        <nav ref={navRef} className="relative space-y-1">
+          <div
+            ref={pillRef}
+            className="absolute left-0 w-full rounded-lg bg-white/15 transition-all duration-300 ease-out"
+            style={{ opacity: 0 }}
+          />
           {RELEASES.map((release) => (
-            <div key={release.id} id={release.id} className="rounded-2xl card-glass p-6 sm:p-8 scroll-mt-24">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">{release.date}</h2>
-              <ul className="list-disc pl-5 space-y-2 marker:text-brand-400">
-                {release.changes.map((change, i) => (
-                  <li key={i} className="text-sm text-slate-700 pl-1">
-                    {change}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <a
+              key={release.id}
+              ref={(el) => setLinkRef(release.id, el)}
+              href={`#${release.id}`}
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById(release.id)?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className={clsx(
+                'relative block rounded-lg px-3 py-2 text-sm transition-colors',
+                visibleIds.has(release.id)
+                  ? 'font-bold text-white'
+                  : 'text-white/60 hover:text-white',
+              )}
+            >
+              {release.date}
+            </a>
           ))}
+        </nav>
+      }
+    >
+      {RELEASES.map((release) => (
+        <div key={release.id} id={release.id} className="rounded-2xl card-glass p-6 sm:p-8 scroll-mt-24">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">{release.date}</h2>
+          <ul className="list-disc pl-5 space-y-2 marker:text-brand-400">
+            {release.changes.map((change, i) => (
+              <li key={i} className="text-sm text-slate-700 pl-1">
+                {change}
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-    </Container>
+      ))}
+    </Page>
   )
 }

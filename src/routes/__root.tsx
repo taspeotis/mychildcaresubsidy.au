@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRootRoute, HeadContent, Link, Outlet, useLocation } from '@tanstack/react-router'
+import { Analytics } from '../components/Analytics'
 import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
 import { RateChangeBanner } from '../components/RateChangeBanner'
@@ -111,6 +112,7 @@ function RootLayoutInner() {
   return (
     <div className="flex min-h-screen flex-col bg-page">
       <HeadContent />
+      <Analytics />
       <header className="header-glow sticky top-0 z-40 bg-brand-900">
         <Container className="flex h-auto min-h-[4rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
           <Link to="/" className="shrink-0 inline-flex items-center gap-2">
@@ -194,16 +196,21 @@ function RootLayoutInner() {
             <a href="https://github.com/taspeotis/mychildcaresubsidy.au/issues" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
               Open an issue
             </a>
-            .{' '}
+            .
+          </p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
             <Link to="/release-notes" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
               Release notes
             </Link>
-            .{' '}
+            <span aria-hidden="true" className="text-white/20">·</span>
+            <Link to="/privacy" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <span aria-hidden="true" className="text-white/20">·</span>
             <Link to="/settings" search={(prev) => prev} className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">
               Settings
             </Link>
-            .
-          </p>
+          </nav>
         </Container>
       </footer>
     </div>

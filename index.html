@@ -11,6 +11,21 @@
     <meta property="og:title" content="Child Care Subsidy Calculator for Australian Families" />
     <meta property="og:description" content="Work out your out-of-pocket child care costs after the Child Care Subsidy and state kindy or preschool funding." />
     <meta property="og:url" content="https://mychildcaresubsidy.au/" />
+    <!--
+      Privacy-friendly analytics (GoatCounter): no cookies, no personal data,
+      only aggregate page views. See /privacy.
+
+      `no_onload` disables count.js's automatic pageview, for two reasons:
+      1. This is a single-page app, so we count each route change ourselves in
+         src/components/Analytics.tsx.
+      2. count.js's default path uses <link rel="canonical"> when it's on the
+         same domain. Our canonical above is hardcoded to "/", which would make
+         every direct page load count as "/". Sending an explicit path avoids it.
+    -->
+    <script>
+      window.goatcounter = { no_onload: true }
+    </script>
+    <script data-goatcounter="https://taspeotis.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </head>
   <body class="antialiased">
     <div id="root"></div>

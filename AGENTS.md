@@ -14,7 +14,7 @@ src/
   components/       # Reusable UI components
   context/          # Shared calculator state provider
   estimates/        # Saved estimates feature (provider, snapshot, types, labels)
-  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic, estimates, settings, release-notes)
+  routes/           # TanStack file-based routes (__root, index, ccs, act, nsw, qld, vic, estimates, settings, release-notes, privacy)
   styles/index.css  # Tailwind theme + custom CSS classes
   config.ts         # Shared default values for calculator inputs
   types.ts          # Shared TypeScript types
@@ -70,7 +70,7 @@ The navbar pill also changes colour: purple gradient (`from-brand-600 to-brand-8
 
 Complex multi-property visual effects that Tailwind utilities can't express are in `src/styles/index.css`:
 
-- **`.bg-page`** — Radial gradient background with depth
+- **`.bg-page`** — The site's page background: a **dark purple** radial + linear gradient (`#6b1d95`→`#501575`). Because it's dark, readable text must live on a `card-glass` card (dark `slate-*` text) or inside a `sidebar-gradient` panel (white text), **never** placed directly on `bg-page`. Dark `slate-900`/`slate-500` headings or links sitting straight on the background fail WCAG contrast (~1.7–2.2:1) and look broken.
 - **`.card-glass`** — White card with gradient, layered shadows (inset highlight + ambient + purple depth + white glow)
 - **`.card-lift`** — Hover animation: translateY(-4px) + intensified shadows + accent ring
 - **`.sidebar-gradient`** — Dark purple gradient for calculator sidebars
@@ -79,6 +79,10 @@ Complex multi-property visual effects that Tailwind utilities can't express are 
 ### Home page layout
 
 The home page has a hero section, then a CCS calculator card (federal) at the top, followed by a card with a divided list of state/territory calculator links. Each state row shows the state badge, program name, description, and a chevron. A section below explains the three-step CCS + state/territory funding + gap fee model.
+
+### Content / utility page layout
+
+Standalone content pages (Settings, Release Notes, Privacy) share the `Page` component (`src/components/Page.tsx`), which renders the two-column shell: a dark `sidebar-gradient` `StickyPanel` on the left holding the back link, the page `<h1>` (from the `title` prop), and an optional `sidebar` slot (intro copy or a table of contents — all **white text**, since the panel is dark), and a right column for the `card-glass` content (passed as `children`, `slate-900` headings / `slate-700` body). On mobile the sidebar stacks above the content. Use `<Page title=… sidebar=…>` for any new top-level page rather than hand-rolling the layout or placing a heading/back link directly on `bg-page` (see the `.bg-page` note above — dark text on the dark background fails contrast). The `sidebar` slot keeps it flexible: Release Notes passes a dynamic scroll-spy table of contents there.
 
 ### Calculator page layout
 
@@ -179,6 +183,16 @@ When the rates change for a new financial year:
 ### Scroll restoration
 
 Configured via `scrollRestoration: true` on `createRouter()` in `src/main.tsx` (not the deprecated `<ScrollRestoration />` component).
+
+### Analytics
+
+Privacy-friendly page-view analytics via [GoatCounter](https://www.goatcounter.com) (no cookies, no personal data). `count.js` is loaded in `index.html` with `window.goatcounter = { no_onload: true }`, so it never auto-counts. `Analytics` (`src/components/Analytics.tsx`), mounted in `__root.tsx`, counts the initial view and every client-side navigation by watching `useLocation().pathname` and calling `window.goatcounter.count({ path })`.
+
+Two reasons the path is sent explicitly rather than relying on count.js's default:
+- This is an SPA, so route changes don't reload the page (count.js only counts on its own `onload`).
+- count.js's `get_path()` uses `<link rel="canonical">` when it's same-domain, and our canonical is hardcoded to `/` — its default would attribute every direct page load to `/`. An explicit `path` bypasses that.
+
+We send `pathname` only (no query string) so historical-rate links (`?rates=`) don't fragment the stats. The privacy policy lives at `/privacy` (indexable, in `sitemap.xml`) and is linked from the footer.
 
 ### Shared calculator state
 
