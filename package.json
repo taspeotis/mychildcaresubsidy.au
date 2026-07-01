@@ -11,11 +11,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
-    "@tanstack/react-router": "^1.170.11",
-    "@tanstack/router-plugin": "^1.168.14",
+    "@tailwindcss/vite": "^4.3.2",
+    "@tanstack/react-router": "^1.170.16",
+    "@tanstack/router-plugin": "^1.168.18",
     "clsx": "^2.1.1",
-    "motion": "^12.40.0",
+    "motion": "^12.42.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwindcss": "^4.1.18"
@@ -23,15 +23,15 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.16",
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "happy-dom": "^20.8.9",
+    "@vitejs/plugin-react": "^6.0.3",
+    "happy-dom": "^20.10.6",
     "typescript": "~6.0.2",
-    "vite": "^8.0.16",
+    "vite": "^8.1.2",
     "vite-plugin-singlefile": "^2.3.2",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.9"
   },
   "overrides": {
     "@tailwindcss/vite": {
