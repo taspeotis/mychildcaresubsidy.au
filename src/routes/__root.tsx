@@ -3,7 +3,7 @@ import { createRootRoute, HeadContent, Link, Outlet, useLocation } from '@tansta
 import { Analytics } from '../components/Analytics'
 import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
-import { RateChangeBanner } from '../components/RateChangeBanner'
+import { Banner } from '../components/Banner'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
 import { useRates } from '../context/RatesState'
 import { EstimatesProvider, useEstimates } from '../estimates/EstimatesState'
@@ -178,7 +178,7 @@ function RootLayoutInner() {
       </header>
 
       <main className="flex-1 pb-16">
-        <RateChangeBanner />
+        <Banner />
         <Outlet />
       </main>
 

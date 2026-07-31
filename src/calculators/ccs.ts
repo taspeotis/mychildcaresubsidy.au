@@ -83,13 +83,6 @@ export function getRateSetBySlug(slug: string | undefined | null): RateSet | nul
   return null
 }
 
-/**
- * Date the FY2026-27 rates take effect. Before this date the 'current' rates
- * apply; from this date the 'new' rates ARE the current rates. Local time, so
- * it flips at midnight on the 6th.
- */
-export const RATES_EFFECTIVE = new Date(2026, 6, 6) // 6 July 2026
-
 // Default rate set used when a calculator is called without an explicit set
 // (tests, and any non-UI caller). The UI always passes the user's selection.
 const DEFAULT_RATES = RATE_SETS.new
