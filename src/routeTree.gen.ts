@@ -9,55 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VicRouteImport } from './routes/vic'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
-import { Route as QldRouteImport } from './routes/qld'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as NswRouteImport } from './routes/nsw'
-import { Route as EstimatesRouteImport } from './routes/estimates'
-import { Route as CcsRouteImport } from './routes/ccs'
-import { Route as ActRouteImport } from './routes/act'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ActRouteImport } from './routes/act'
+import { Route as CcsRouteImport } from './routes/ccs'
+import { Route as EstimatesRouteImport } from './routes/estimates'
+import { Route as NswRouteImport } from './routes/nsw'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as QldRouteImport } from './routes/qld'
+import { Route as ReleaseNotesRouteImport } from './routes/release-notes'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as VicRouteImport } from './routes/vic'
 
-const VicRoute = VicRouteImport.update({
-  id: '/vic',
-  path: '/vic',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReleaseNotesRoute = ReleaseNotesRouteImport.update({
-  id: '/release-notes',
-  path: '/release-notes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QldRoute = QldRouteImport.update({
-  id: '/qld',
-  path: '/qld',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NswRoute = NswRouteImport.update({
-  id: '/nsw',
-  path: '/nsw',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EstimatesRoute = EstimatesRouteImport.update({
-  id: '/estimates',
-  path: '/estimates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CcsRoute = CcsRouteImport.update({
-  id: '/ccs',
-  path: '/ccs',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActRoute = ActRouteImport.update({
@@ -65,9 +30,44 @@ const ActRoute = ActRouteImport.update({
   path: '/act',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CcsRoute = CcsRouteImport.update({
+  id: '/ccs',
+  path: '/ccs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstimatesRoute = EstimatesRouteImport.update({
+  id: '/estimates',
+  path: '/estimates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NswRoute = NswRouteImport.update({
+  id: '/nsw',
+  path: '/nsw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QldRoute = QldRouteImport.update({
+  id: '/qld',
+  path: '/qld',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReleaseNotesRoute = ReleaseNotesRouteImport.update({
+  id: '/release-notes',
+  path: '/release-notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VicRoute = VicRouteImport.update({
+  id: '/vic',
+  path: '/vic',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -162,60 +162,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/vic': {
-      id: '/vic'
-      path: '/vic'
-      fullPath: '/vic'
-      preLoaderRoute: typeof VicRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/release-notes': {
-      id: '/release-notes'
-      path: '/release-notes'
-      fullPath: '/release-notes'
-      preLoaderRoute: typeof ReleaseNotesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/qld': {
-      id: '/qld'
-      path: '/qld'
-      fullPath: '/qld'
-      preLoaderRoute: typeof QldRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/nsw': {
-      id: '/nsw'
-      path: '/nsw'
-      fullPath: '/nsw'
-      preLoaderRoute: typeof NswRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/estimates': {
-      id: '/estimates'
-      path: '/estimates'
-      fullPath: '/estimates'
-      preLoaderRoute: typeof EstimatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ccs': {
-      id: '/ccs'
-      path: '/ccs'
-      fullPath: '/ccs'
-      preLoaderRoute: typeof CcsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/act': {
@@ -225,11 +176,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/ccs': {
+      id: '/ccs'
+      path: '/ccs'
+      fullPath: '/ccs'
+      preLoaderRoute: typeof CcsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estimates': {
+      id: '/estimates'
+      path: '/estimates'
+      fullPath: '/estimates'
+      preLoaderRoute: typeof EstimatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nsw': {
+      id: '/nsw'
+      path: '/nsw'
+      fullPath: '/nsw'
+      preLoaderRoute: typeof NswRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qld': {
+      id: '/qld'
+      path: '/qld'
+      fullPath: '/qld'
+      preLoaderRoute: typeof QldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/release-notes': {
+      id: '/release-notes'
+      path: '/release-notes'
+      fullPath: '/release-notes'
+      preLoaderRoute: typeof ReleaseNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vic': {
+      id: '/vic'
+      path: '/vic'
+      fullPath: '/vic'
+      preLoaderRoute: typeof VicRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
