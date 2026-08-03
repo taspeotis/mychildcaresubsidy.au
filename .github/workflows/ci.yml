@@ -19,9 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Tracks the current Node LTS rather than pinning a major, so CI doesn't
+      # drift onto an end-of-life runtime between manual bumps.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: lts/*
           cache: npm
 
       - run: npm ci
