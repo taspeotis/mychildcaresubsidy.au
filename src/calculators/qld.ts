@@ -35,9 +35,11 @@ export function calculateQldDaily(inputs: DailyInputs): DailyResult {
 
   // Kindy funding calculation
   const kindyHoursDecimal = inputs.kindyProgramHours
+  // Daily mode has no kindy start time, so unlike fortnightly mode there are no
+  // pre-kindy hours to use up CCS hours first: CCS hours go to kindy hours first.
   const ccsFundedKindyHours = ccs.applicableCcsHours >= ccs.sessionHours
     ? kindyHoursDecimal
-    : Math.max(0, ccs.applicableCcsHours - (inputs.kindyProgramHours > 0 ? 0 : 0))
+    : Math.max(0, ccs.applicableCcsHours)
   const applicableKindyHours = Math.min(kindyHoursDecimal, QLD_KINDY_HOURS_PER_WEEK)
   const applicableKindyFundedCcsHours = Math.min(applicableKindyHours, ccsFundedKindyHours)
   const applicableKindyFundedNonCcsHours = Math.max(0, applicableKindyHours - applicableKindyFundedCcsHours)
