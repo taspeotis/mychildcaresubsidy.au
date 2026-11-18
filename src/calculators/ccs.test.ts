@@ -232,10 +232,12 @@ describe('CCS percentage boundaries', () => {
     expect(calculateStandardCcsPercent(600_000)).toBe(0)
   })
 
-  it('tapers correctly just above threshold', () => {
-    // $93,520 is one full $5,000 step above the $88,520 threshold,
-    // so reduction = floor((93520 - 88520) / 5000) * 1 = 1 → 89%
+  it('tapers continuously at 1 point per $5,000, rounded to 2 decimal places', () => {
+    // Schedule 2 clause 3(2): 90 − (income − 88,520) ÷ 5,000
     expect(calculateStandardCcsPercent(93_520)).toBe(89)
+    expect(calculateStandardCcsPercent(100_000)).toBe(87.7) // 90 − 2.296 = 87.704 → 87.70
+    expect(calculateStandardCcsPercent(88_521)).toBe(90) // 89.9998 → 90.00
+    expect(calculateStandardCcsPercent(150_000)).toBe(77.7) // 90 − 12.296
   })
 })
 
@@ -365,7 +367,7 @@ describe('fortnightly rounding consistency', () => {
  * Higher CCS for the 2nd and younger children aged 5 or under.
  * FY2026-27 bands per the "Rates for second and younger children 2026-27"
  * table on https://www.education.gov.au/early-childhood/child-care-subsidy
- * Two tapers (1% per $3,000) bracket two flat bands (80%, 50%).
+ * Two continuous tapers (1 point per $3,000, rounded to 2 decimal places) bracket two flat bands (80%, 50%).
  */
 describe('calculateHigherCcsPercent (second/younger child)', () => {
   it('returns 95% at or below $146,437', () => {
@@ -374,31 +376,35 @@ describe('calculateHigherCcsPercent (second/younger child)', () => {
     expect(calculateHigherCcsPercent(146_437)).toBe(95)
   })
 
-  it('tapers 95% → 80% at 1% per $3,000 above $146,437', () => {
-    expect(calculateHigherCcsPercent(149_437)).toBe(94) // first full $3,000 step
-    expect(calculateHigherCcsPercent(191_436)).toBe(81) // last taper point before the flat band
+  it('tapers 95% → 80% continuously at 1 point per $3,000 above $146,437', () => {
+    expect(calculateHigherCcsPercent(149_437)).toBe(94)
+    expect(calculateHigherCcsPercent(150_000)).toBe(93.81) // 95 − 3,563 ÷ 3,000 = 93.8123
+    expect(calculateHigherCcsPercent(191_436)).toBe(80) // 80.0003 → 80.00
   })
 
   it('returns 80% across $191,437 to below $270,727', () => {
-    expect(calculateHigherCcsPercent(191_437)).toBe(80) // continuous with the taper (81 → 80)
+    expect(calculateHigherCcsPercent(191_437)).toBe(80) // continuous with the taper
     expect(calculateHigherCcsPercent(230_000)).toBe(80)
     expect(calculateHigherCcsPercent(270_726)).toBe(80)
   })
 
-  it('tapers 80% → 50% at 1% per $3,000 above $270,727', () => {
+  it('tapers 80% → 50% continuously at 1 point per $3,000 above $270,727', () => {
     expect(calculateHigherCcsPercent(270_727)).toBe(80) // continuous with the flat band
     expect(calculateHigherCcsPercent(273_727)).toBe(79)
-    expect(calculateHigherCcsPercent(360_726)).toBe(51) // last taper point before the 50% band
+    expect(calculateHigherCcsPercent(300_000)).toBe(70.24) // 80 − 29,273 ÷ 3,000 = 70.2423
+    expect(calculateHigherCcsPercent(360_726)).toBe(50) // 50.0003 → 50.00
   })
 
   it('returns 50% across $360,727 to below $370,727', () => {
-    expect(calculateHigherCcsPercent(360_727)).toBe(50) // continuous with the taper (51 → 50)
+    expect(calculateHigherCcsPercent(360_727)).toBe(50) // continuous with the taper
     expect(calculateHigherCcsPercent(370_726)).toBe(50)
   })
 
-  it('returns 0% (standard rate applies) at or above $370,727', () => {
-    expect(calculateHigherCcsPercent(370_727)).toBe(0)
-    expect(calculateHigherCcsPercent(400_000)).toBe(0)
+  it('falls back to the standard rate at or above $370,727 (clause 3A(1)(c))', () => {
+    expect(calculateHigherCcsPercent(370_727)).toBe(calculateStandardCcsPercent(370_727))
+    expect(calculateHigherCcsPercent(370_727)).toBe(33.56) // 90 − 282,207 ÷ 5,000
+    expect(calculateHigherCcsPercent(400_000)).toBe(27.7)
+    expect(calculateHigherCcsPercent(600_000)).toBe(0)
   })
 })
 
@@ -425,9 +431,9 @@ describe('estimateCcs', () => {
   it('does not apply the higher rate once income reaches $370,727', () => {
     const result = estimateCcs({ income: 380_000, numberOfChildren: 2, isFirstChildUnder6: true, useHigherCcs: true })
     // Higher CCS no longer applies, so the standard (tapered) rate is used.
-    expect(result.higherPercent).toBe(0)
+    expect(result.higherPercent).toBe(result.standardPercent)
     expect(result.applicablePercent).toBe(result.standardPercent)
-    expect(result.applicablePercent).toBe(32) // 90 − floor((380,000 − 88,520) / 5,000)
+    expect(result.applicablePercent).toBe(31.7) // 90 − (380,000 − 88,520) ÷ 5,000 = 31.704
   })
 })
 
@@ -485,14 +491,15 @@ describe('historical FY2025-26 rate set', () => {
 
   it('uses the FY2025-26 Standard CCS thresholds', () => {
     expect(calculateStandardCcsPercent(85_279, rates)).toBe(90)
-    expect(calculateStandardCcsPercent(90_279, rates)).toBe(89) // first full $5,000 step
+    expect(calculateStandardCcsPercent(90_279, rates)).toBe(89)
+    expect(calculateStandardCcsPercent(100_000, rates)).toBe(87.06) // 90 − 14,721 ÷ 5,000 = 87.0558
     expect(calculateStandardCcsPercent(535_279, rates)).toBe(0)
   })
 
   it('uses the FY2025-26 Higher CCS thresholds', () => {
     expect(calculateHigherCcsPercent(143_273, rates)).toBe(95)
-    expect(calculateHigherCcsPercent(146_273, rates)).toBe(94) // first full $3,000 step
-    expect(calculateHigherCcsPercent(367_563, rates)).toBe(0)
+    expect(calculateHigherCcsPercent(146_273, rates)).toBe(94)
+    expect(calculateHigherCcsPercent(367_563, rates)).toBe(33.54) // standard rate: 90 − 282,284 ÷ 5,000
   })
 
   it('estimateCcs returns the FY2025-26 LDC cap ($14.63)', () => {

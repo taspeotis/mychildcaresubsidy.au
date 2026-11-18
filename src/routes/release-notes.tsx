@@ -25,6 +25,7 @@ const RELEASES: Release[] = [
     changes: [
       'The NSW and VIC calculators now use the 2027 rates. In NSW, Start Strong is now Preschool Fee Relief, with slightly higher amounts. VIC Free Kinder amounts have gone up too. Still working out fees for the rest of 2026? You can switch to the 2026 rates in Settings.',
       'The VIC calculator now handles Pre-Prep. If your child gets more than 15 funded hours of 4-year-old kinder, pick your hours and the Free Kinder offset goes up to match.',
+      'The CCS percentage calculator now uses the exact government formula, to two decimal places. It used to round to whole percentages, which could overstate your subsidy by up to a percentage point. For example, a family income of $100,000 now gives 87.70%, not 88%.',
     ],
   },
   {

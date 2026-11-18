@@ -252,7 +252,7 @@ function CcsCalculator() {
       <CcsCalculatorModal
         open={ccsModalOpen}
         onClose={() => setCcsModalOpen(false)}
-        onApply={(pct) => shared.setCcsPercent(String(pct))}
+        onApply={(pct) => shared.setCcsPercent(pct.toFixed(2))}
         colorScheme="brand"
       />
 

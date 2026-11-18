@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { fmtPercent } from '../config'
 import { estimateCcs } from '../calculators/ccs'
 import type { ColorScheme } from '../types'
 import { useRates } from '../context/RatesState'
@@ -79,12 +80,12 @@ function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: O
             <div className="flex items-baseline justify-between">
               <span className={`text-sm ${colorScheme === 'brand' ? 'text-brand-700' : 'text-accent-700'}`}>Your estimated CCS</span>
               <span className={`text-2xl font-bold ${colorScheme === 'brand' ? 'text-brand-600' : 'text-accent-500'}`}>
-                {result.applicablePercent}%
+                {fmtPercent(result.applicablePercent)}%
               </span>
             </div>
             {isSecondChild && result.higherPercent > result.standardPercent && (
               <p className={`mt-1 text-xs ${colorScheme === 'brand' ? 'text-brand-700' : 'text-accent-600'}`}>
-                Higher CCS applied ({result.standardPercent}% standard)
+                Higher CCS applied ({fmtPercent(result.standardPercent)}% standard)
               </p>
             )}
           </div>
@@ -108,7 +109,7 @@ function CcsCalculatorModalInner({ onClose, onApply, colorScheme = 'accent' }: O
             className="flex-1"
             disabled={incomeValue <= 0}
           >
-            Use {result.applicablePercent}%
+            Use {fmtPercent(result.applicablePercent)}%
           </Button>
         </div>
       </div>

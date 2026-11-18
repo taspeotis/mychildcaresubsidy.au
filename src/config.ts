@@ -13,6 +13,11 @@ export function fmt(n: number): string {
   return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
 }
 
+/** A CCS percentage for display: "90" or "87.70". */
+export function fmtPercent(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2)
+}
+
 /** Whole-dollar currency, e.g. "$2,625", for annual scheme amounts. */
 export function fmtWhole(n: number): string {
   return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })

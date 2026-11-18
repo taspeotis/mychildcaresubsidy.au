@@ -103,42 +103,50 @@ export const ACTIVITY_TEST_HOURS = {
   higher: 100,
 } as const
 
+/** Round to 2 decimal places, as Schedule 2 requires for tapered percentages. */
+function roundPercent(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100
+}
+
 /**
- * Calculate Standard CCS percentage based on family adjusted taxable income.
+ * Standard CCS percentage (A New Tax System (Family Assistance) Act 1999,
+ * Schedule 2 clause 3). Between the thresholds it's a continuous taper, not
+ * whole-percent steps:
+ *   90 − (income − lower threshold) ÷ 5,000, rounded to 2 decimal places.
+ * e.g. $100,000 in FY2026-27 → 90 − 11,480 ÷ 5,000 = 87.70%.
  */
 export function calculateStandardCcsPercent(income: number, rates: RateSet = DEFAULT_RATES): number {
   if (income <= rates.standardFull) return 90
   if (income >= rates.standardZero) return 0
-
-  // Tapers at 1% per $5,000 from 90%
-  const reduction = Math.floor((income - rates.standardFull) / 5_000) * 1
-  return Math.max(0, 90 - reduction)
+  return roundPercent(90 - (income - rates.standardFull) / 5_000)
 }
 
 /**
- * Calculate Higher CCS percentage for 2nd+ under-6 child.
+ * Higher CCS percentage for a 2nd+ child aged 5 or under (Schedule 2 clause 3A).
+ * Continuous tapers, rounded to 2 decimal places:
+ *   - up to `higher95`: 95%
+ *   - to `higher95TaperEnd`: 95 − (income − higher95) ÷ 3,000 (the Act writes this
+ *     as the lesser of 95% and 115 − (income − lower other-rate threshold) ÷ 3,000;
+ *     `higher95` is that threshold + $60,000, so they're the same)
+ *   - to `higher80FlatEnd`: 80%
+ *   - to `higher80TaperEnd`: 80 − (income − higher80FlatEnd) ÷ 3,000
+ *   - to `higher50End`: 50%
+ * At or above `higher50End` the higher rate doesn't apply and the standard rate
+ * does (clause 3A(1)(c)); and if the standard rate is ever higher, it wins
+ * (clause 3A(2)).
  */
 export function calculateHigherCcsPercent(income: number, rates: RateSet = DEFAULT_RATES): number {
-  if (income <= rates.higher95) return 95
-  if (income >= rates.higher50End) return 0
+  const standard = calculateStandardCcsPercent(income, rates)
+  if (income >= rates.higher50End) return standard
 
-  if (income < rates.higher95TaperEnd) {
-    // Tapers at 1% per $3,000 from 95%
-    const reduction = Math.floor((income - rates.higher95) / 3_000) * 1
-    return Math.max(80, 95 - reduction)
-  }
+  let higher: number
+  if (income <= rates.higher95) higher = 95
+  else if (income < rates.higher95TaperEnd) higher = roundPercent(95 - (income - rates.higher95) / 3_000)
+  else if (income < rates.higher80FlatEnd) higher = 80
+  else if (income < rates.higher80TaperEnd) higher = roundPercent(80 - (income - rates.higher80FlatEnd) / 3_000)
+  else higher = 50
 
-  if (income < rates.higher80FlatEnd) return 80
-
-  if (income < rates.higher80TaperEnd) {
-    // Tapers at 1% per $3,000 from 80%
-    const reduction = Math.floor((income - rates.higher80FlatEnd) / 3_000) * 1
-    return Math.max(50, 80 - reduction)
-  }
-
-  if (income < rates.higher50End) return 50
-
-  return 0
+  return Math.max(higher, standard)
 }
 
 export interface CcsEstimateInputs {
