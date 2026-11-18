@@ -20,8 +20,8 @@ const STATE_PROGRAMS = [
   {
     to: '/nsw',
     state: 'NSW',
-    program: 'Start Strong',
-    description: 'Annual fee relief for 3 and 4+ year olds in long day care preschool programs.',
+    program: 'Preschool Fee Relief',
+    description: 'Annual fee relief for 3 and 4+ year olds in long day care preschool programs. Formerly Start Strong.',
   },
   {
     to: '/qld',

@@ -34,13 +34,15 @@ Funded hours model. 30 hours per fortnight of funded kindergarten in long day ca
 
 Funded hours model. 6 to 7.5 hours of funded preschool on one day per week at participating long day care services. Similar gap-hours approach to QLD.
 
-### NSW — Start Strong
+### NSW — Preschool Fee Relief
 
-Annual fee relief model. Fixed annual dollar amounts ($423--$2,563 depending on age group and tier) divided across service operating weeks and days per week. Fee relief is applied daily after CCS, reducing the gap fee.
+Officially "Fee Relief for Long Day Care", which replaced Start Strong for Long Day Care from 1 January 2027. The site uses the shorter "Preschool Fee Relief" (as Best Start NSW does) for the scheme name, and "Fee Relief" for result labels and the grid column.
+
+Annual fee relief model. Fixed annual dollar amounts (2027: $434–$2,625 depending on age group and tier) divided across service operating weeks and days per week. Fee relief is applied daily after CCS, reducing the gap fee. From 2027 the maximum tier is for Aboriginal and/or Torres Strait Islander children, or children at a service in an Inner Regional or more remote area, a SEIFA decile 1–2 area, or run by an ACCO. There's no family income or disability test.
 
 ### VIC — Free Kinder
 
-Annual offset model. A flat annual offset ($2,101 standard / $2,693 priority cohort) pro-rated by enrolled kinder hours (scaled against 15 hrs/wk) and divided across 40 program weeks. Applied daily after CCS.
+Annual offset model. A flat annual offset (2027: $2,154 standard / $2,760 priority cohort) scaled by funded kinder hours against 15 hrs/wk and divided across 40 program weeks. Scaling covers 3yo programs under 15 hours and Pre-Prep 4yo programs of 16 to 25 hours, whose extra-hour rate is exactly the 15-hour rate ÷ 15. Pre-Prep options sit in the Kinder Program select as plain hour values (`'16'`–`'25'`), so saved estimates need no format change. Funded hours are capped by cohort (`VIC_MAX_FUNDED_HOURS`: 20 standard, 25 priority) via `vicKinderHours()`, used by both the route and the estimate snapshot. Applied daily after CCS. One provider says the 2027 offset is spread over 44 weeks; that isn't officially confirmed, so it's still 40 (`weeks` in the VIC rate-year entry).
 
 ## Design decisions
 
@@ -99,7 +101,7 @@ The `FortnightlyGrid` component (`src/components/FortnightlyGrid.tsx`) is a reus
 Key props:
 - `days: DayConfig[]` — 10-element array (Mon-Fri x 2 weeks), each with `booked`, `sessionFee`, `sessionStart`, `sessionEnd`, `hasKindy`
 - `kindyToggle?: { label: string; maxPerWeek?: number }` — Optional kindy/preschool checkbox column. `maxPerWeek` enforces a limit (e.g. ACT allows 1 preschool day per week).
-- `fundingLabel: string` — Column header for state/territory funding (e.g. "Free Kindy", "Start Strong", "Preschool", "Free Kinder")
+- `fundingLabel: string` — Column header for state/territory funding (e.g. "Free Kindy", "Fee Relief", "Preschool", "Free Kinder")
 - `results: DayResult[] | null` — Per-day calculated results mapped from the calculator output
 - `uniformSessions?: boolean` — When true, fee/times are controlled globally (see "Apply to All Days"). With no per-day setting left (`kindyToggle` absent) the day rows are locked and booking happens via the day pills; with a `kindyToggle` the editor still opens for the kindy/preschool designation but hides the fee/time inputs.
 
@@ -156,18 +158,24 @@ The navbar and the ToggleGroup (Daily/Fortnightly) use a sliding pill pattern:
 
 ### Banner
 
-`Banner` (`src/components/Banner.tsx`) is a site-wide notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It has a single job: when a historical `?rates=` set is active (see "Rate sets and historical rates") it shows a persistent, non-dismissable amber notice that an older rate year is in use, with a "Switch to current rates" link that clears the `rates` param on the current route (`<Link to="." search={() => ({})}>`). It's hidden on `/settings`, where the rate year is chosen, and renders nothing on the latest rates.
+`Banner` (`src/components/Banner.tsx`) is a site-wide notice mounted at the top of `<main>` in `__root.tsx` (above `<Outlet />`), so it appears on every route. It has two modes, and neither shows on `/settings`, where rate years are chosen:
 
-It previously also carried a dismissable purple heads-up that the FY2026-27 rates were changing on 6 July 2026. That was removed once the date passed — if a future rate change needs the same pre-announcement, add it back as a second mode here rather than as a new component.
+- **Earlier rates in use.** When a `?rates=` (CCS) or `?state=` (state and territory) year other than the latest is active (see "Rate sets and historical rates"): a persistent, non-dismissable amber notice naming what's in use, with a "Switch to the latest rates" link that clears both params on the current route (`<Link to="." search={() => ({})}>`).
+- **State rates heads-up.** The calculators switch to a new year's state rates as soon as they're published, even before 1 January. Until that date, a dismissable purple notice on `/nsw`, `/vic`, and `/estimates` (only when it holds an NSW or VIC estimate) says the calculator uses the new year's amounts, and quietly links to Settings for the previous year. Dismissal persists to `localStorage` under `mccs.banner.state-rates-<year>`, so the next year's heads-up re-surfaces. Auto-hides from `defaultStateRatesStart()` (1 January of the default year).
+
+A previous mode announced the FY2026-27 CCS rates ahead of 6 July 2026 and was removed after that date. For a future CCS pre-announcement, add a mode here in the same style.
 
 ### Rate sets and historical rates
 
-The calculators normally use the latest CCS rates, but a service (or anyone double-checking past figures) can switch to a historical rate year. The selection lives entirely in the URL `?rates=` search param — there is no stored preference, so a bare URL always resolves to the latest rates and parents never get "stuck" on an old set.
+The calculators normally use the latest rates, but a service (or anyone double-checking past figures) can switch to an earlier rate year. There are two independent selections because the schemes change at different times: **CCS** by financial year (July), via `?rates=`, and **state and territory** funding by calendar year (January), via `?state=`. They live entirely in the URL; there is no stored preference, so a bare URL always resolves to the latest rates and parents never get "stuck" on an old set.
 
 - `RATE_SETS` in `src/calculators/ccs.ts` holds each year's caps + thresholds keyed by `RateSetId` (`current` = FY2025-26, `new` = FY2026-27), each with an `fyLabel` and a `urlSlug` (e.g. `2025-26`). `DEFAULT_RATE_SET` is the latest; `getRateSetBySlug()` maps a URL slug to a set.
-- `useRates()` (`src/context/RatesState.tsx`) reads the `rates` param (validated at the root route in `__root.tsx`) and returns `{ rateSet, isDefault }`. It's a hook, not a provider.
-- Pure calculators take an optional `rateSet` (CCS) or `hourlyRateCap` (state schemes), defaulting to the latest. Each calculator route reads `rateSet` from `useRates()`, passes it into the calc calls, and **includes `rateSet` in the `useMemo` dependency arrays** so switching rates recomputes. `snapshot.calculateEstimate(estimate, rateSet)` does the same for saved estimates.
-- The `/settings` route (`src/routes/settings.tsx`) is the entry point: pick a rate year, then open any calculator with that selection baked into a bookmarkable link (`/qld?rates=2025-26`). It's intentionally low-key — linked only from the footer, `noindex`, and left out of `sitemap.xml` so it isn't surfaced to parents.
+- `STATE_RATE_YEARS` in `src/calculators/stateRates.ts` holds each calendar year's NSW fee relief table (plus that year's scheme `name` and maximum-tier eligibility copy) and VIC Free Kinder offsets + weeks. `DEFAULT_STATE_RATE_YEAR` is the latest (2027); `getStateRateYear()` maps the `?state=` year to an entry. QLD and ACT fund the gap for kindy/preschool hours directly, so they have no per-year amounts. `NSW_FEE_RELIEF` and `VIC_FREE_KINDER_*` remain as named exports mirroring the default.
+- `?state=` is a **number** (`?state=2026`). TanStack Router JSON-encodes search values, so a numeric-looking string would serialise as `?state=%222026%22`. `validateSearch` keeps it only when it's a known year.
+- Navigation keeps both params: navbar calculator links use `search={keepRates}` and the estimate save/cancel/edit `navigate()` calls pass `search: (prev) => prev`, so a saved estimate isn't silently recalculated at different rates. (A `Link`/`navigate` with no `search` clears all params in TanStack Router.) Only the Banner's "Switch to the latest rates" link clears them.
+- `useRates()` (`src/context/RatesState.tsx`) reads the `rates` param and returns `{ rateSet, isDefault }`; `useStateRates()` reads `state` and returns `{ stateRates, isDefault }`. Both params are validated at the root route in `__root.tsx`. They're hooks, not providers.
+- Pure calculators take an optional `rateSet` (CCS) or `hourlyRateCap` (state schemes), plus `feeReliefRates` (NSW) / `freeKinderRates` (VIC), all defaulting to the latest. Each calculator route reads them from the hooks, passes them into the calc calls, and **includes them in the `useMemo` dependency arrays** so switching rates recomputes. `snapshot.calculateEstimate(estimate, rateSet, stateRates)` does the same for saved estimates.
+- The `/settings` route (`src/routes/settings.tsx`) is the entry point: pick a CCS rate year and/or a state and territory rate year, then open any calculator with that selection baked into a bookmarkable link (`/nsw?rates=2025-26&state=2026`). It's intentionally low-key — linked only from the footer, `noindex`, and left out of `sitemap.xml` so it isn't surfaced to parents.
 
 ### CCS rate tables
 
@@ -178,6 +186,8 @@ When the rates change for a new financial year:
 2. If you want to warn parents ahead of the effective date, add a pre-announcement mode to `Banner` (see "Banner") with its own dismissal key and a cut-off date.
 3. The footer FY label (`__root.tsx`), the modal subtitle (`CcsCalculatorModal.tsx`), and the Settings page already read `rateSet.fyLabel` dynamically — no change needed there.
 4. Update the README rates note, the affected calculator tests (default-set assertions follow the new latest set; add/keep a historical block), then add a release note.
+
+When state and territory rates change for a new calendar year: add an entry to `STATE_RATE_YEARS`, point `DEFAULT_STATE_RATE_YEAR` at it, add it to the Settings `STATE_RATE_OPTIONS` list, and check the heads-up copy in `Banner`. The footer year, NSW/VIC key facts and Settings descriptions read the entry dynamically. Then update tests, the README and the release notes as above.
 
 ### Scroll restoration
 

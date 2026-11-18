@@ -13,11 +13,11 @@ import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
-import { calculateNswDaily, calculateNswFortnightlySessions, NSW_FEE_RELIEF } from '../calculators/nsw'
+import { calculateNswDaily, calculateNswFortnightlySessions } from '../calculators/nsw'
 import type { NswAgeGroup, NswFeeReliefTier } from '../calculators/nsw'
-import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
+import { DEFAULTS, fmt, fmtWhole, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
-import { useRates } from '../context/RatesState'
+import { useRates, useStateRates } from '../context/RatesState'
 import { useUniformSessions, daysAreUniform } from '../hooks/useUniformSessions'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
@@ -27,8 +27,8 @@ import { pageMeta } from '../seo'
 export const Route = createFileRoute('/nsw')({
   component: NswCalculator,
   head: () => pageMeta({
-    title: 'NSW Start Strong Calculator',
-    description: 'Estimate out-of-pocket costs combining NSW Start Strong with the Child Care Subsidy.',
+    title: 'NSW Preschool Fee Relief Calculator',
+    description: 'Estimate out-of-pocket costs combining NSW Preschool Fee Relief (formerly Start Strong) with the Child Care Subsidy.',
   }),
 })
 
@@ -45,6 +45,8 @@ const TIER_OPTIONS = [
 function NswCalculator() {
   const shared = useSharedCalculatorState()
   const { rateSet } = useRates()
+  const { stateRates } = useStateRates()
+  const feeReliefRates = stateRates.nsw
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -93,8 +95,9 @@ function NswCalculator() {
       serviceWeeks: weeks,
       daysPerWeek: dpw,
       hourlyRateCap: rateSet.ldcCap,
+      feeReliefRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, ageGroup, feeReliefTier, serviceWeeks, shared.daysPerWeek, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, ageGroup, feeReliefTier, serviceWeeks, shared.daysPerWeek, rateSet, feeReliefRates])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -122,8 +125,9 @@ function NswCalculator() {
       serviceWeeks: weeks,
       sessions,
       hourlyRateCap: rateSet.ldcCap,
+      feeReliefRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, weeklyDays, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, weeklyDays, rateSet, feeReliefRates])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -157,8 +161,9 @@ function NswCalculator() {
       serviceWeeks: weeks,
       sessions,
       hourlyRateCap: rateSet.ldcCap,
+      feeReliefRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, days, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, ageGroup, feeReliefTier, serviceWeeks, days, rateSet, feeReliefRates])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -236,7 +241,7 @@ function NswCalculator() {
     if (isEditing && editingEstimate) {
       updateEstimate(editingEstimate.id, input)
       cancelEditing()
-      navigate({ to: '/estimates' })
+      navigate({ to: '/estimates', search: (prev) => prev })
       return
     }
     addEstimate(input)
@@ -253,7 +258,7 @@ function NswCalculator() {
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
     setApplyToAll(true)
-    navigate({ to: '/estimates' })
+    navigate({ to: '/estimates', search: (prev) => prev })
   }
 
   return (
@@ -271,11 +276,11 @@ function NswCalculator() {
             <StickyPanel className="rounded-2xl sidebar-gradient p-6 lg:p-8">
               <CalculatorSidebar
                 schemeTag="NSW"
-                schemeName="Start Strong"
-                description="The NSW Start Strong program provides annual fee relief for children in long day care preschool programs, reducing your gap fee."
+                schemeName="Preschool Fee Relief"
+                description="NSW Preschool Fee Relief (formerly Start Strong) reduces your gap fee for children in long day care preschool programs."
                 keyFacts={[
-                  { label: 'Fee Relief (4+)', value: '$1,783\u2013$2,563/yr' },
-                  { label: 'Fee Relief (3yo)', value: '$423\u2013$769/yr' },
+                  { label: 'Fee Relief (4+)', value: `${fmtWhole(feeReliefRates['4+'].standard)}\u2013${fmtWhole(feeReliefRates['4+'].maximum)}/yr` },
+                  { label: 'Fee Relief (3yo)', value: `${fmtWhole(feeReliefRates['3'].standard)}\u2013${fmtWhole(feeReliefRates['3'].maximum)}/yr` },
                   { label: 'Applied', value: 'Weekly' },
                 ]}
                 guidance={[
@@ -289,7 +294,7 @@ function NswCalculator() {
                   },
                   {
                     title: 'Fee Relief Tier',
-                    description: 'Maximum rate applies if your child is Aboriginal/Torres Strait Islander, from a low-income family, has disability/additional needs, or attends a service in a disadvantaged or regional area.',
+                    description: feeReliefRates.maximumEligibility,
                   },
                   {
                     title: 'Service Operating Weeks',
@@ -342,7 +347,7 @@ function NswCalculator() {
             {mode === 'daily' && (
               <>
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Start Strong Details</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Fee Relief Details</h2>
                   <div className="mt-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
@@ -389,7 +394,7 @@ function NswCalculator() {
                   const whPct = Number(shared.withholding) || 0
                   const ccsRate = Math.round(Math.min(hrly, cap) * (ccsPct / 100) * 100) / 100
                   const net = dailyResult.ccsEntitlement
-                  const annualRelief = NSW_FEE_RELIEF[ageGroup][feeReliefTier]
+                  const annualRelief = feeReliefRates[ageGroup][feeReliefTier]
                   const weeks = Number(serviceWeeks) || 50
                   const dpw = Number(shared.daysPerWeek) || 3
 
@@ -412,8 +417,8 @@ function NswCalculator() {
                         { label: 'Hourly Rate Cap', value: `${fmt(cap)}/hr`, detail: hrly > cap ? `Your rate ${fmt(hrly)}/hr exceeds the cap` : `Your rate is within the cap`, detailOnly: true },
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
-                        { label: 'Gap Before Start Strong', value: fmt(dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
-                        { label: 'Start Strong Fee Relief', value: fmt(dailyResult.dailyFeeRelief), detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
+                        { label: 'Gap Before Fee Relief', value: fmt(dailyResult.gapBeforeFeeRelief), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
+                        { label: 'Fee Relief', value: fmt(dailyResult.dailyFeeRelief), detail: `${fmt(annualRelief)}/yr ÷ ${weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
                         ...(debt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
@@ -430,7 +435,7 @@ function NswCalculator() {
             {mode === 'weekly' && (
               <>
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Start Strong Settings</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Fee Relief Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <SelectField
                       label="Child's Age Group"
@@ -459,7 +464,7 @@ function NswCalculator() {
                   days={weeklyDays}
                   onChange={setWeeklyDays}
                   results={weeklyDayResults}
-                  fundingLabel="Start Strong"
+                  fundingLabel="Fee Relief"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
                   uniformSessions={applyToAll}
@@ -496,7 +501,7 @@ function NswCalculator() {
                         rows={[
                           { label: 'Session Fees', value: fmt(w1Fees), type: 'debit' as const },
                           { label: 'CCS Entitlement', value: fmt(w1Ccs), type: 'credit' as const },
-                          { label: 'Start Strong Fee Relief', value: fmt(w1Relief), type: 'credit' as const },
+                          { label: 'Fee Relief', value: fmt(w1Relief), type: 'credit' as const },
                           ...(wkDebtPerWeek > 0 ? [
                             { label: 'Debt Recovery', value: fmt(wkDebtPerWeek), type: 'debit' as const },
                           ] : []),
@@ -519,10 +524,10 @@ function NswCalculator() {
                       rows={[
                         { label: 'Weekly Session Fees', value: fmt(w1Fees), type: 'debit' as const },
                         { label: 'Week 1 CCS', value: fmt(w1Ccs), type: 'credit' as const },
-                        { label: 'Week 1 Start Strong', value: fmt(w1Relief), type: 'credit' as const },
+                        { label: 'Week 1 Fee Relief', value: fmt(w1Relief), type: 'credit' as const },
                         { label: 'Week 1 Gap', value: fmt(w1Gap) },
                         { label: 'Week 2 CCS', value: fmt(w2Ccs), type: 'credit' as const },
-                        { label: 'Week 2 Start Strong', value: fmt(w2Relief), type: 'credit' as const },
+                        { label: 'Week 2 Fee Relief', value: fmt(w2Relief), type: 'credit' as const },
                         { label: 'Week 2 Gap', value: fmt(w2Gap) },
                         ...(wkDebt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(wkDebt.debtPerDay), type: 'debit' as const },
@@ -539,7 +544,7 @@ function NswCalculator() {
             {mode === 'fortnightly' && (
               <>
                 <div className="rounded-2xl card-glass p-8">
-                  <h2 className="text-lg font-bold text-slate-900">Start Strong Settings</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Fee Relief Settings</h2>
                   <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <SelectField
                       label="Child's Age Group"
@@ -568,7 +573,7 @@ function NswCalculator() {
                   days={days}
                   onChange={setDays}
                   results={dayResults}
-                  fundingLabel="Start Strong"
+                  fundingLabel="Fee Relief"
                   fmt={fmt}
                   defaults={{ sessionFee: shared.sessionFee, sessionStart: shared.sessionStart, sessionEnd: shared.sessionEnd }}
                   uniformSessions={applyToAll}
@@ -589,7 +594,7 @@ function NswCalculator() {
                       rows={[
                         { label: 'Total Session Fees', value: fmt(fortnightlyResult.totalSessionFees), type: 'debit' as const },
                         { label: 'Total CCS Entitlement', value: fmt(fortnightlyResult.totalCcsEntitlement), type: 'credit' as const },
-                        { label: 'Total Start Strong Fee Relief', value: fmt(fortnightlyResult.totalFeeRelief), type: 'credit' as const },
+                        { label: 'Total Fee Relief', value: fmt(fortnightlyResult.totalFeeRelief), type: 'credit' as const },
                         ...(fnDebt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(fnDebt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(fnDebt.ccsPaidToService), type: 'credit' as const },
@@ -605,7 +610,7 @@ function NswCalculator() {
 
             <AddEstimateFooter
               onSubmit={handleSubmit}
-              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: "/estimates" }) } : undefined}
+              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: '/estimates', search: (prev) => prev }) } : undefined}
               isEditing={isEditing}
               editingLabel={editingLabel}
               disabled={!hasValidInput}

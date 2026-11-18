@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { calculateEstimate } from './snapshot'
+import { STATE_RATE_YEARS } from '../calculators/stateRates'
 import type { Estimate, SharedSnapshot } from './types'
 import type { DayConfig } from '../components/FortnightlyGrid'
 
@@ -200,6 +201,35 @@ describe('calculateEstimate', () => {
     const result = calculateEstimate(estimate)
     expect(result).not.toBeNull()
     expect(result!.stateFunding).toBeGreaterThan(0)
+  })
+
+  it('recalculates NSW and VIC estimates at the chosen state rate year', () => {
+    const nsw: Estimate = {
+      id: 'n', createdAt: 0, scheme: 'nsw', mode: 'daily', childName: '', serviceName: '',
+      shared: { ...baseShared(), ccsPercent: '0' },
+      local: { ageGroup: '4+', feeReliefTier: 'maximum', serviceWeeks: '50', weeklyDays: [], days: [] },
+    }
+    const vic: Estimate = {
+      id: 'v', createdAt: 0, scheme: 'vic', mode: 'daily', childName: '', serviceName: '',
+      shared: { ...baseShared(), ccsPercent: '0' },
+      local: { kinderHours: '15', cohort: 'standard', weeklyDays: [], days: [] },
+    }
+    const nsw2026 = calculateEstimate(nsw, undefined, STATE_RATE_YEARS['2026'])!
+    const nsw2027 = calculateEstimate(nsw)!
+    expect(nsw2027.stateFunding).toBeGreaterThan(nsw2026.stateFunding)
+    const vic2026 = calculateEstimate(vic, undefined, STATE_RATE_YEARS['2026'])!
+    const vic2027 = calculateEstimate(vic)!
+    expect(vic2027.stateFunding).toBeGreaterThan(vic2026.stateFunding)
+  })
+
+  it('caps VIC Pre-Prep hours at 20 for the standard cohort', () => {
+    const make = (kinderHours: string, cohort: 'standard' | 'priority'): Estimate => ({
+      id: 'v', createdAt: 0, scheme: 'vic', mode: 'daily', childName: '', serviceName: '',
+      shared: { ...baseShared(), ccsPercent: '0', sessionFee: '500' },
+      local: { kinderHours, cohort, weeklyDays: [], days: [] },
+    })
+    expect(calculateEstimate(make('25', 'standard'))!.stateFunding).toBe(calculateEstimate(make('20', 'standard'))!.stateFunding)
+    expect(calculateEstimate(make('25', 'priority'))!.stateFunding).toBeGreaterThan(calculateEstimate(make('20', 'priority'))!.stateFunding)
   })
 
   it('applies debt recovery to the gap fee', () => {

@@ -21,7 +21,7 @@ export interface CcsResult {
  * Compute the base CCS entitlement for a single session.
  *
  * All state/territory calculators share this core CCS logic.
- * State-specific funding (Free Kindy, Start Strong, etc.) is layered
+ * State-specific funding (Free Kindy, Preschool Fee Relief, etc.) is layered
  * on top by each calculator.
  */
 export function computeSessionCcs(params: {

@@ -1,16 +1,25 @@
 import { CCS_HOURLY_RATE_CAP } from './ccs'
 import { computeSessionCcs, roundTo } from './shared'
+import { DEFAULT_STATE_RATE_YEAR, type VicFreeKinderRates } from './stateRates'
 
-// VIC Free Kinder for Long Day Care — 2026 annual offset amounts
-// Applied over 40 program weeks per year, after CCS
-export const VIC_FREE_KINDER_WEEKS = 40
-
-export const VIC_FREE_KINDER_OFFSET = {
-  standard: 2101,
-  priority: 2693,
-} as const
+// VIC Free Kinder for Long Day Care: annual offset amounts and program weeks for
+// the default (latest) rate year, applied after CCS. Rates for each year live in
+// stateRates.ts; retained as named exports for callers wanting the headline figures.
+export const VIC_FREE_KINDER_RATES: VicFreeKinderRates = DEFAULT_STATE_RATE_YEAR.vic
+export const VIC_FREE_KINDER_WEEKS = VIC_FREE_KINDER_RATES.weeks
+export const VIC_FREE_KINDER_OFFSET = VIC_FREE_KINDER_RATES.offset
 
 export type VicCohort = 'standard' | 'priority'
+
+// Most funded 4yo hours per week: Pre-Prep areas fund up to 20 hours, and
+// priority cohort children are funded for up to 25 hours statewide.
+export const VIC_MAX_FUNDED_HOURS: Record<VicCohort, number> = { standard: 20, priority: 25 }
+
+/** Parse a Kinder Program select value into funded hours/week, capped for the cohort. */
+export function vicKinderHours(kinderHours: string, cohort: VicCohort): number {
+  const hrs = kinderHours === '15-3yo' ? 15 : Number(kinderHours) || 15
+  return Math.min(hrs, VIC_MAX_FUNDED_HOURS[cohort])
+}
 
 export interface VicDailyInputs {
   ccsPercent: number
@@ -23,6 +32,8 @@ export interface VicDailyInputs {
   daysPerWeek: number
   /** CCS hourly rate cap (LDC). Defaults to the latest FY2026-27 cap when omitted. */
   hourlyRateCap?: number
+  /** Offset amounts and program weeks. Defaults to the latest rate year when omitted. */
+  freeKinderRates?: VicFreeKinderRates
 }
 
 export interface VicDailyResult {
@@ -51,10 +62,14 @@ export function calculateVicDaily(inputs: VicDailyInputs): VicDailyResult {
 
   const gapBeforeFreeKinder = roundTo(inputs.sessionFee - ccs.ccsEntitlement, 2)
 
-  // Pro-rate the annual offset by enrolled hours
-  const baseOffset = VIC_FREE_KINDER_OFFSET[inputs.cohort]
+  // Scale the annual offset by funded hours against a 15 hr/wk program. Below 15
+  // that's the pro-rata for 3yo programs; above 15 it's Pre-Prep, where each extra
+  // weekly hour is funded at the 15-hour rate ÷ 15 ($143.60 standard / $184
+  // priority in 2027), so the same formula holds.
+  const rates = inputs.freeKinderRates ?? VIC_FREE_KINDER_RATES
+  const baseOffset = rates.offset[inputs.cohort]
   const annualOffset = roundTo(baseOffset * (inputs.kinderHoursPerWeek / 15), 2)
-  const weeklyOffset = roundTo(annualOffset / VIC_FREE_KINDER_WEEKS, 2)
+  const weeklyOffset = roundTo(annualOffset / rates.weeks, 2)
   const dailyOffset = roundTo(weeklyOffset / inputs.daysPerWeek, 2)
 
   // Offset can't exceed gap after CCS
@@ -99,14 +114,16 @@ export function calculateVicFortnightlySessions(inputs: {
   kinderHoursPerWeek: number
   sessions: VicSessionInput[]
   hourlyRateCap?: number
+  freeKinderRates?: VicFreeKinderRates
 }): VicFortnightlySessionsResult | null {
   const week1Booked = inputs.sessions.slice(0, 5).filter((s) => s.booked).length
   const week2Booked = inputs.sessions.slice(5, 10).filter((s) => s.booked).length
   if (week1Booked + week2Booked === 0) return null
 
-  const baseOffset = VIC_FREE_KINDER_OFFSET[inputs.cohort]
+  const rates = inputs.freeKinderRates ?? VIC_FREE_KINDER_RATES
+  const baseOffset = rates.offset[inputs.cohort]
   const annualOffset = roundTo(baseOffset * (inputs.kinderHoursPerWeek / 15), 2)
-  const weeklyOffset = roundTo(annualOffset / VIC_FREE_KINDER_WEEKS, 2)
+  const weeklyOffset = roundTo(annualOffset / rates.weeks, 2)
 
   let remainingCcsHours = inputs.fortnightlyCcsHours
   const sessionResults: VicFortnightlySessionsResult['sessions'] = []

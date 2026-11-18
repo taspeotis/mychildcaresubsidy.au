@@ -5,7 +5,7 @@ import { StickyPanel } from '../components/StickyPanel'
 import { EstimateRow } from '../components/EstimateRow'
 import { Button } from '../components/Button'
 import { useEstimates } from '../estimates/EstimatesState'
-import { useRates } from '../context/RatesState'
+import { useRates, useStateRates } from '../context/RatesState'
 import { calculateEstimate } from '../estimates/snapshot'
 import { formatEstimateLabel } from '../estimates/labels'
 import type { Estimate, EstimateResult } from '../estimates/types'
@@ -29,15 +29,16 @@ interface CalculatedEstimate {
 function EstimatesPage() {
   const { estimates, deleteEstimate, clearAll, startEditing } = useEstimates()
   const { rateSet } = useRates()
+  const { stateRates } = useStateRates()
   const navigate = useNavigate()
 
   const calculated = useMemo<CalculatedEstimate[]>(
     () => estimates.map((estimate, i) => ({
       estimate,
-      result: calculateEstimate(estimate, rateSet),
+      result: calculateEstimate(estimate, rateSet, stateRates),
       label: formatEstimateLabel(estimate, i + 1),
     })),
-    [estimates, rateSet],
+    [estimates, rateSet, stateRates],
   )
 
   const fortnightly = calculated.filter((c) => c.estimate.mode !== 'daily')
@@ -53,7 +54,7 @@ function EstimatesPage() {
 
   function handleEdit(estimate: Estimate) {
     startEditing(estimate.id)
-    navigate({ to: `/${estimate.scheme}` })
+    navigate({ to: `/${estimate.scheme}`, search: (prev) => prev })
   }
 
   function handleClearAll() {

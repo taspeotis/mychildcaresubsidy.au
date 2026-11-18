@@ -1,5 +1,5 @@
 /**
- * NSW Start Strong fee relief calculator tests.
+ * NSW Preschool Fee Relief calculator tests (Start Strong until 2026).
  *
  * All 4 case studies sourced from the NSW Department of Education:
  *   https://education.nsw.gov.au/early-childhood-education/operating-an-early-childhood-education-service/grants-and-funded-programs/start-strong-funding/start-strong-for-long-day-care/calculating-fee-relief-payment
@@ -10,6 +10,10 @@
  */
 import { describe, it, expect } from 'vitest'
 import { calculateNswDaily, calculateNswFortnightlySessions } from './nsw'
+import { STATE_RATE_YEARS } from './stateRates'
+
+// The case studies below use the 2026 rates they were published with.
+const NSW_2026 = STATE_RATE_YEARS['2026'].nsw
 
 describe('calculateNswDaily', () => {
   /**
@@ -25,6 +29,7 @@ describe('calculateNswDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'maximum',
       serviceWeeks: 49,
       daysPerWeek: 4,
@@ -48,6 +53,7 @@ describe('calculateNswDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 52,
       daysPerWeek: 1,
@@ -73,6 +79,7 @@ describe('calculateNswDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '3',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'maximum',
       serviceWeeks: 50,
       daysPerWeek: 2,
@@ -99,6 +106,7 @@ describe('calculateNswDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '3',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 49,
       daysPerWeek: 1,
@@ -128,6 +136,7 @@ describe('calculateNswFortnightlySessions', () => {
       ccsWithholdingPercent: 5,
       fortnightlyCcsHours: 72,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 50,
       sessions,
@@ -149,6 +158,7 @@ describe('NSW edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 50,
       daysPerWeek: 3,
@@ -167,6 +177,7 @@ describe('NSW edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 50,
       daysPerWeek: 3,
@@ -187,6 +198,7 @@ describe('NSW edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       ageGroup: '4+',
+      feeReliefRates: NSW_2026,
       feeReliefTier: 'standard',
       serviceWeeks: 50,
       daysPerWeek: 3,
@@ -208,6 +220,7 @@ describe('NSW fee relief independence from CCS', () => {
     sessionStartHour: 7,
     sessionEndHour: 17,
     ageGroup: '4+' as const,
+    feeReliefRates: NSW_2026,
     feeReliefTier: 'standard' as const,
     serviceWeeks: 50,
     daysPerWeek: 3,
@@ -254,5 +267,37 @@ describe('NSW fee relief independence from CCS', () => {
 
     expect(result5.annualFeeRelief).toBe(result20.annualFeeRelief)
     expect(result5.weeklyFeeRelief).toBe(result20.weeklyFeeRelief)
+  })
+})
+
+/**
+ * 2027 rates (the default): "2027 Fee Relief for Long Day Care program
+ * guidelines", section 5.8 Table 1.
+ *   4YO+ maximum $2,625, 4YO+ standard $1,826, 3YO maximum $788, 3YO standard $434.
+ */
+describe('NSW 2027 rates (default)', () => {
+  const base = {
+    ccsPercent: 36,
+    ccsWithholdingPercent: 5,
+    sessionFee: 150,
+    sessionStartHour: 7,
+    sessionEndHour: 17,
+    daysPerWeek: 1,
+  }
+
+  it.each([
+    ['4+', 'maximum', 49, 53.57], // $2,625 ÷ 49
+    ['4+', 'standard', 52, 35.12], // $1,826 ÷ 52
+    ['3', 'maximum', 50, 15.76], // $788 ÷ 50
+    ['3', 'standard', 49, 8.86], // $434 ÷ 49
+  ] as const)('%s %s over %i weeks → $%d/wk', (ageGroup, feeReliefTier, serviceWeeks, weekly) => {
+    const result = calculateNswDaily({ ...base, ageGroup, feeReliefTier, serviceWeeks })
+    expect(result.weeklyFeeRelief).toBe(weekly)
+  })
+
+  it('defaults to the 2027 annual amounts', () => {
+    const result = calculateNswDaily({ ...base, ageGroup: '4+', feeReliefTier: 'maximum', serviceWeeks: 50 })
+    expect(result.annualFeeRelief).toBe(2625)
+    expect(result.annualFeeRelief).toBe(STATE_RATE_YEARS['2027'].nsw['4+'].maximum)
   })
 })

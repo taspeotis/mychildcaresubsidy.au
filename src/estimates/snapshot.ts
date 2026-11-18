@@ -2,8 +2,9 @@ import { calculateCcsDaily, calculateCcsFortnightly } from '../calculators/ccsCa
 import { calculateActDaily, calculateActFortnightly } from '../calculators/act'
 import { calculateNswDaily, calculateNswFortnightlySessions } from '../calculators/nsw'
 import { calculateQldDaily, calculateQldFortnightly } from '../calculators/qld'
-import { calculateVicDaily, calculateVicFortnightlySessions } from '../calculators/vic'
+import { calculateVicDaily, calculateVicFortnightlySessions, vicKinderHours } from '../calculators/vic'
 import { RATE_SETS, type RateSet } from '../calculators/ccs'
+import { DEFAULT_STATE_RATE_YEAR, type StateRateYear } from '../calculators/stateRates'
 import { computeDebtRecovery, WEEKDAYS } from '../config'
 import type { DayConfig } from '../components/FortnightlyGrid'
 import type { FortnightlySession } from '../types'
@@ -70,7 +71,11 @@ function applyFortnightDebt(shared: SharedSnapshot, ccsEntitlement: number, stat
   return { debtPerDay: debt.debtPerDay, gap }
 }
 
-export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SETS.new): EstimateResult | null {
+export function calculateEstimate(
+  estimate: Estimate,
+  rateSet: RateSet = RATE_SETS.new,
+  stateRates: StateRateYear = DEFAULT_STATE_RATE_YEAR,
+): EstimateResult | null {
   const { shared, mode } = estimate
   const ccs = num(shared.ccsPercent)
   const wh = num(shared.withholding)
@@ -114,6 +119,7 @@ export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SE
         const dpw = num(shared.daysPerWeek) || 3
         const r = calculateNswDaily({
           hourlyRateCap: rateSet.ldcCap,
+          feeReliefRates: stateRates.nsw,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -142,9 +148,10 @@ export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SE
       }
       case 'vic': {
         const dpw = num(shared.daysPerWeek) || 3
-        const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
+        const khrs = vicKinderHours(estimate.local.kinderHours, estimate.local.cohort)
         const r = calculateVicDaily({
           hourlyRateCap: rateSet.ldcCap,
+          freeKinderRates: stateRates.vic,
           ccsPercent: ccs,
           ccsWithholdingPercent: wh,
           sessionFee: fee,
@@ -200,6 +207,7 @@ export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SE
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateNswFortnightlySessions({
         hourlyRateCap: rateSet.ldcCap,
+        feeReliefRates: stateRates.nsw,
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,
@@ -224,10 +232,11 @@ export function calculateEstimate(estimate: Estimate, rateSet: RateSet = RATE_SE
     case 'vic': {
       const days = daysForMode(estimate.local, mode)
       const sessions = simpleSessions(days)
-      const khrs = estimate.local.kinderHours === '15-3yo' ? 15 : num(estimate.local.kinderHours) || 15
+      const khrs = vicKinderHours(estimate.local.kinderHours, estimate.local.cohort)
       if (!sessions.some((s) => s.booked && s.sessionFee > 0)) return null
       const r = calculateVicFortnightlySessions({
         hourlyRateCap: rateSet.ldcCap,
+        freeKinderRates: stateRates.vic,
         ccsPercent: ccs,
         ccsWithholdingPercent: wh,
         fortnightlyCcsHours: ccsHours,

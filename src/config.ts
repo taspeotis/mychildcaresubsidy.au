@@ -13,6 +13,11 @@ export function fmt(n: number): string {
   return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
 }
 
+/** Whole-dollar currency, e.g. "$2,625", for annual scheme amounts. */
+export function fmtWhole(n: number): string {
+  return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })
+}
+
 export const DAYS_OPTIONS = [
   { value: '1', label: '1 day' },
   { value: '2', label: '2 days' },

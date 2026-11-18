@@ -241,7 +241,7 @@ function ActCalculator() {
     if (isEditing && editingEstimate) {
       updateEstimate(editingEstimate.id, input)
       cancelEditing()
-      navigate({ to: '/estimates' })
+      navigate({ to: '/estimates', search: (prev) => prev })
       return
     }
     addEstimate(input)
@@ -260,7 +260,7 @@ function ActCalculator() {
       true,
     ))
     setApplyToAll(true)
-    navigate({ to: '/estimates' })
+    navigate({ to: '/estimates', search: (prev) => prev })
   }
 
   return (
@@ -592,7 +592,7 @@ function ActCalculator() {
 
             <AddEstimateFooter
               onSubmit={handleSubmit}
-              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: "/estimates" }) } : undefined}
+              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: '/estimates', search: (prev) => prev }) } : undefined}
               isEditing={isEditing}
               editingLabel={editingLabel}
               disabled={!hasValidInput}

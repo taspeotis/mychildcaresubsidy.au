@@ -5,14 +5,26 @@ import { Container } from '../components/Container'
 import { NavCountBadge } from '../components/NavCountBadge'
 import { Banner } from '../components/Banner'
 import { SharedCalculatorProvider } from '../context/SharedCalculatorState'
-import { useRates } from '../context/RatesState'
+import { useRates, useStateRates } from '../context/RatesState'
+import { getStateRateYear } from '../calculators/stateRates'
+
+// Calculator nav links carry the selected rate years (`?rates=`, `?state=`) along.
+const keepRates = (prev: { rates?: string; state?: number }) => ({ rates: prev.rates, state: prev.state })
 import { EstimatesProvider, useEstimates } from '../estimates/EstimatesState'
 
 export const Route = createRootRoute({
-  // `rates` selects a historical CCS rate set (see useRates / the Settings page).
-  // Validated at the root so it's preserved and typed across every route.
-  validateSearch: (search: Record<string, unknown>): { rates?: string } =>
-    typeof search.rates === 'string' ? { rates: search.rates } : {},
+  // `rates` selects a historical CCS rate set (see useRates) and `state` a
+  // historical state and territory rate year (see useStateRates); both are set
+  // from the Settings page. Validated at the root so they're typed on every route.
+  // `state` is a number so it serialises as a bare `?state=2026` (TanStack would
+  // quote a numeric-looking string).
+  validateSearch: (search: Record<string, unknown>): { rates?: string; state?: number } => {
+    const state = getStateRateYear(Number(search.state))?.year
+    return {
+      ...(typeof search.rates === 'string' ? { rates: search.rates } : {}),
+      ...(state ? { state } : {}),
+    }
+  },
   component: RootLayout,
 })
 
@@ -30,6 +42,7 @@ function RootLayoutInner() {
   const { pathname } = useLocation()
   const { estimates } = useEstimates()
   const { rateSet } = useRates()
+  const { stateRates } = useStateRates()
   const estimateCount = estimates.length
   const navRef = useRef<HTMLElement>(null)
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0, route: '' })
@@ -142,17 +155,17 @@ function RootLayoutInner() {
                 }`}
                 style={{ left: pill.left, top: pill.top, width: pill.width, height: pill.height, opacity: pill.opacity }}
               />
-              <Link to="/ccs" className={navLinkClass}>
+              <Link to="/ccs" search={keepRates} className={navLinkClass}>
                 CCS
               </Link>
               <span className="mx-1 hidden text-white/20 sm:inline">|</span>
               {/* State calculators - alphabetical */}
-              <Link to="/act" className={navLinkClass}>ACT</Link>
-              <Link to="/nsw" className={navLinkClass}>NSW</Link>
-              <Link to="/qld" className={navLinkClass}>QLD</Link>
-              <Link to="/vic" className={navLinkClass}>VIC</Link>
+              <Link to="/act" search={keepRates} className={navLinkClass}>ACT</Link>
+              <Link to="/nsw" search={keepRates} className={navLinkClass}>NSW</Link>
+              <Link to="/qld" search={keepRates} className={navLinkClass}>QLD</Link>
+              <Link to="/vic" search={keepRates} className={navLinkClass}>VIC</Link>
               <span className="mx-1 hidden text-white/20 sm:inline">|</span>
-              <Link to="/estimates" className={navLinkClass}>
+              <Link to="/estimates" search={keepRates} className={navLinkClass}>
                 Estimates
                 <NavCountBadge count={estimateCount} />
               </Link>
@@ -185,7 +198,7 @@ function RootLayoutInner() {
       <footer className="footer-glow bg-brand-900">
         <Container className="py-8 text-center text-xs text-white/50 space-y-3">
           <p>These calculators give estimates only, not financial advice. Your actual costs may differ.</p>
-          <p>CCS rates applicable to fiscal year {rateSet.fyLabel}. State and territory rates applicable to 2026 calendar year.</p>
+          <p>CCS rates applicable to fiscal year {rateSet.fyLabel}. State and territory rates applicable to {stateRates.year} calendar year.</p>
           <p>
             This site is{' '}
             <a href="https://github.com/taspeotis/mychildcaresubsidy.au" target="_blank" rel="noopener noreferrer" className="text-white/70 underline underline-offset-2 hover:text-white transition-colors">

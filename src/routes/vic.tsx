@@ -12,11 +12,11 @@ import { CcsCalculatorModal } from '../components/CcsCalculatorModal'
 import { FortnightlyGrid, createDefaultDays } from '../components/FortnightlyGrid'
 import type { DayConfig, DayResult } from '../components/FortnightlyGrid'
 import { AddEstimateFooter } from '../components/AddEstimateFooter'
-import { calculateVicDaily, calculateVicFortnightlySessions, VIC_FREE_KINDER_WEEKS, VIC_FREE_KINDER_OFFSET } from '../calculators/vic'
+import { calculateVicDaily, calculateVicFortnightlySessions, vicKinderHours, VIC_MAX_FUNDED_HOURS } from '../calculators/vic'
 import type { VicCohort } from '../calculators/vic'
-import { DEFAULTS, fmt, DAYS_OPTIONS, computeDebtRecovery } from '../config'
+import { DEFAULTS, fmt, fmtWhole, DAYS_OPTIONS, computeDebtRecovery } from '../config'
 import { useSharedCalculatorState } from '../context/SharedCalculatorState'
-import { useRates } from '../context/RatesState'
+import { useRates, useStateRates } from '../context/RatesState'
 import { useUniformSessions, daysAreUniform } from '../hooks/useUniformSessions'
 import { useEstimates } from '../estimates/EstimatesState'
 import { formatEstimateLabel } from '../estimates/labels'
@@ -36,6 +36,12 @@ const AGE_OPTIONS = [
   { value: '15-3yo', label: '3yo kinder (15 hrs/wk)' },
   { value: '7.5', label: '3yo kinder (7.5 hrs/wk)' },
   { value: '5', label: '3yo kinder (5 hrs/wk)' },
+  // Pre-Prep: funded 4yo hours above 15 in rollout areas (up to 20) and for
+  // priority cohort children statewide (up to 25). The offset scales with hours.
+  ...Array.from({ length: 10 }, (_, i) => {
+    const hrs = 16 + i
+    return { value: String(hrs), label: `4yo Pre-Prep (${hrs} hrs/wk)` }
+  }),
 ]
 
 const COHORT_OPTIONS = [
@@ -46,6 +52,8 @@ const COHORT_OPTIONS = [
 function VicCalculator() {
   const shared = useSharedCalculatorState()
   const { rateSet } = useRates()
+  const { stateRates } = useStateRates()
+  const freeKinderRates = stateRates.vic
   const [mode, setMode] = useState('daily')
   const [ccsModalOpen, setCcsModalOpen] = useState(false)
 
@@ -69,7 +77,13 @@ function VicCalculator() {
     ),
   )
 
-  const kinderHoursNum = kinderHours === '15-3yo' ? 15 : Number(kinderHours) || 15
+  const kinderHoursNum = vicKinderHours(kinderHours, cohort)
+  // Only offer Pre-Prep hours the cohort can be funded for.
+  const kinderOptions = AGE_OPTIONS.filter((o) => Number(o.value) <= VIC_MAX_FUNDED_HOURS[cohort] || o.value === '15-3yo')
+  const changeCohort = (next: VicCohort) => {
+    setCohort(next)
+    if (Number(kinderHours) > VIC_MAX_FUNDED_HOURS[next]) setKinderHours(String(VIC_MAX_FUNDED_HOURS[next]))
+  }
 
   // When on, the Session Details card governs every booked day (weekly/fortnightly).
   const uniform = useUniformSessions(shared, setWeeklyDays, setDays)
@@ -93,8 +107,9 @@ function VicCalculator() {
       kinderHoursPerWeek: kinderHoursNum,
       daysPerWeek: dpw,
       hourlyRateCap: rateSet.ldcCap,
+      freeKinderRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.sessionFee, shared.sessionStart, shared.sessionEnd, cohort, kinderHoursNum, shared.daysPerWeek, rateSet, freeKinderRates])
 
   // Weekly: duplicate week 1 into a fortnight and calculate
   const weeklyResult = useMemo(() => {
@@ -120,8 +135,9 @@ function VicCalculator() {
       kinderHoursPerWeek: kinderHoursNum,
       sessions,
       hourlyRateCap: rateSet.ldcCap,
+      freeKinderRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, weeklyDays, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, weeklyDays, rateSet, freeKinderRates])
 
   const weeklyDayResults: DayResult[] | null = weeklyResult
     ? weeklyResult.sessions.slice(0, 5).map((s) => ({
@@ -153,8 +169,9 @@ function VicCalculator() {
       kinderHoursPerWeek: kinderHoursNum,
       sessions,
       hourlyRateCap: rateSet.ldcCap,
+      freeKinderRates,
     })
-  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, days, rateSet])
+  }, [shared.ccsPercent, shared.withholding, shared.ccsHours, cohort, kinderHoursNum, days, rateSet, freeKinderRates])
 
   const dayResults: DayResult[] | null = fortnightlyResult
     ? fortnightlyResult.sessions.map((s) => ({
@@ -231,7 +248,7 @@ function VicCalculator() {
     if (isEditing && editingEstimate) {
       updateEstimate(editingEstimate.id, input)
       cancelEditing()
-      navigate({ to: '/estimates' })
+      navigate({ to: '/estimates', search: (prev) => prev })
       return
     }
     addEstimate(input)
@@ -247,7 +264,7 @@ function VicCalculator() {
       { sessionFee: DEFAULTS.sessionFee, sessionStart: DEFAULTS.sessionStartHour, sessionEnd: DEFAULTS.sessionEndHour },
     ))
     setApplyToAll(true)
-    navigate({ to: '/estimates' })
+    navigate({ to: '/estimates', search: (prev) => prev })
   }
 
   return (
@@ -268,9 +285,9 @@ function VicCalculator() {
                 schemeName="Free Kinder"
                 description="Victoria's Free Kinder program provides an annual fee offset for 3 and 4-year-olds in long day care kindergarten programs, reducing your gap fee."
                 keyFacts={[
-                  { label: 'Standard Offset', value: `$2,101/yr` },
-                  { label: 'Priority Cohort', value: `$2,693/yr` },
-                  { label: 'Program Weeks', value: `${VIC_FREE_KINDER_WEEKS}/yr` },
+                  { label: 'Standard Offset', value: `${fmtWhole(freeKinderRates.offset.standard)}/yr` },
+                  { label: 'Priority Cohort', value: `${fmtWhole(freeKinderRates.offset.priority)}/yr` },
+                  { label: 'Program Weeks', value: `${freeKinderRates.weeks}/yr` },
                 ]}
                 guidance={[
                   {
@@ -283,11 +300,11 @@ function VicCalculator() {
                   },
                   {
                     title: 'Priority Cohort',
-                    description: 'Eligible if your child is Aboriginal/Torres Strait Islander, from a refugee or asylum seeker background, has had contact with Child Protection, or received Early Start Kindergarten.',
+                    description: 'Eligible if your child is Aboriginal/Torres Strait Islander, from a refugee or asylum seeker background, has had contact with Child Protection, or is or was supported by Early Start Kindergarten or Access to Early Learning.',
                   },
                   {
                     title: 'Kinder Hours',
-                    description: 'Most LDC centres deliver 15 hours/week for both 3yo and 4yo kinder (2 days of 7.5 hrs). Some 3yo programs may offer fewer hours.',
+                    description: 'Most LDC centres deliver 15 hours/week for both 3yo and 4yo kinder (2 days of 7.5 hrs). Some 3yo programs may offer fewer hours. In Pre-Prep areas, and for priority cohort children, 4yo kinder can be funded for more than 15 hours, and the offset goes up with the hours. Ask your centre how many hours are funded.',
                   },
                 ]}
               >
@@ -341,7 +358,7 @@ function VicCalculator() {
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField
                         label="Kinder Program"
-                        options={AGE_OPTIONS}
+                        options={kinderOptions}
                         value={kinderHours}
                         onChange={(e) => setKinderHours(e.target.value)}
                       />
@@ -350,7 +367,7 @@ function VicCalculator() {
                         hint="See sidebar for eligibility"
                         options={COHORT_OPTIONS}
                         value={cohort}
-                        onChange={(e) => setCohort(e.target.value as VicCohort)}
+                        onChange={(e) => changeCohort(e.target.value as VicCohort)}
                       />
                     </div>
                     <SelectField
@@ -374,7 +391,7 @@ function VicCalculator() {
                   const net = dailyResult.ccsEntitlement
                   const dpw = Number(shared.daysPerWeek) || 3
                   const khrs = kinderHoursNum
-                  const baseOffset = VIC_FREE_KINDER_OFFSET[cohort]
+                  const baseOffset = freeKinderRates.offset[cohort]
 
                   const debt = computeDebtRecovery({
                     ccsEntitlement: net,
@@ -396,7 +413,7 @@ function VicCalculator() {
                         { label: 'CCS Rate', value: `${fmt(ccsRate)}/hr`, detail: `lesser of ${fmt(hrly)} and ${fmt(cap)} × ${ccsPct}%`, detailOnly: true },
                         { label: 'CCS Entitlement', value: fmt(net), detail: `${fmt(ccsRate)}/hr × ${hrs} hrs, less ${whPct}% withholding`, type: 'credit' as const },
                         { label: 'Gap Before Free Kinder', value: fmt(dailyResult.gapBeforeFreeKinder), detail: `${fmt(fee)} – ${fmt(net)}`, muted: true },
-                        { label: 'Free Kinder Offset', value: fmt(dailyResult.dailyOffset), detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${VIC_FREE_KINDER_WEEKS} weeks ÷ ${dpw} days`, type: 'credit' as const },
+                        { label: 'Free Kinder Offset', value: fmt(dailyResult.dailyOffset), detail: `${fmt(baseOffset)}/yr × ${khrs}/15 hrs ÷ ${freeKinderRates.weeks} weeks ÷ ${dpw} days`, type: 'credit' as const },
                         ...(debt.debtPerDay > 0 ? [
                           { label: 'Debt Recovery', value: fmt(debt.debtPerDay), type: 'debit' as const },
                           { label: 'CCS Paid to Service', value: fmt(debt.ccsPaidToService), type: 'credit' as const },
@@ -417,7 +434,7 @@ function VicCalculator() {
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
                       label="Kinder Program"
-                      options={AGE_OPTIONS}
+                      options={kinderOptions}
                       value={kinderHours}
                       onChange={(e) => setKinderHours(e.target.value)}
                     />
@@ -425,7 +442,7 @@ function VicCalculator() {
                       label="Cohort"
                       options={COHORT_OPTIONS}
                       value={cohort}
-                      onChange={(e) => setCohort(e.target.value as VicCohort)}
+                      onChange={(e) => changeCohort(e.target.value as VicCohort)}
                     />
                   </div>
                 </div>
@@ -518,7 +535,7 @@ function VicCalculator() {
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <SelectField
                       label="Kinder Program"
-                      options={AGE_OPTIONS}
+                      options={kinderOptions}
                       value={kinderHours}
                       onChange={(e) => setKinderHours(e.target.value)}
                     />
@@ -526,7 +543,7 @@ function VicCalculator() {
                       label="Cohort"
                       options={COHORT_OPTIONS}
                       value={cohort}
-                      onChange={(e) => setCohort(e.target.value as VicCohort)}
+                      onChange={(e) => changeCohort(e.target.value as VicCohort)}
                     />
                   </div>
                 </div>
@@ -572,7 +589,7 @@ function VicCalculator() {
 
             <AddEstimateFooter
               onSubmit={handleSubmit}
-              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: "/estimates" }) } : undefined}
+              onCancel={isEditing ? () => { cancelEditing(); navigate({ to: '/estimates', search: (prev) => prev }) } : undefined}
               isEditing={isEditing}
               editingLabel={editingLabel}
               disabled={!hasValidInput}

@@ -1,11 +1,11 @@
 import { CCS_HOURLY_RATE_CAP } from './ccs'
 import { computeSessionCcs, roundTo } from './shared'
+import { DEFAULT_STATE_RATE_YEAR, type NswFeeReliefRates } from './stateRates'
 
-// NSW Start Strong for Long Day Care — 2026 annual fee relief amounts
-export const NSW_FEE_RELIEF = {
-  '4+': { standard: 1783, maximum: 2563 },
-  '3': { standard: 423, maximum: 769 },
-} as const
+// NSW Preschool Fee Relief, officially "Fee Relief for Long Day Care" (Start Strong until 2026): annual fee relief
+// amounts for the default (latest) rate year. Rates for each year live in
+// stateRates.ts; retained as a named export for callers wanting the headline figures.
+export const NSW_FEE_RELIEF: NswFeeReliefRates = DEFAULT_STATE_RATE_YEAR.nsw
 
 export type NswAgeGroup = '4+' | '3'
 export type NswFeeReliefTier = 'standard' | 'maximum'
@@ -22,6 +22,8 @@ export interface NswDailyInputs {
   daysPerWeek: number
   /** CCS hourly rate cap (LDC). Defaults to the latest FY2026-27 cap when omitted. */
   hourlyRateCap?: number
+  /** Annual fee relief amounts. Defaults to the latest rate year when omitted. */
+  feeReliefRates?: NswFeeReliefRates
 }
 
 export interface NswDailyResult {
@@ -36,7 +38,7 @@ export interface NswDailyResult {
 }
 
 /**
- * Calculate daily out-of-pocket cost for an NSW Start Strong LDC session.
+ * Calculate daily out-of-pocket cost for an NSW Preschool Fee Relief session.
  */
 export function calculateNswDaily(inputs: NswDailyInputs): NswDailyResult {
   const ccs = computeSessionCcs({
@@ -51,7 +53,7 @@ export function calculateNswDaily(inputs: NswDailyInputs): NswDailyResult {
   const gapBeforeFeeRelief = roundTo(inputs.sessionFee - ccs.ccsEntitlement, 2)
 
   // Annual fee relief divided across service operating weeks, then by days per week
-  const annualFeeRelief = NSW_FEE_RELIEF[inputs.ageGroup][inputs.feeReliefTier]
+  const annualFeeRelief = (inputs.feeReliefRates ?? NSW_FEE_RELIEF)[inputs.ageGroup][inputs.feeReliefTier]
   const weeklyFeeRelief = roundTo(annualFeeRelief / inputs.serviceWeeks, 2)
   const dailyFeeRelief = roundTo(weeklyFeeRelief / inputs.daysPerWeek, 2)
 
@@ -87,7 +89,7 @@ export interface NswFortnightlySessionsResult {
 }
 
 /**
- * Calculate fortnightly out-of-pocket costs for NSW Start Strong LDC with per-session inputs.
+ * Calculate fortnightly out-of-pocket costs for NSW Preschool Fee Relief with per-session inputs.
  */
 export function calculateNswFortnightlySessions(inputs: {
   ccsPercent: number
@@ -98,12 +100,13 @@ export function calculateNswFortnightlySessions(inputs: {
   serviceWeeks: number
   sessions: NswSessionInput[]
   hourlyRateCap?: number
+  feeReliefRates?: NswFeeReliefRates
 }): NswFortnightlySessionsResult | null {
   const week1Booked = inputs.sessions.slice(0, 5).filter((s) => s.booked).length
   const week2Booked = inputs.sessions.slice(5, 10).filter((s) => s.booked).length
   if (week1Booked + week2Booked === 0) return null
 
-  const annualFeeRelief = NSW_FEE_RELIEF[inputs.ageGroup][inputs.feeReliefTier]
+  const annualFeeRelief = (inputs.feeReliefRates ?? NSW_FEE_RELIEF)[inputs.ageGroup][inputs.feeReliefTier]
   const weeklyFeeRelief = roundTo(annualFeeRelief / inputs.serviceWeeks, 2)
 
   let remainingCcsHours = inputs.fortnightlyCcsHours

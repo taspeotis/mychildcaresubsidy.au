@@ -87,7 +87,7 @@ export interface EstimateResult {
 export const SCHEME_META: Record<EstimateScheme, { label: string; fundingLabel: string }> = {
   ccs: { label: 'CCS', fundingLabel: '' },
   act: { label: 'ACT', fundingLabel: 'Preschool' },
-  nsw: { label: 'NSW', fundingLabel: 'Start Strong' },
+  nsw: { label: 'NSW', fundingLabel: 'Fee Relief' },
   qld: { label: 'QLD', fundingLabel: 'Free Kindy' },
   vic: { label: 'VIC', fundingLabel: 'Free Kinder' },
 }

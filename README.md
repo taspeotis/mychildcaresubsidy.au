@@ -6,7 +6,7 @@ Free, open-source calculator for estimating out-of-pocket child care costs in Au
 
 - **Federal CCS** for centre-based day care, family day care, and outside school hours care (OSHC), including school-age children
 - **ACT** Three-Year-Old Preschool
-- **NSW** Start Strong
+- **NSW** Preschool Fee Relief (formerly Start Strong)
 - **QLD** Free Kindy
 - **VIC** Free Kinder
 
@@ -20,9 +20,9 @@ The federal government subsidises child care fees based on family income (up to 
 
 ## Rates
 
-Federal CCS rates are for FY2026-27 (July 2026 to June 2027). State and territory rates are for calendar year 2026.
+Federal CCS rates are for FY2026-27 (July 2026 to June 2027). State and territory rates are for calendar year 2027.
 
-If you need to check figures against the previous year's rates (for example, verifying a service's historical kindy funding), the Settings page lets you switch the calculators to the 2025-26 rates. The choice is kept in the page's address, so a calculator can be bookmarked at those rates.
+If you need to check figures against the previous year's rates (for example, verifying a service's historical kindy funding), the Settings page lets you switch the calculators to the 2025-26 CCS rates or the 2026 state and territory rates. The choice is kept in the page's address, so a calculator can be bookmarked at those rates.
 
 Estimates only, not financial advice.
 

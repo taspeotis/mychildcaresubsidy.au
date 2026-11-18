@@ -14,6 +14,10 @@
  */
 import { describe, it, expect } from 'vitest'
 import { calculateVicDaily, calculateVicFortnightlySessions } from './vic'
+import { STATE_RATE_YEARS } from './stateRates'
+
+// The examples below use the 2026 rates they were published with.
+const VIC_2026 = STATE_RATE_YEARS['2026'].vic
 
 describe('calculateVicDaily', () => {
   /**
@@ -29,6 +33,7 @@ describe('calculateVicDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 3,
     })
@@ -50,6 +55,7 @@ describe('calculateVicDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'priority',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 3,
     })
@@ -71,6 +77,7 @@ describe('calculateVicDaily', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 7.5,
       daysPerWeek: 3,
     })
@@ -88,6 +95,7 @@ describe('calculateVicDaily', () => {
       sessionStartHour: 8,
       sessionEndHour: 13,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 2,
     })
@@ -112,6 +120,7 @@ describe('calculateVicFortnightlySessions', () => {
       ccsWithholdingPercent: 5,
       fortnightlyCcsHours: 72,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       sessions,
     })
@@ -132,6 +141,7 @@ describe('VIC edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 3,
     })
@@ -149,6 +159,7 @@ describe('VIC edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 3,
     })
@@ -168,6 +179,7 @@ describe('VIC edge cases', () => {
       sessionStartHour: 7,
       sessionEndHour: 17,
       cohort: 'standard',
+      freeKinderRates: VIC_2026,
       kinderHoursPerWeek: 15,
       daysPerWeek: 3,
     })
@@ -188,6 +200,7 @@ describe('VIC offset independence from CCS', () => {
     sessionStartHour: 7,
     sessionEndHour: 17,
     cohort: 'standard' as const,
+    freeKinderRates: VIC_2026,
     kinderHoursPerWeek: 15,
     daysPerWeek: 3,
   }
@@ -243,5 +256,47 @@ describe('VIC offset independence from CCS', () => {
 
     expect(result85.annualOffset).toBe(result0.annualOffset)
     expect(result85.weeklyOffset).toBe(result0.weeklyOffset)
+  })
+})
+
+/**
+ * 2027 rates (the default): vic.gov.au "2027 Kindergarten funding rates",
+ * long day care Free Kinder rate: standard $2,154, priority cohort $2,760.
+ */
+describe('VIC 2027 rates (default)', () => {
+  const base = {
+    ccsPercent: 85,
+    ccsWithholdingPercent: 5,
+    sessionFee: 120,
+    sessionStartHour: 7,
+    sessionEndHour: 17,
+    daysPerWeek: 3,
+  }
+
+  it('standard 15 hrs/wk: $2,154/yr over 40 weeks → $53.85/wk', () => {
+    const result = calculateVicDaily({ ...base, cohort: 'standard', kinderHoursPerWeek: 15 })
+    expect(result.annualOffset).toBe(2154)
+    expect(result.weeklyOffset).toBe(53.85)
+  })
+
+  it('priority cohort: $2,760/yr over 40 weeks → $69.00/wk', () => {
+    const result = calculateVicDaily({ ...base, cohort: 'priority', kinderHoursPerWeek: 15 })
+    expect(result.annualOffset).toBe(2760)
+    expect(result.weeklyOffset).toBe(69)
+  })
+
+  it('Pre-Prep: 20 hrs/wk → $2,154 + 5 × $143.60 extra-hour rate', () => {
+    const result = calculateVicDaily({ ...base, cohort: 'standard', kinderHoursPerWeek: 20 })
+    expect(result.annualOffset).toBe(2872) // 2154 + 718
+  })
+
+  it('Pre-Prep priority: 25 hrs/wk → $2,760 + 10 × $184 extra-hour rate', () => {
+    const result = calculateVicDaily({ ...base, cohort: 'priority', kinderHoursPerWeek: 25 })
+    expect(result.annualOffset).toBe(4600) // 2760 + 1840
+  })
+
+  it('pro-rata: 7.5 hrs/wk → half the 2027 offset', () => {
+    const result = calculateVicDaily({ ...base, cohort: 'standard', kinderHoursPerWeek: 7.5 })
+    expect(result.annualOffset).toBe(1077)
   })
 })
